@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+
+# env / secrets — provided via GitHub Actions secrets, never committed
+.env
+.env.local
+.env.*.local
+
+# editor/OS
+*.tmp.*
+.DS_Store
+.vscode
