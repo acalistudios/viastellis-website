@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* ViaStellis design tokens */
+@theme {
+  --color-cosmos-950: #07050f;
+  --color-cosmos-900: #0e0a1e;
+  --color-cosmos-800: #1a1333;
+  --color-cosmos-700: #271d4a;
+  --color-cosmos-600: #3d2d70;
+  --color-stardust-400: #a78bfa;
+  --color-stardust-300: #c4b5fd;
+  --color-stardust-200: #ddd6fe;
+  --color-stellar-400: #f59e0b;
+  --color-stellar-300: #fcd34d;
+  --color-rose-400: #fb7185;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+}
+
+/* Base reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-cosmos-950);
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* PDF / print export — keep the cosmic theme in the output */
+@media print {
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    background-color: var(--color-cosmos-950) !important;
+  }
+  @page {
+    margin: 10mm;
+  }
+
+  /* Release the 100%-height / overflow scroll chain so content flows across
+     multiple pages instead of being clipped to a single viewport. */
+  html, body, #root {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  #root > div,
+  #root main {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Avoid awkward breaks through cards and the chart graphic. */
+  .print-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  svg {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
