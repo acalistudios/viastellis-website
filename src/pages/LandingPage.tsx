@@ -90,22 +90,24 @@ export function LandingPage() {
           <Link to="/" className="text-2xl font-display text-stardust-300 flex items-center gap-2 hover:text-stellar-300 transition-colors">
             <span className="text-3xl">⭐</span> ViaStellis
           </Link>
-          <nav className="flex items-center gap-8 text-sm">
-            <a href="#offerings" className="text-slate-400 hover:text-stardust-300 transition-colors font-medium">
+          <nav className="flex items-center gap-5 sm:gap-8 text-sm">
+            {/* Secondary links: hidden on phones to avoid overflow; the hero CTAs
+                and page sections still cover these on mobile. */}
+            <a href="#offerings" className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium">
               Features
             </a>
-            <a href="#pricing" className="text-slate-400 hover:text-stardust-300 transition-colors font-medium">
+            <a href="#pricing" className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium">
               Pricing
             </a>
             <Link
               to="/match"
-              className="text-slate-400 hover:text-stardust-300 transition-colors font-medium"
+              className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium"
             >
               Try Demo
             </Link>
             <Link
               to="/auth"
-              className="px-6 py-2 bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 hover:from-stardust-400/30 hover:to-stellar-300/30 border border-stardust-400/50 text-stardust-300 rounded-full text-sm font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/20"
+              className="whitespace-nowrap px-4 sm:px-6 py-2 bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 hover:from-stardust-400/30 hover:to-stellar-300/30 border border-stardust-400/50 text-stardust-300 rounded-full text-sm font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/20"
             >
               Sign In
             </Link>
