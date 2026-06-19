@@ -11,7 +11,6 @@ import { DecisionPage } from '@/pages/DecisionPage'
 import { StellaPage } from '@/pages/StellaPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { JournalPage } from '@/pages/JournalPage'
-import { OnboardingPage } from '@/pages/OnboardingPage'
 import { TermsPage, PrivacyPage, RefundPage, ContactPage } from '@/pages/LegalPages'
 import { UpgradePage } from '@/pages/UpgradePage'
 
@@ -29,7 +28,6 @@ function App() {
     <Routes>
       {/* ── Public routes (no shell, no auth required) ── */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/welcome" element={<OnboardingPage />} />
       <Route path="/auth" element={<AuthPage />} />
       {/* Recovery-link landing page — needs a session but NOT a chart */}
       <Route path="/reset-password" element={<ResetPasswordPage />} />

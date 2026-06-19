@@ -62,7 +62,10 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-cosmos-950 flex flex-col items-center justify-center px-6 py-12">
       <div className="mb-10 text-center">
-        <h1 className="font-display text-4xl text-stardust-300 tracking-wide">ViaStellis</h1>
+        <Link to="/" aria-label="ViaStellis home" className="inline-block group">
+          <img src="/logo.svg" alt="ViaStellis" className="w-14 h-14 mx-auto mb-3 group-hover:scale-105 transition-transform" />
+          <h1 className="font-display text-4xl text-stardust-300 tracking-wide">ViaStellis</h1>
+        </Link>
         <p className="text-slate-500 mt-1 text-sm">Set a new password</p>
       </div>
 

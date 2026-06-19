@@ -89,10 +89,23 @@ export function MatchInvitePage() {
   if (!inviter) {
     return (
       <div className="min-h-screen bg-cosmos-950 flex flex-col items-center justify-center px-6 text-center">
-        <h1 className="font-display text-3xl text-stardust-300 mb-3">ViaStellis</h1>
-        <p className="text-slate-400 text-sm mb-6">This invite link is invalid or incomplete.</p>
-        <Link to="/welcome" className="text-stardust-400 underline underline-offset-2 text-sm">
-          Explore ViaStellis instead
+        <Link to="/" aria-label="ViaStellis home">
+          <img src="/logo.svg" alt="ViaStellis" className="w-16 h-16 mb-4 hover:scale-105 transition-transform" />
+        </Link>
+        <h1 className="font-display text-3xl text-stardust-300 mb-3">Compatibility invite</h1>
+        <p className="text-slate-400 text-sm mb-2 max-w-sm">
+          This page opens a personalized compatibility match when you follow an invite link a friend
+          shares with you.
+        </p>
+        <p className="text-slate-500 text-xs mb-6 max-w-sm">
+          It looks like this link is missing its invite details. Want to create your own chart and
+          share a match instead?
+        </p>
+        <Link
+          to="/"
+          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold hover:shadow-lg hover:shadow-stardust-400/20 transition-all"
+        >
+          Explore ViaStellis
         </Link>
       </div>
     )

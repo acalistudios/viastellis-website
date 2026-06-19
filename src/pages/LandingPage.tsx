@@ -88,7 +88,7 @@ export function LandingPage() {
       <header className="sticky top-0 z-40 bg-gradient-to-b from-[#0f0817]/90 to-transparent backdrop-blur-md border-b border-stardust-400/10 px-6 py-4 relative">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="text-2xl font-display text-stardust-300 flex items-center gap-2 hover:text-stellar-300 transition-colors">
-            <span className="text-3xl">⭐</span> ViaStellis
+            <img src="/logo.svg" alt="" className="w-8 h-8" /> ViaStellis
           </Link>
           <nav className="flex items-center gap-5 sm:gap-8 text-sm">
             {/* Secondary links: hidden on phones to avoid overflow; the hero CTAs
@@ -147,16 +147,15 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Right: Artwork placeholder */}
+            {/* Right: Hero artwork — Stella holding the zodiac wheel */}
             <div className="hidden md:block">
-              <div className="bg-cosmos-900 border border-cosmos-700 rounded-3xl aspect-square flex items-center justify-center text-slate-500 text-center p-6">
-                <p className="text-sm">
-                  [Hero artwork: Stella figure with constellation + zodiac wheel]
-                  <br />
-                  <code className="text-[10px] mt-2 inline-block">
-                    Provide image file path or upload to /artwork
-                  </code>
-                </p>
+              <div className="relative">
+                <div className="absolute -inset-4 bg-stardust-400/10 blur-3xl rounded-full" aria-hidden="true" />
+                <img
+                  src="/stella.png"
+                  alt="Stella, your AI astrologer, holding a glowing zodiac wheel among the stars"
+                  className="relative w-full rounded-3xl border border-stardust-400/20 shadow-2xl shadow-stardust-400/10"
+                />
               </div>
             </div>
           </div>

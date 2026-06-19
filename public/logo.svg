@@ -1,0 +1,50 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ViaStellis">
+  <defs>
+    <linearGradient id="vsBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1333"/>
+      <stop offset="0.55" stop-color="#0e0a1e"/>
+      <stop offset="1" stop-color="#271d4a"/>
+    </linearGradient>
+    <radialGradient id="vsGlow" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="#a78bfa" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vsGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="0.5" stop-color="#fcd34d"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- deep cosmic tile -->
+  <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#vsBg)"/>
+  <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#vsGlow)"/>
+
+  <!-- faint stars -->
+  <g fill="#e2e8f0" opacity="0.7">
+    <circle cx="24" cy="26" r="0.8"/>
+    <circle cx="78" cy="34" r="0.7"/>
+    <circle cx="30" cy="74" r="0.7"/>
+    <circle cx="72" cy="78" r="0.6"/>
+    <circle cx="20" cy="52" r="0.5"/>
+  </g>
+
+  <!-- compass ring -->
+  <circle cx="50" cy="50" r="33" fill="none" stroke="url(#vsGold)" stroke-width="1" opacity="0.55"/>
+  <g fill="#fcd34d" opacity="0.8">
+    <circle cx="73.3" cy="26.7" r="1.4"/>
+    <circle cx="73.3" cy="73.3" r="1.4"/>
+    <circle cx="26.7" cy="73.3" r="1.4"/>
+    <circle cx="26.7" cy="26.7" r="1.4"/>
+  </g>
+
+  <!-- 8-point compass star (long cardinal + short diagonal spikes) -->
+  <path fill="url(#vsGold)" d="
+    M94,50 L57.4,46.9 L71.2,28.8 L53.1,42.6 L50,6 L46.9,42.6
+    L28.8,28.8 L42.6,46.9 L6,50 L42.6,53.1 L28.8,71.2 L46.9,57.4
+    L50,94 L53.1,57.4 L71.2,71.2 L57.4,53.1 Z"/>
+  <circle cx="50" cy="50" r="4.5" fill="#fffbeb"/>
+
+  <!-- small sparkle accent -->
+  <path fill="#fde68a" d="M75,18 L76.4,22.6 L81,24 L76.4,25.4 L75,30 L73.6,25.4 L69,24 L73.6,22.6 Z" opacity="0.9"/>
+</svg>

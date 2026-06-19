@@ -27,6 +27,7 @@ export function HomePage() {
       >
         ⚙
       </Link>
+      <img src="/logo.svg" alt="" className="w-14 h-14 mb-2" />
       <h1 className="text-4xl font-display text-stardust-300 mb-1">ViaStellis</h1>
       <p className="text-slate-500 text-sm mb-8">Your path through the stars</p>
 

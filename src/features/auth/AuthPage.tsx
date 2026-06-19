@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Starfield } from '@/components/ui/Starfield'
 import { Button } from '@/components/ui/Button'
@@ -107,18 +107,20 @@ export function AuthPage() {
       <div className="absolute top-20 right-10 w-40 h-40 border border-stardust-400/10 rounded-full" />
       <div className="absolute bottom-32 left-10 w-32 h-32 border border-stardust-400/5 rounded-full" />
 
-      {/* Logo / wordmark */}
-      <div className="mb-12 text-center relative z-10">
-        <div className="inline-block mb-4">
-          <span className="text-5xl">⭐</span>
-        </div>
-        <h1 className="font-display text-5xl text-stardust-300 tracking-wide drop-shadow-lg">
+      {/* Logo / wordmark — clicking returns to the home page */}
+      <Link to="/" className="mb-12 text-center relative z-10 block group" aria-label="ViaStellis home">
+        <img
+          src="/logo.svg"
+          alt="ViaStellis"
+          className="w-16 h-16 mx-auto mb-4 drop-shadow-lg group-hover:scale-105 transition-transform"
+        />
+        <h1 className="font-display text-5xl text-stardust-300 tracking-wide drop-shadow-lg group-hover:text-stardust-200 transition-colors">
           ViaStellis
         </h1>
         <p className="text-slate-300 mt-2 text-sm font-light tracking-widest">
           YOUR PATH THROUGH THE STARS
         </p>
-      </div>
+      </Link>
 
       <div className="w-full max-w-sm relative z-10">
         {/* Main auth card */}
@@ -224,9 +226,14 @@ export function AuthPage() {
             )}
 
             {message && (
-              <p className="text-emerald-300 text-sm bg-emerald-400/10 border border-emerald-400/30 rounded-lg px-4 py-3">
-                {message}
-              </p>
+              <div className="text-emerald-300 text-sm bg-emerald-400/10 border border-emerald-400/30 rounded-lg px-4 py-3">
+                <p>{message}</p>
+                <p className="text-emerald-200/70 text-xs mt-2 leading-relaxed">
+                  Don’t see it? Check your spam or junk folder. To make sure future emails
+                  reach your inbox, add <span className="font-medium">Stella@viastellis.com</span> to
+                  your contacts.
+                </p>
+              </div>
             )}
 
             <Button
