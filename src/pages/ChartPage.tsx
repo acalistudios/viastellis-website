@@ -3,6 +3,7 @@ import { useNatalChart } from '@/hooks/useNatalChart'
 import { NorthIndianChart } from '@/components/chart/NorthIndianChart'
 import { ShareCardButton } from '@/components/chart/ShareCardButton'
 import { DashaTimeline } from '@/components/chart/DashaTimeline'
+import { CareerReportCard } from '@/components/chart/CareerReportCard'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { detectYogas } from '@/lib/yogas'
 import { getChartSynthesis } from '@/lib/placementMeanings'
@@ -496,6 +497,9 @@ export function ChartPage() {
 
       {/* Vimshottari Dasha timeline */}
       <DashaTimeline chart={chart} />
+
+      {/* Personalized career deep-dive report */}
+      <CareerReportCard chart={chart} />
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>

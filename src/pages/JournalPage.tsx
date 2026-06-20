@@ -14,6 +14,8 @@ import { useNatalChart } from '@/hooks/useNatalChart'
 import { moonSiderealDeg, moonGocharaQuality, signFromDeg, getNakshatra } from '@/lib/ephemeris'
 import { getPanchanga } from '@/lib/panchanga'
 import { streamStella } from '@/lib/gemini'
+import { CreditCost } from '@/components/ui/CreditCost'
+import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ZodiacSign } from '@/types'
@@ -195,9 +197,10 @@ export function JournalPage() {
             <button
               onClick={() => void scanPatterns()}
               disabled={scanning}
-              className="text-xs text-stardust-400 hover:text-stardust-300 transition-colors disabled:opacity-50"
+              className="text-xs text-stardust-400 hover:text-stardust-300 transition-colors disabled:opacity-50 inline-flex items-center gap-1"
             >
               {scanning ? 'Stella is reading your entries…' : '✨ Ask Stella to spot patterns with the sky'}
+              {!scanning && <CreditCost credits={CREDIT_COSTS.journal} />}
             </button>
           )}
         </div>

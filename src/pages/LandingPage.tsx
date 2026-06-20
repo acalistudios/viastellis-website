@@ -152,7 +152,7 @@ export function LandingPage() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-stardust-400/10 blur-3xl rounded-full" aria-hidden="true" />
                 <img
-                  src="/stella.png"
+                  src="/stella-hero.png"
                   alt="Stella, your AI astrologer, holding a glowing zodiac wheel among the stars"
                   className="relative w-full rounded-3xl border border-stardust-400/20 shadow-2xl shadow-stardust-400/10"
                 />

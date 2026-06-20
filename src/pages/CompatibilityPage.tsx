@@ -15,6 +15,8 @@ import { computeVibeScore, type VibeResult } from '@/lib/vibe'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
 import { CELEBRITIES } from '@/data/celebrities'
 import { streamStella } from '@/lib/gemini'
+import { CreditCost } from '@/components/ui/CreditCost'
+import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
@@ -264,7 +266,9 @@ export function CompatibilityPage() {
         </div>
 
         <Button type="submit" size="lg" disabled={!name.trim() || !date || !city}>
-          ✨ Check the Vibe
+          <span className="inline-flex items-center gap-1">
+            ✨ Check the Vibe <CreditCost credits={CREDIT_COSTS.compatibility} color="text-cosmos-950/70" />
+          </span>
         </Button>
       </form>
 

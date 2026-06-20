@@ -13,6 +13,8 @@ import { useUser } from '@/store/UserContext'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { getTransitSnapshot, moonGocharaQuality, signFromDeg, moonSiderealDeg } from '@/lib/ephemeris'
 import { streamStella } from '@/lib/gemini'
+import { CreditCost } from '@/components/ui/CreditCost'
+import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { DecisionAnswer, ZodiacSign } from '@/types'
@@ -186,7 +188,9 @@ export function DecisionPage() {
           className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-4 py-3 text-slate-100 placeholder:text-slate-600 text-sm resize-none focus:outline-none focus:border-stardust-400 disabled:opacity-50"
         />
         <Button type="submit" size="lg" disabled={!question.trim() || streaming} isLoading={streaming}>
-          Ask the Sky
+          <span className="inline-flex items-center gap-1">
+            Ask the Sky <CreditCost credits={CREDIT_COSTS.decision} color="text-cosmos-950/70" />
+          </span>
         </Button>
       </form>
 

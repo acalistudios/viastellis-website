@@ -1,7 +1,10 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { TodayCard } from '@/components/home/TodayCard'
 import { InfoBubble } from '@/components/ui/InfoBubble'
+import { MoonPhase } from '@/components/ui/MoonPhase'
+import { getPanchanga } from '@/lib/panchanga'
 import { getPlacementMeaning, getNakshatraMeaning, getChartSynthesis } from '@/lib/placementMeanings'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ZodiacSign } from '@/types'
@@ -17,6 +20,9 @@ export function HomePage() {
 
   const moon = chart?.planets.find(p => p.planet === 'Moon')
   const sun = chart?.planets.find(p => p.planet === 'Sun')
+
+  // Tonight's moon phase (global — same everywhere on Earth).
+  const moonPhase = useMemo(() => getPanchanga(new Date()).moonPhase, [])
 
   return (
     <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg mx-auto">
@@ -35,9 +41,17 @@ export function HomePage() {
         <span className="w-8 h-8 rounded-full border-2 border-stardust-400 border-t-transparent animate-spin my-12" />
       ) : chart ? (
         <>
-          <p className="text-slate-300 text-lg mb-6">
+          <p className="text-slate-300 text-lg mb-4">
             Welcome back, <span className="text-stardust-300">{chart.birth_data.name}</span>
           </p>
+
+          {/* Tonight's moon */}
+          <div className="flex flex-col items-center mb-6">
+            <MoonPhase illumination={moonPhase.illumination} name={moonPhase.name} size={64} />
+            <p className="text-slate-400 text-xs mt-1.5">
+              {moonPhase.name} · <span className="text-slate-500">{moonPhase.illumination}% lit</span>
+            </p>
+          </div>
 
           {/* Daily horoscope */}
           <TodayCard chart={chart} />

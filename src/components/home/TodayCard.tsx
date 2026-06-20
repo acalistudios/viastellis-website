@@ -6,8 +6,7 @@
  * generated on demand — one credit, cached for the day in sessionStorage.
  */
 
-import { useMemo, useState } from 'react'
-import { useUser } from '@/store/UserContext'
+import { useMemo } from 'react'
 import {
   getTransitSnapshot,
   moonGocharaQuality,
@@ -15,7 +14,7 @@ import {
   signFromDeg,
 } from '@/lib/ephemeris'
 import { getPanchanga } from '@/lib/panchanga'
-import { streamStella } from '@/lib/gemini'
+import { HoroscopeSection } from './HoroscopeSection'
 import { InfoBubble } from '../ui/InfoBubble'
 import type { NatalChart, ZodiacSign } from '@/types'
 
@@ -38,14 +37,6 @@ interface Props {
 }
 
 export function TodayCard({ chart }: Props) {
-  const { session } = useUser()
-  const todayKey = new Date().toISOString().split('T')[0]
-  const cacheKey = `stella-daily-${todayKey}`
-
-  const [reading, setReading] = useState<string>(() => sessionStorage.getItem(cacheKey) ?? '')
-  const [streaming, setStreaming] = useState(false)
-  const [error, setError] = useState('')
-
   const today = useMemo(() => {
     const now = new Date()
     const transits = getTransitSnapshot(now)
@@ -73,40 +64,19 @@ export function TodayCard({ chart }: Props) {
     return { transits, transitMoonSign, natalMoonSign, gochara, transitMoon, activations, panchanga }
   }, [chart])
 
-  async function fetchReading() {
-    if (!session || streaming) return
-    setError('')
-    setStreaming(true)
-    try {
-      const prompt =
-        `Write today's personal daily reading (~80 words) for ${chart.birth_data.name}. ` +
-        `Today the Moon transits ${today.transitMoonSign} (${today.transitMoon.nakshatra}), which is the ` +
-        `${today.gochara.houseFromMoon}th sign from their natal Moon in ${today.natalMoonSign}` +
-        `${today.gochara.isChandrashtama ? ' — chandrashtama, the monthly rest day' : ''}. ` +
-        `Day quality: ${today.gochara.quality}. ` +
-        (today.activations.length ? `Also: ${today.activations.join('; ')}. ` : '') +
-        `Their natal Moon nakshatra: ${chart.planets.find(p => p.planet === 'Moon')?.nakshatra}. ` +
-        `Flowing prose, warm, specific to these placements, no headings.`
-
-      let text = ''
-      for await (const chunk of streamStella(prompt, { persona: 'warm' }, session.access_token)) {
-        text += chunk
-        setReading(text)
-      }
-      sessionStorage.setItem(cacheKey, text)
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Stella couldn't write today's reading.")
-    } finally {
-      setStreaming(false)
-    }
-  }
+  const transitSummary =
+    `Moon in ${today.transitMoonSign} (${today.transitMoon.nakshatra}), ` +
+    `${today.gochara.houseFromMoon}th sign from natal Moon in ${today.natalMoonSign}, ` +
+    `day quality ${today.gochara.quality}` +
+    (today.activations.length ? `; ${today.activations.join('; ')}` : '') +
+    (today.gochara.isChandrashtama ? '; chandrashtama (rest day)' : '')
 
   const q = QUALITY_COPY[today.gochara.quality]
 
   return (
     <div className="w-full bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-3 text-left">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] uppercase tracking-widest text-slate-500">Today for you</p>
+        <p className="text-[11px] uppercase tracking-widest text-stardust-400">Today for you</p>
         <p className={`text-xs font-medium ${q.tone}`}>{q.label}</p>
       </div>
 
@@ -146,24 +116,7 @@ export function TodayCard({ chart }: Props) {
         )}
       </p>
 
-      {reading ? (
-        <p className="text-slate-300 text-sm leading-relaxed mt-3 pt-3 border-t border-cosmos-800 whitespace-pre-wrap">
-          {reading}
-          {streaming && (
-            <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
-          )}
-        </p>
-      ) : (
-        <button
-          onClick={() => void fetchReading()}
-          disabled={streaming}
-          className="mt-3 text-xs text-stardust-400 hover:text-stardust-300 transition-colors disabled:opacity-50"
-        >
-          {streaming ? 'Stella is reading your sky…' : "✨ Get Stella's daily reading"}
-        </button>
-      )}
-
-      {error && <p className="text-rose-400 text-xs mt-2">{error}</p>}
+      <HoroscopeSection chart={chart} transitSummary={transitSummary} />
     </div>
   )
 }

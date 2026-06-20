@@ -1,9 +1,10 @@
 /**
- * useNatalChart — loads the signed-in user's primary birth chart row from
- * Supabase, runs the ephemeris engine on it, and returns the computed chart.
+ * useNatalChart — loads the signed-in user's primary birth chart and runs the
+ * ephemeris engine on it.
  *
- * Calculation happens client-side (it's pure math, ~ms) so we don't need to
- * store chart_data server-side yet — though the column exists for caching later.
+ * Calculation is pure client-side math (~ms). We cache the birth data per user
+ * in localStorage so revisits render the chart INSTANTLY (no spinner), then
+ * revalidate against Supabase in the background (stale-while-revalidate).
  */
 
 import { useEffect, useState } from 'react'
@@ -14,6 +15,28 @@ import type { BirthData, NatalChart } from '@/types'
 import type { Database } from '@/types/supabase'
 
 type BirthChartRow = Database['public']['Tables']['birth_charts']['Row']
+
+const CACHE_PREFIX = 'viastellis-birthdata-'
+
+interface CachedChart {
+  birthData: BirthData
+  chartId: string
+}
+
+function readCache(userId: string): CachedChart | null {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + userId)
+    return raw ? (JSON.parse(raw) as CachedChart) : null
+  } catch {
+    return null
+  }
+}
+
+function writeCache(userId: string, value: CachedChart) {
+  try {
+    localStorage.setItem(CACHE_PREFIX + userId, JSON.stringify(value))
+  } catch { /* ignore */ }
+}
 
 function rowToBirthData(row: BirthChartRow): BirthData {
   return {
@@ -55,30 +78,47 @@ export function useNatalChart(): UseNatalChartResult {
       return
     }
 
-    let cancelled = false
+    const userId = user.id
 
+    // Instant render from cache, if present.
+    const cached = readCache(userId)
+    if (cached) {
+      setBirthData(cached.birthData)
+      setChartId(cached.chartId)
+      setChart(calculateNatalChart(cached.birthData))
+      setLoading(false)
+      setError(null)
+    }
+
+    let cancelled = false
     async function load() {
-      setLoading(true)
+      if (!cached) setLoading(true)
       setError(null)
       try {
         const { data, error: dbError } = await supabase
           .from('birth_charts')
           .select('*')
-          .eq('user_id', user!.id)
+          .eq('user_id', userId)
           .eq('is_primary', true)
           .limit(1)
           .maybeSingle()
 
         if (dbError) throw dbError
-        if (!data) throw new Error('No birth chart found. Please complete onboarding.')
         if (cancelled) return
+        if (!data) {
+          // Keep showing the cache if we have one; otherwise it's a real "no chart".
+          if (!cached) throw new Error('No birth chart found. Please complete onboarding.')
+          return
+        }
 
         const bd = rowToBirthData(data)
         setBirthData(bd)
         setChartId(data.id)
         setChart(calculateNatalChart(bd))
+        writeCache(userId, { birthData: bd, chartId: data.id })
       } catch (err: unknown) {
-        if (!cancelled) {
+        // Only surface an error if we have no cached chart to fall back on.
+        if (!cancelled && !cached) {
           setError(err instanceof Error ? err.message : 'Failed to load your chart.')
         }
       } finally {

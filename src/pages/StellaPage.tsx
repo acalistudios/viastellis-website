@@ -10,6 +10,7 @@
 import { useState, useRef, useEffect, useMemo, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
+import { CREDIT_COSTS, creditLabel } from '@/config/creditCosts'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { birthDataToJde } from '@/lib/ephemeris'
 import { calculateVimshottari, findCurrentDasha } from '@/lib/dasha'
@@ -30,7 +31,7 @@ const SUGGESTIONS = [
 ]
 
 export function StellaPage() {
-  const { session } = useUser()
+  const { session, profile } = useUser()
   const { chart } = useNatalChart()
 
   const [persona, setPersona] = useState<StellaPersona>('warm')
@@ -244,6 +245,11 @@ export function StellaPage() {
           )}
         </button>
       </form>
+      {profile?.subscription_tier !== 'premium' && (
+        <p className="px-5 pb-3 -mt-1 text-[10px] text-slate-600 text-center">
+          {creditLabel(CREDIT_COSTS.chat)} per message
+        </p>
+      )}
     </div>
   )
 }

@@ -20,7 +20,9 @@ import { getPanchanga, upcomingEclipses } from '@/lib/panchanga'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { WeekAheadCard } from '@/components/calendar/WeekAheadCard'
 import { useUser } from '@/store/UserContext'
-import { streamStella } from '@/lib/gemini'
+import { getSharedReading } from '@/lib/sharedReading'
+import { CreditCost } from '@/components/ui/CreditCost'
+import { CREDIT_COSTS } from '@/config/creditCosts'
 import { upcomingRetrogrades } from '@/lib/retrograde'
 import { getGemstoneRecommendations } from '@/lib/gemstones'
 import { Button } from '@/components/ui/Button'
@@ -131,8 +133,13 @@ export function CalendarPage() {
     [selected]
   )
 
-  // Reset the AI day-reading whenever a different day is selected
-  useEffect(() => { setDayReading(''); setDayError('') }, [selected])
+  // The AI day-reading is cached in localStorage (keyed by date) so it stays
+  // consistent across reloads and isn't regenerated/re-charged.
+  useEffect(() => {
+    const key = `viastellis-day-${selected.getFullYear()}-${selected.getMonth() + 1}-${selected.getDate()}`
+    setDayReading(localStorage.getItem(key) ?? '')
+    setDayError('')
+  }, [selected])
 
   const selectedPanchanga = useMemo(
     () => getPanchanga(new Date(selected.getFullYear(), selected.getMonth(), selected.getDate(), 12)),
@@ -150,27 +157,36 @@ export function CalendarPage() {
   }, [selected, natalMoonSign])
 
   async function askAboutDay() {
-    if (!session || !selectedInfo || dayStreaming) return
+    if (!session || !selectedInfo || !natalMoonSign || dayStreaming) return
     setDayError('')
-    setDayReading('')
     setDayStreaming(true)
     try {
       const transitLine = selectedTransits
         .map(t => `${t.planet} ${t.sign}${t.retrograde ? '(R)' : ''}`)
         .join(', ')
-      const prompt =
-        `Explain this day (~90 words) for someone with natal Moon in ${natalMoonSign}: ` +
-        `${selected.toDateString()}. Moon transits ${selectedInfo.moonSign} ` +
-        `(${selectedInfo.houseFromMoon}th from their Moon, ${selectedInfo.quality}` +
-        `${selectedInfo.isChandrashtama ? ', chandrashtama' : ''}). ` +
-        `Panchanga: ${selectedPanchanga.tithi.name} tithi (${selectedPanchanga.tithi.paksha}), ` +
-        `${selectedPanchanga.vara.name}, ${selectedPanchanga.yoga.name} yoga. ` +
-        `Sky: ${transitLine}. What kind of day is this for them? Flowing prose, warm, no headings.`
-
-      let acc = ''
-      for await (const chunk of streamStella(prompt, { persona: 'warm' }, session.access_token)) {
-        acc += chunk
-        setDayReading(acc)
+      const dateKey = `${selected.getFullYear()}-${selected.getMonth() + 1}-${selected.getDate()}`
+      const res = await getSharedReading({
+        kind: 'calendar_day',
+        cacheKey: `${natalMoonSign}|${dateKey}`,
+        unlock: true, // the cost is shown on the button; clicking confirms it
+        data: {
+          natalMoonSign,
+          dateLabel: selected.toDateString(),
+          transitMoonSign: selectedInfo.moonSign,
+          houseFromMoon: `${selectedInfo.houseFromMoon}th`,
+          quality: selectedInfo.quality,
+          isChandrashtama: selectedInfo.isChandrashtama ? 'yes' : '',
+          tithi: selectedPanchanga.tithi.name,
+          paksha: selectedPanchanga.tithi.paksha,
+          vara: selectedPanchanga.vara.name,
+          yoga: selectedPanchanga.yoga.name,
+          sky: transitLine,
+        },
+      })
+      if (res.body) {
+        setDayReading(res.body)
+        // Cache locally for instant, charge-free re-views.
+        localStorage.setItem(`viastellis-day-${dateKey}`, res.body)
       }
     } catch (err: unknown) {
       setDayError(err instanceof Error ? err.message : "Stella couldn't read this day.")
@@ -361,9 +377,10 @@ export function CalendarPage() {
             <button
               onClick={() => void askAboutDay()}
               disabled={dayStreaming}
-              className="mt-4 text-xs text-stardust-400 hover:text-stardust-300 transition-colors disabled:opacity-50"
+              className="mt-4 text-xs text-stardust-400 hover:text-stardust-300 transition-colors disabled:opacity-50 inline-flex items-center gap-1"
             >
               {dayStreaming ? 'Stella is reading this day…' : '✨ Ask Stella about this day'}
+              {!dayStreaming && <CreditCost credits={CREDIT_COSTS.calendar_day} />}
             </button>
           )}
           {dayError && <p className="text-rose-400 text-xs mt-2">{dayError}</p>}

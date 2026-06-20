@@ -7,7 +7,7 @@ interface UserContextValue {
   session: Session | null
   user: User | null
   profile: UserProfile | null
-  /** True while the initial session + profile are being hydrated from Supabase. */
+  /** True only on the very first hydration with no cached data; cached loads render instantly. */
   loading: boolean
   /** True if the signed-in user has at least one primary birth chart saved. */
   hasPrimaryChart: boolean
@@ -24,17 +24,48 @@ const UserContext = createContext<UserContextValue>({
   refreshChartStatus: async () => {},
 })
 
+// localStorage keys — cached so revisits render instantly (stale-while-revalidate).
+const PROFILE_KEY = 'viastellis-profile'
+const HAS_CHART_KEY = 'viastellis-has-chart'
+
+function readCachedProfile(): UserProfile | null {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY)
+    return raw ? (JSON.parse(raw) as UserProfile) : null
+  } catch {
+    return null
+  }
+}
+
+function clearCache() {
+  try {
+    localStorage.removeItem(PROFILE_KEY)
+    localStorage.removeItem(HAS_CHART_KEY)
+    // Purge per-user birth-data caches (personal data) on sign-out.
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith('viastellis-birthdata-')) localStorage.removeItem(k)
+    }
+  } catch { /* ignore */ }
+}
+
 export function UserProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(() => readCachedProfile())
+  const [hasPrimaryChart, setHasPrimaryChart] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(HAS_CHART_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
   const [loading, setLoading] = useState(true)
-  const [hasPrimaryChart, setHasPrimaryChart] = useState(false)
 
   // ── Initial session + auth listener ──────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      if (!session) setLoading(false) // no session → done loading
+      if (!session) setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -42,6 +73,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (!session) {
         setProfile(null)
         setHasPrimaryChart(false)
+        clearCache()
         setLoading(false)
       }
     })
@@ -49,7 +81,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  // ── Fetch profile + chart status whenever session changes ─────────────────
+  // ── Hydrate profile + chart status when the session resolves ──────────────
   useEffect(() => {
     if (!session?.user) {
       setProfile(null)
@@ -58,11 +90,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    async function load() {
-      setLoading(true)
-      try {
-        const userId = session!.user.id
+    const userId = session.user.id
 
+    // If we have cached data for THIS user, show it immediately (no spinner).
+    const cached = readCachedProfile()
+    const haveValidCache = cached?.id === userId
+    if (haveValidCache) {
+      setProfile(cached)
+      setLoading(false)
+    }
+
+    let cancelled = false
+    async function revalidate() {
+      if (!haveValidCache) setLoading(true) // first-ever load: block until fetched
+      try {
         const [profileRes, chartRes] = await Promise.all([
           supabase.from('profiles').select('*').eq('id', userId).single(),
           supabase
@@ -72,15 +113,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
             .eq('is_primary', true)
             .limit(1),
         ])
+        if (cancelled) return
 
-        setProfile((profileRes.data as UserProfile) ?? null)
-        setHasPrimaryChart((chartRes.data?.length ?? 0) > 0)
+        const p = (profileRes.data as UserProfile) ?? null
+        const hasChart = (chartRes.data?.length ?? 0) > 0
+        setProfile(p)
+        setHasPrimaryChart(hasChart)
+        try {
+          if (p) localStorage.setItem(PROFILE_KEY, JSON.stringify(p))
+          localStorage.setItem(HAS_CHART_KEY, String(hasChart))
+        } catch { /* ignore */ }
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    load()
+    revalidate()
+    return () => { cancelled = true }
   }, [session])
 
   // ── Manual refresh (called after saving a new birth chart) ────────────────
@@ -92,7 +141,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
       .eq('user_id', session.user.id)
       .eq('is_primary', true)
       .limit(1)
-    setHasPrimaryChart((data?.length ?? 0) > 0)
+    const hasChart = (data?.length ?? 0) > 0
+    setHasPrimaryChart(hasChart)
+    try {
+      localStorage.setItem(HAS_CHART_KEY, String(hasChart))
+    } catch { /* ignore */ }
   }
 
   return (

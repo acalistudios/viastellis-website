@@ -25,6 +25,7 @@ export type Database = {
           avatar_url: string | null
           subscription_tier: 'free' | 'premium'
           credits_remaining: number
+          default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
           stella_persona: 'stoic' | 'sassy' | 'warm'
           is_banned: boolean
           ban_reason: string | null

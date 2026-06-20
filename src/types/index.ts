@@ -7,6 +7,7 @@ export interface UserProfile {
   avatar_url: string | null
   subscription_tier: 'free' | 'premium'
   credits_remaining: number
+  default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
   created_at: string
 }
 
