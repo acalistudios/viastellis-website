@@ -19,12 +19,17 @@ interface Props {
   transitSummary: string
 }
 
-const META: Record<HoroscopeLens, { emoji: string; title: string; tag: string }> = {
-  western_sun: { emoji: '☀️', title: 'Sun', tag: 'Western' },
-  vedic_moon: { emoji: '🌙', title: 'Moon', tag: 'Vedic' },
-  vedic_sun: { emoji: '✶', title: 'Sun', tag: 'Vedic' },
-  personalized: { emoji: '✨', title: 'Personalized', tag: 'Your chart' },
+const META: Record<HoroscopeLens, { emoji: string; title: string; tag: string; alwaysFree?: boolean }> = {
+  western_sun: { emoji: '☀️', title: 'Sun',          tag: 'Western' },
+  vedic_moon:  { emoji: '🌙', title: 'Moon',         tag: 'Vedic' },
+  vedic_sun:   { emoji: '✶',  title: 'Sun',          tag: 'Vedic' },
+  personalized:{ emoji: '✨', title: 'Personalized', tag: 'Your chart' },
+  love:        { emoji: '💗', title: 'Love',         tag: 'Daily', alwaysFree: true },
+  career:      { emoji: '💼', title: 'Career',       tag: 'Daily', alwaysFree: true },
+  money:       { emoji: '💰', title: 'Money',        tag: 'Daily', alwaysFree: true },
 }
+
+const TOPIC_LENSES: HoroscopeLens[] = ['love', 'career', 'money']
 
 export function HoroscopeSection({ chart, transitSummary }: Props) {
   const { profile } = useUser()
@@ -37,9 +42,14 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
   const western = westernSunSign(chart.birth_data.date)
 
   const signFor = (lens: HoroscopeLens) =>
-    lens === 'western_sun' ? western : lens === 'vedic_moon' ? moonSign : lens === 'vedic_sun' ? sunSign : undefined
+    lens === 'western_sun' || TOPIC_LENSES.includes(lens)
+      ? western
+      : lens === 'vedic_moon' ? moonSign
+      : lens === 'vedic_sun' ? sunSign
+      : undefined
 
-  const costFor = (lens: HoroscopeLens) => (lens === 'personalized' ? 2 : lens === defaultLens ? 0 : 1)
+  const costFor = (lens: HoroscopeLens) =>
+    META[lens].alwaysFree ? 0 : lens === 'personalized' ? 2 : lens === defaultLens ? 0 : 1
 
   const [active, setActive] = useState<HoroscopeLens>(defaultLens)
   const [bodies, setBodies] = useState<Partial<Record<HoroscopeLens, string>>>({})
@@ -96,9 +106,9 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
     <div className="mt-4 pt-4 border-t border-cosmos-800">
       <p className="text-[11px] uppercase tracking-widest text-stardust-400 mb-2">Today’s Horoscope</p>
 
-      {/* Lens tabs */}
+      {/* Lens tabs — astrological then topic */}
       <div className="flex flex-wrap gap-1.5 mb-3">
-        {(Object.keys(META) as HoroscopeLens[]).map((lens) => {
+        {(['western_sun', 'vedic_moon', 'vedic_sun', 'personalized'] as HoroscopeLens[]).map((lens) => {
           const m = META[lens]
           const free = isPremium || lens === defaultLens || bodies[lens] != null
           const isActive = active === lens
@@ -122,11 +132,37 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
         })}
       </div>
 
+      {/* Topic lenses — always free */}
+      <div className="flex gap-1.5 mb-3">
+        {TOPIC_LENSES.map((lens) => {
+          const m = META[lens]
+          const isActive = active === lens
+          return (
+            <button
+              key={lens}
+              onClick={() => selectLens(lens)}
+              className={[
+                'flex-1 text-[11px] rounded-full px-2.5 py-1 border transition-colors inline-flex items-center justify-center gap-1',
+                isActive
+                  ? 'bg-stardust-400/20 border-stardust-400/50 text-stardust-200'
+                  : 'bg-cosmos-800 border-cosmos-700 text-slate-400 hover:text-slate-200',
+              ].join(' ')}
+            >
+              <span>{m.emoji}</span>
+              <span>{m.title}</span>
+              <span className="text-emerald-500 text-[9px]">free</span>
+            </button>
+          )
+        })}
+      </div>
+
       {/* Descriptor for the active lens */}
       <p className="text-slate-500 text-xs italic mb-2">
         {active === 'personalized'
-          ? 'Personalized horoscope based on your full Vedic chart — your Moon, Sun, and Lagna, woven with today’s transits.'
-          : `Today’s ${META[active].tag} ${META[active].title}-sign reading${signFor(active) ? ` · ${signFor(active)}` : ''}.`}
+          ? "Personalized horoscope based on your full Vedic chart -- your Moon, Sun, and Lagna, woven with today's transits."
+          : TOPIC_LENSES.includes(active)
+          ? `Today's ${META[active].title} horoscope for ${western ?? 'your sign'} - always free.`
+          : `Today's ${META[active].tag} ${META[active].title}-sign reading${signFor(active) ? (' - ' + signFor(active)) : ''}.`}
       </p>
 
       {/* Body */}
