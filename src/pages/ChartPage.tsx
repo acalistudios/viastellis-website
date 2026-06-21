@@ -3,7 +3,8 @@ import { useNatalChart } from '@/hooks/useNatalChart'
 import { NorthIndianChart } from '@/components/chart/NorthIndianChart'
 import { ShareCardButton } from '@/components/chart/ShareCardButton'
 import { DashaTimeline } from '@/components/chart/DashaTimeline'
-import { CareerReportCard } from '@/components/chart/CareerReportCard'
+import { ReportCard } from '@/components/chart/ReportCard'
+import { CREDIT_COSTS } from '@/config/creditCosts'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { detectYogas } from '@/lib/yogas'
 import { getChartSynthesis } from '@/lib/placementMeanings'
@@ -498,8 +499,37 @@ export function ChartPage() {
       {/* Vimshottari Dasha timeline */}
       <DashaTimeline chart={chart} />
 
-      {/* Personalized career deep-dive report */}
-      <CareerReportCard chart={chart} />
+      {/* Personalized deep-dive reports */}
+      <div className="mt-8">
+        <h2 className="text-sm text-slate-400 font-medium px-1">Deep-Dive Reports</h2>
+        <p className="text-xs text-slate-600 px-1 mb-1">
+          Personalized readings written from your full chart — generated once, yours to keep forever.
+        </p>
+        <ReportCard
+          chart={chart}
+          kind="career"
+          emoji="💼"
+          title="Your Career Blueprint"
+          description="Your vocational nature, ideal fields, strengths, growth edges, and what your current dasha period favors for work and money."
+          cost={CREDIT_COSTS.report_career}
+        />
+        <ReportCard
+          chart={chart}
+          kind="year_ahead"
+          emoji="🗓️"
+          title="Your Year Ahead"
+          description="Your year's overarching theme plus love, career, health, your best windows of opportunity, and what to watch — read from your current dasha."
+          cost={CREDIT_COSTS.report_year_ahead}
+        />
+        <ReportCard
+          chart={chart}
+          kind="birth_chart"
+          emoji="✦"
+          title="Birth-Chart Deep-Dive"
+          description="A full guided tour of your chart — core self, emotions, mind, love, drive, growth, and karmic axis, placement by placement."
+          cost={CREDIT_COSTS.report_birth_chart}
+        />
+      </div>
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>

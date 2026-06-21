@@ -42,8 +42,8 @@ export const SUBSCRIPTIONS: PlanOption[] = [
   {
     id: 'annual',
     label: 'Annual',
-    priceLabel: '$49.99 / yr',
-    detail: '360 credits up front · ~2 months free',
+    priceLabel: '$39.99 / yr',
+    detail: '360 credits up front · save $19.89 vs monthly',
     credits: 360,
     mode: 'subscription',
     priceId: env.VITE_STRIPE_PRICE_ANNUAL ?? '',

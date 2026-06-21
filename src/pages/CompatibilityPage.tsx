@@ -16,6 +16,7 @@ import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
 import { CELEBRITIES } from '@/data/celebrities'
 import { streamStella } from '@/lib/gemini'
 import { CreditCost } from '@/components/ui/CreditCost'
+import { SynastryReportCard } from '@/components/chart/SynastryReportCard'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -360,6 +361,11 @@ export function CompatibilityPage() {
                 )}
               </p>
             </div>
+          )}
+
+          {/* Synastry deep-dive report (one-time, per-pair) */}
+          {myChart && (
+            <SynastryReportCard myChart={myChart} partnerChart={result.chartB} />
           )}
         </div>
       )}
