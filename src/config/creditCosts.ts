@@ -17,6 +17,7 @@ export const CREDIT_COSTS = {
   report_year_ahead: 40,
   report_birth_chart: 40,
   report_synastry: 40,
+  tarot_spread: 2,
 } as const
 
 export type CreditAction = keyof typeof CREDIT_COSTS

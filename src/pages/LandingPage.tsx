@@ -100,7 +100,7 @@ export function LandingPage() {
               Pricing
             </a>
             <Link
-              to="/match"
+              to="/compatibility"
               className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium"
             >
               Try Demo
@@ -139,7 +139,7 @@ export function LandingPage() {
                   Get Started Free
                 </Link>
                 <Link
-                  to="/match"
+                  to="/compatibility"
                   className="px-8 py-4 bg-[#1a1a3f]/60 hover:bg-[#1a1a3f]/80 border border-stardust-400/40 text-slate-100 font-semibold rounded-full transition-all hover:border-stardust-400/70 hover:shadow-lg hover:shadow-stardust-400/10 text-center"
                 >
                   Try Vibe Match Demo

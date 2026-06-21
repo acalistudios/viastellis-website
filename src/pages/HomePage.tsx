@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { TodayCard } from '@/components/home/TodayCard'
+import { TarotSection } from '@/components/home/TarotSection'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MoonPhase } from '@/components/ui/MoonPhase'
 import { getPanchanga } from '@/lib/panchanga'
@@ -55,6 +56,9 @@ export function HomePage() {
 
           {/* Daily horoscope */}
           <TodayCard chart={chart} />
+
+          {/* Daily tarot */}
+          <TarotSection chart={chart} />
 
           {/* Combined blueprint — what your three pillars mean together */}
           {sun && moon && (
