@@ -153,15 +153,37 @@ export function TarotSection({ chart }: Props) {
   )
 }
 
+// Per-suit colour palette for the card face
+const SUIT_STYLE: Record<string, { bg: string; border: string; text: string; symbol: string }> = {
+  major:     { bg: 'from-stardust-400/20 to-stellar-300/20', border: 'border-stardust-400/40', text: 'text-stardust-300', symbol: '★' },
+  wands:     { bg: 'from-amber-500/20 to-orange-500/20',     border: 'border-amber-400/40',    text: 'text-amber-300',    symbol: '🔥' },
+  cups:      { bg: 'from-sky-500/20 to-cyan-500/20',         border: 'border-sky-400/40',      text: 'text-sky-300',      symbol: '🌊' },
+  swords:    { bg: 'from-slate-400/20 to-blue-300/20',       border: 'border-slate-400/40',    text: 'text-slate-300',    symbol: '⚔' },
+  pentacles: { bg: 'from-emerald-500/20 to-green-400/20',    border: 'border-emerald-400/40',  text: 'text-emerald-300',  symbol: '⬟' },
+}
+
+function CardFace({ card, size = 'sm' }: { card: TarotCard; size?: 'sm' | 'lg' }) {
+  const s = SUIT_STYLE[card.suit]
+  const isLg = size === 'lg'
+  return (
+    <div className={`bg-gradient-to-br ${s.bg} border ${s.border} rounded-lg flex flex-col items-center justify-between
+      ${isLg ? 'w-10 h-14 px-1 py-1' : 'w-full aspect-[2/3] px-1 py-1'}`}>
+      <span className={`${s.text} ${isLg ? 'text-[9px]' : 'text-[10px]'} font-bold leading-none mt-0.5`}>{card.label}</span>
+      <span className={isLg ? 'text-base' : 'text-lg'}>{s.symbol}</span>
+      <span className={`${s.text} ${isLg ? 'text-[9px]' : 'text-[10px]'} font-bold leading-none mb-0.5`}>{card.label}</span>
+    </div>
+  )
+}
+
 function DailyCardDisplay({ card }: { card: TarotCard }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex-shrink-0 w-10 h-14 bg-gradient-to-br from-stardust-400/20 to-stellar-300/20 border border-stardust-400/40 rounded-lg flex items-center justify-center">
-        <span className="text-stardust-300 text-lg">✦</span>
+      <div className="flex-shrink-0 w-10 h-14">
+        <CardFace card={card} size="lg" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-slate-100 font-display text-base leading-snug">{card.name}</p>
-        <p className="text-stardust-300 text-xs mt-0.5">{card.keywords.join(' · ')}</p>
+        <p className={`${SUIT_STYLE[card.suit].text} text-xs mt-0.5`}>{card.keywords.join(' · ')}</p>
         <p className="text-slate-400 text-xs mt-1 leading-relaxed">{card.upright}</p>
       </div>
     </div>
@@ -172,10 +194,8 @@ function MiniCard({ card, position }: { card: TarotCard; position: string }) {
   return (
     <div className="bg-cosmos-800 border border-cosmos-700 rounded-xl p-2 text-center">
       <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{position}</p>
-      <div className="w-full aspect-[2/3] bg-gradient-to-br from-stardust-400/10 to-stellar-300/10 border border-stardust-400/20 rounded-lg flex items-center justify-center mb-1.5">
-        <span className="text-stardust-300 text-sm">✦</span>
-      </div>
-      <p className="text-slate-200 text-[11px] font-medium leading-tight">{card.name}</p>
+      <CardFace card={card} />
+      <p className="text-slate-200 text-[11px] font-medium leading-tight mt-1.5">{card.name}</p>
       <p className="text-slate-500 text-[10px] mt-0.5 leading-tight">{card.keywords[0]}</p>
     </div>
   )

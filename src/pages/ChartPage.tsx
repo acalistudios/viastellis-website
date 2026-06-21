@@ -4,6 +4,7 @@ import { NorthIndianChart } from '@/components/chart/NorthIndianChart'
 import { ShareCardButton } from '@/components/chart/ShareCardButton'
 import { DashaTimeline } from '@/components/chart/DashaTimeline'
 import { ReportCard } from '@/components/chart/ReportCard'
+import { NumerologySection } from '@/components/chart/NumerologySection'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { detectYogas } from '@/lib/yogas'
@@ -530,6 +531,9 @@ export function ChartPage() {
           cost={CREDIT_COSTS.report_birth_chart}
         />
       </div>
+
+      {/* Numerology */}
+      <NumerologySection chart={chart} />
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>
