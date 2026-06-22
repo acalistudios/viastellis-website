@@ -6,6 +6,7 @@ import { DashaTimeline } from '@/components/chart/DashaTimeline'
 import { ReportCard } from '@/components/chart/ReportCard'
 import { NumerologySection } from '@/components/chart/NumerologySection'
 import { WesternChartView } from '@/components/chart/WesternChartView'
+import { signCuspFlag, nakshatraEdgeFlag } from '@/lib/boundaryFlags'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { detectYogas } from '@/lib/yogas'
@@ -120,6 +121,9 @@ export function ChartPage() {
   }
 
   const timeUnknown = chart.birth_data.time_unknown
+  const ascCusp = !timeUnknown
+    ? signCuspFlag(SIGNS_LIST.indexOf(chart.ascendant.sign) * 30 + chart.ascendant.degree)
+    : null
 
   const moonSign = chart.planets.find(p => p.planet === 'Moon')?.sign
   const sunSign = chart.planets.find(p => p.planet === 'Sun')?.sign
@@ -217,6 +221,12 @@ export function ChartPage() {
             <p className="text-slate-100 text-xl font-display mt-0.5">
               {SIGN_GLYPHS[chart.ascendant.sign]} {chart.ascendant.sign}
             </p>
+            {ascCusp && (
+              <p className="text-amber-300/80 text-[10px] mt-1 max-w-[15rem] leading-snug">
+                Near the {ascCusp.neighbor} boundary — a few minutes' difference in birth time could
+                change your rising sign.
+              </p>
+            )}
           </div>
           <p className="text-stellar-300 text-lg font-medium">{formatDegree(chart.ascendant.degree)}</p>
         </div>
@@ -287,7 +297,11 @@ export function ChartPage() {
         </div>
         {chart.planets
           .filter(p => p.planet !== 'Ascendant')
-          .map((p) => (
+          .map((p) => {
+            const absLon = SIGNS_LIST.indexOf(p.sign) * 30 + p.degree
+            const cusp = signCuspFlag(absLon)
+            const nakEdge = p.planet === 'Moon' ? nakshatraEdgeFlag(absLon) : null
+            return (
             <div key={p.planet} className="border-b border-cosmos-800 last:border-0">
               <button
                 onClick={() => setExpandedPlanet(expandedPlanet === p.planet ? null : p.planet)}
@@ -309,11 +323,21 @@ export function ChartPage() {
                 </span>
                 <span className="text-slate-300 text-sm">
                   {SIGN_GLYPHS[p.sign]} {p.sign.slice(0, 3)}
+                  {cusp && (
+                    <span className="block text-amber-300/80 text-[10px]" title={`On the cusp — within ${cusp.distance}° of ${cusp.neighbor}`}>
+                      cusp · {SIGN_GLYPHS[cusp.neighbor]}
+                    </span>
+                  )}
                 </span>
                 <span className="text-slate-400 text-sm text-right tabular-nums">{formatDegree(p.degree)}</span>
                 <span className="text-slate-400 text-xs text-right leading-tight">
                   {p.nakshatra}
                   <span className="text-slate-600 ml-1">p{p.nakshatra_pada}</span>
+                  {nakEdge && (
+                    <span className="block text-amber-300/80 text-[10px] mt-0.5" title="The Moon's nakshatra sets your dasha timeline — double-check your birth time.">
+                      near {nakEdge.neighbor} edge
+                    </span>
+                  )}
                 </span>
               </button>
 
@@ -341,7 +365,8 @@ export function ChartPage() {
                 </div>
               )}
             </div>
-          ))}
+            )
+          })}
       </div>
 
       {/* Houses (only when time known) */}

@@ -9,6 +9,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { calculateWesternChart } from '@/lib/westernChart'
+import { signCuspFlag } from '@/lib/boundaryFlags'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType } from '@/types'
@@ -81,6 +82,12 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
               {SIGN_GLYPHS[chart.ascendant.sign]} {chart.ascendant.sign}
             </p>
             <p className="text-slate-500 text-xs">{fmtDeg(chart.ascendant.degree)}</p>
+            {signCuspFlag(chart.ascendant.longitude) && (
+              <p className="text-amber-300/80 text-[10px] mt-1 leading-snug">
+                Near a sign boundary — a few minutes' difference in birth time could shift this to{' '}
+                {signCuspFlag(chart.ascendant.longitude)!.neighbor}.
+              </p>
+            )}
           </div>
           <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-4 py-3 text-center">
             <p className="text-[11px] uppercase tracking-widest text-slate-500">Midheaven</p>
@@ -105,23 +112,31 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
           <span className="text-right">Sign · Degree</span>
           <span className="text-right pl-3">{timeUnknown ? '' : 'House'}</span>
         </div>
-        {chart.planets.map((p) => (
-          <div key={p.body} className="grid grid-cols-[1fr_auto_auto] gap-2 px-4 py-2.5 border-b border-cosmos-800/60 last:border-0 items-center">
-            <span className="text-slate-200 text-sm flex items-center gap-2">
-              <span className="text-stardust-300 w-5 text-center">{BODY_GLYPHS[p.body]}</span>
-              {p.body}
-              {p.retrograde && p.body !== 'North Node' && p.body !== 'South Node' && (
-                <span className="text-rose-300 text-[10px]" title="Retrograde">℞</span>
-              )}
-            </span>
-            <span className="text-right text-slate-300 text-sm">
-              {SIGN_GLYPHS[p.sign]} {p.sign} <span className="text-slate-500">{fmtDeg(p.degree)}</span>
-            </span>
-            <span className="text-right text-slate-400 text-sm pl-3 w-8">
-              {timeUnknown ? '' : p.house}
-            </span>
-          </div>
-        ))}
+        {chart.planets.map((p) => {
+          const cusp = signCuspFlag(p.longitude)
+          return (
+            <div key={p.body} className="grid grid-cols-[1fr_auto_auto] gap-2 px-4 py-2.5 border-b border-cosmos-800/60 last:border-0 items-center">
+              <span className="text-slate-200 text-sm flex items-center gap-2">
+                <span className="text-stardust-300 w-5 text-center">{BODY_GLYPHS[p.body]}</span>
+                {p.body}
+                {p.retrograde && p.body !== 'North Node' && p.body !== 'South Node' && (
+                  <span className="text-rose-300 text-[10px]" title="Retrograde">℞</span>
+                )}
+              </span>
+              <span className="text-right text-slate-300 text-sm">
+                {SIGN_GLYPHS[p.sign]} {p.sign} <span className="text-slate-500">{fmtDeg(p.degree)}</span>
+                {cusp && (
+                  <span className="block text-amber-300/80 text-[10px]" title={`On the cusp — within ${cusp.distance}° of ${cusp.neighbor}`}>
+                    on the cusp · {SIGN_GLYPHS[cusp.neighbor]} {cusp.neighbor}
+                  </span>
+                )}
+              </span>
+              <span className="text-right text-slate-400 text-sm pl-3 w-8">
+                {timeUnknown ? '' : p.house}
+              </span>
+            </div>
+          )
+        })}
       </div>
 
       {/* Houses */}
