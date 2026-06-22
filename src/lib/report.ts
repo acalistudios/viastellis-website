@@ -9,7 +9,7 @@ const PROXY_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
   : '/api'
 
-export type ReportKind = 'career' | 'year_ahead' | 'birth_chart' | 'numerology'
+export type ReportKind = 'career' | 'year_ahead' | 'birth_chart' | 'numerology' | 'western_birth_chart'
 
 export interface ReportContext {
   name: string
@@ -26,6 +26,15 @@ export interface NumerologyContext {
   birthday: string
 }
 
+export interface WesternReportContext {
+  name: string
+  ascendant: string
+  midheaven: string
+  house_system: string
+  planets: string
+  aspects: string
+}
+
 export interface ReportResult {
   body?: string
   locked?: boolean
@@ -34,7 +43,7 @@ export interface ReportResult {
 
 export async function getReport(args: {
   kind: ReportKind
-  context: ReportContext | NumerologyContext
+  context: ReportContext | NumerologyContext | WesternReportContext
   unlock?: boolean
 }): Promise<ReportResult> {
   const { data: { session } } = await supabase.auth.getSession()
