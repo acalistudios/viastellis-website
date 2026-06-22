@@ -10,7 +10,7 @@
 import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
-const SUPPORT_EMAIL = 'acali@acalistudios.com'
+const SUPPORT_EMAIL = 'support@viastellis.com'
 const COMPANY = 'ViaStellis' // the Service / brand name
 const OPERATOR = 'ACALI Studios' // customer-facing operator (registered DBA)
 const LEGAL_ENTITY = 'Pacific Summit Industries, LLC, doing business as ACALI Studios'
