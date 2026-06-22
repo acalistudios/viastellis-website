@@ -3,18 +3,19 @@
  * general trust: Terms of Service, Privacy Policy, Refund Policy, Contact.
  *
  * NOTE: These are solid, specific starting-point templates tailored to
- * ViaStellis, but they are NOT legal advice. Have counsel review before
- * relying on them in production, and fill in the bracketed placeholders
- * (legal entity name, governing-law jurisdiction, support inbox).
+ * ViaStellis. They are NOT legal advice — have counsel review before relying
+ * on them in production. Entity, jurisdiction, and support inbox are filled in.
  */
 
 import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
-const SUPPORT_EMAIL = 'support@viastellis.com' // TODO: confirm this inbox exists
-const COMPANY = 'ViaStellis' // TODO: replace with the registered legal entity if different
-const GOVERNING_LAW = '[State/Country]' // TODO: set governing-law jurisdiction
-const EFFECTIVE_DATE = 'June 14, 2026'
+const SUPPORT_EMAIL = 'acali@acalistudios.com'
+const COMPANY = 'ViaStellis' // the Service / brand name
+const OPERATOR = 'ACALI Studios' // customer-facing operator (registered DBA)
+const LEGAL_ENTITY = 'Pacific Summit Industries, LLC, doing business as ACALI Studios'
+const GOVERNING_LAW = 'the State of California, United States'
+const EFFECTIVE_DATE = 'June 22, 2026'
 
 function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -43,14 +44,14 @@ export function TermsPage() {
   return (
     <LegalLayout title="Terms of Service">
       <p>
-        Welcome to {COMPANY}. By creating an account or using the {COMPANY} website and app
-        (the “Service”), you agree to these Terms of Service. If you do not agree, please do not
-        use the Service.
+        Welcome to {COMPANY}. {COMPANY} is operated by {LEGAL_ENTITY} (“{OPERATOR}”, “we”, “us”).
+        By creating an account or using the {COMPANY} website and app (the “Service”), you agree to
+        these Terms of Service. If you do not agree, please do not use the Service.
       </p>
 
       <h2>1. Entertainment purposes only</h2>
       <p>
-        {COMPANY} provides Vedic astrology readings, charts, and AI-generated guidance
+        {COMPANY} provides Vedic and Western astrology readings, charts, and AI-generated guidance
         (“Stella”) for personal reflection and entertainment only. Nothing in the Service is, or
         should be relied upon as, financial, medical, legal, psychological, or other professional
         advice. Always consult a qualified professional for important decisions.
@@ -90,7 +91,7 @@ export function TermsPage() {
 
       <h2>6. Intellectual property</h2>
       <p>
-        The Service, including its design, text, and software, is owned by {COMPANY} and protected
+        The Service, including its design, text, and software, is owned by {OPERATOR} and protected
         by law. Your birth data and journal entries remain yours; you grant us a limited license to
         process them solely to operate the Service for you.
       </p>
@@ -98,7 +99,7 @@ export function TermsPage() {
       <h2>7. Disclaimers & limitation of liability</h2>
       <p>
         The Service is provided “as is,” without warranties of any kind. To the maximum extent
-        permitted by law, {COMPANY} is not liable for any indirect, incidental, or consequential
+        permitted by law, {OPERATOR} is not liable for any indirect, incidental, or consequential
         damages, or for decisions you make based on the Service. Our total liability is limited to
         the amount you paid us in the 12 months before the claim.
       </p>
@@ -117,8 +118,8 @@ export function PrivacyPage() {
   return (
     <LegalLayout title="Privacy Policy">
       <p>
-        This Privacy Policy explains what information {COMPANY} collects, how we use it, and your
-        choices. We aim to collect only what we need to give you a meaningful, personal experience.
+        This Privacy Policy explains what information {OPERATOR} (operator of {COMPANY}) collects,
+        how we use it, and your choices. We aim to collect only what we need to give you a meaningful, personal experience.
       </p>
 
       <h2>1. Information we collect</h2>
