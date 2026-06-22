@@ -5,6 +5,7 @@ import { ShareCardButton } from '@/components/chart/ShareCardButton'
 import { DashaTimeline } from '@/components/chart/DashaTimeline'
 import { ReportCard } from '@/components/chart/ReportCard'
 import { NumerologySection } from '@/components/chart/NumerologySection'
+import { WesternChartView } from '@/components/chart/WesternChartView'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { detectYogas } from '@/lib/yogas'
@@ -47,7 +48,7 @@ function formatDegree(deg: number): string {
 }
 
 export function ChartPage() {
-  const { session } = useUser()
+  const { session, profile } = useUser()
   const { chart, loading, error } = useNatalChart()
   const [variant, setVariant] = useState<'D1' | 'D9'>('D1')
   const kundaliRef = useRef<HTMLDivElement>(null)
@@ -111,6 +112,11 @@ export function ChartPage() {
         <p className="text-rose-400 text-sm">{error ?? 'Chart unavailable.'}</p>
       </div>
     )
+  }
+
+  // Western (tropical) chart is a fully separate view; branch before the Vedic UI.
+  if (profile?.chart_system === 'western') {
+    return <WesternChartView birthData={chart.birth_data} />
   }
 
   const timeUnknown = chart.birth_data.time_unknown

@@ -70,3 +70,16 @@ declare module 'astronomia/data/vsop87Bsaturn' {
   const data: unknown
   export default data
 }
+declare module 'astronomia/data/vsop87Buranus' {
+  const data: unknown
+  export default data
+}
+declare module 'astronomia/data/vsop87Bneptune' {
+  const data: unknown
+  export default data
+}
+
+declare module 'astronomia/pluto' {
+  export function heliocentric(jde: number): { lon: number; lat: number; range: number }
+  export function astrometric(jde: number, earth: unknown): { ra: number; dec: number }
+}

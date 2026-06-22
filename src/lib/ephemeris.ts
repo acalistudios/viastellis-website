@@ -222,7 +222,12 @@ function isRetrograde(
  * geometrically required (the rising point of the equator is 90° of RA ahead
  * of the meridian). A sunrise birth must put the Sun on the Ascendant.
  */
-export function calculateAscendant(jde: number, latitudeDeg: number, longitudeDeg: number): number {
+/**
+ * Local Sidereal Time (degrees) for a Julian day and geographic longitude.
+ * IAU mean-sidereal-time formula. Shared by the Vedic Ascendant and the
+ * Western (Placidus) house engine so both use one validated code path.
+ */
+export function localSiderealTime(jde: number, longitudeDeg: number): number {
   // Greenwich Mean Sidereal Time (degrees) at 0h UT — IAU formula
   const jd0 = Math.floor(jde - 0.5) + 0.5
   const T0 = (jd0 - 2451545.0) / 36525.0
@@ -233,7 +238,11 @@ export function calculateAscendant(jde: number, latitudeDeg: number, longitudeDe
   const gmst = norm360(theta0 + 360.98564724 * ut / 24)
 
   // Local Sidereal Time in degrees
-  const lst = norm360(gmst + longitudeDeg)
+  return norm360(gmst + longitudeDeg)
+}
+
+export function calculateAscendant(jde: number, latitudeDeg: number, longitudeDeg: number): number {
+  const lst = localSiderealTime(jde, longitudeDeg)
   const RAMC = lst * DEG2RAD
 
   // Mean obliquity of ecliptic in radians (error vs true obliquity ~0.004°, negligible)

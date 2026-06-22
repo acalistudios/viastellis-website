@@ -26,6 +26,7 @@ export type Database = {
           subscription_tier: 'free' | 'premium'
           credits_remaining: number
           default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
+          chart_system: 'vedic' | 'western'
           stella_persona: 'stoic' | 'sassy' | 'warm'
           is_banned: boolean
           ban_reason: string | null

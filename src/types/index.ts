@@ -8,6 +8,7 @@ export interface UserProfile {
   subscription_tier: 'free' | 'premium'
   credits_remaining: number
   default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
+  chart_system: 'vedic' | 'western'
   created_at: string
 }
 
@@ -53,6 +54,56 @@ export interface NatalChart {
   ascendant: { sign: ZodiacSign; degree: number }
   planets: PlanetPosition[]
   houses: Array<{ house: number; sign: ZodiacSign; degree: number }>
+  calculated_at: string
+}
+
+// ─── Western (tropical) Chart ──────────────────────────────────────────────────
+// Kept fully separate from the Vedic NatalChart above. Western uses the tropical
+// zodiac, the outer planets (Uranus/Neptune/Pluto), Placidus houses, and aspects.
+
+export type WesternBody =
+  | 'Sun' | 'Moon' | 'Mercury' | 'Venus' | 'Mars'
+  | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Pluto'
+  | 'North Node' | 'South Node' | 'Ascendant' | 'Midheaven'
+
+export interface WesternPlanetPosition {
+  body: WesternBody
+  sign: ZodiacSign
+  house: number          // 1–12 (by Placidus cusp)
+  degree: number         // 0–29.99 within the sign
+  longitude: number      // absolute tropical longitude 0–359.99
+  retrograde: boolean
+}
+
+export type AspectType =
+  | 'conjunction' | 'sextile' | 'square' | 'trine' | 'opposition'
+
+export interface Aspect {
+  a: WesternBody
+  b: WesternBody
+  type: AspectType
+  orb: number            // degrees from exact (0 = exact)
+  applying: boolean      // true = forming, false = separating
+}
+
+export interface WesternHouseCusp {
+  house: number          // 1–12
+  sign: ZodiacSign
+  degree: number         // 0–29.99 within the sign
+  longitude: number      // absolute tropical longitude of the cusp
+}
+
+export type HouseSystem = 'placidus' | 'whole_sign' | 'equal'
+
+export interface WesternChart {
+  birth_data: BirthData
+  zodiac: 'tropical'
+  house_system: HouseSystem
+  ascendant: { sign: ZodiacSign; degree: number; longitude: number }
+  midheaven: { sign: ZodiacSign; degree: number; longitude: number }
+  planets: WesternPlanetPosition[]
+  houses: WesternHouseCusp[]
+  aspects: Aspect[]
   calculated_at: string
 }
 

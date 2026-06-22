@@ -10,12 +10,19 @@ const LENS_OPTIONS = [
   { value: 'vedic_sun', label: '✶ Sun sign (Vedic)' },
 ] as const
 
+const CHART_SYSTEM_OPTIONS = [
+  { value: 'vedic', label: '🪔 Vedic (sidereal)', hint: 'Recommended · star-aligned zodiac, nakshatras, dashas' },
+  { value: 'western', label: '♈ Western (tropical)', hint: 'Familiar sun-sign zodiac, Placidus houses, aspects' },
+] as const
+
 export function SettingsPage() {
   const navigate = useNavigate()
   const { user, profile } = useUser()
   const [signingOut, setSigningOut] = useState(false)
   const [lens, setLens] = useState(profile?.default_horoscope_lens ?? 'western_sun')
   const [lensSaved, setLensSaved] = useState(false)
+  const [chartSystem, setChartSystem] = useState(profile?.chart_system ?? 'vedic')
+  const [chartSaved, setChartSaved] = useState(false)
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -32,6 +39,17 @@ export function SettingsPage() {
       .update({ default_horoscope_lens: value })
       .eq('id', user.id)
     if (!error) setLensSaved(true)
+  }
+
+  async function handleChartSystemChange(value: typeof chartSystem) {
+    setChartSystem(value)
+    setChartSaved(false)
+    if (!user) return
+    const { error } = await supabase
+      .from('profiles')
+      .update({ chart_system: value })
+      .eq('id', user.id)
+    if (!error) setChartSaved(true)
   }
 
   return (
@@ -51,6 +69,43 @@ export function SettingsPage() {
           <span className="text-slate-500 text-sm">Credits remaining</span>
           <span className="text-stellar-300 text-sm font-medium">{profile?.credits_remaining ?? '—'}</span>
         </div>
+      </div>
+
+      {/* Chart system: Vedic (default) vs Western */}
+      <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
+        <p className="text-slate-300 text-sm font-medium mb-1">Chart system</p>
+        <p className="text-slate-500 text-xs mb-3">
+          We recommend Vedic. Prefer the familiar tropical zodiac? Switch to Western for a full
+          chart with Placidus houses and aspects.{' '}
+          <a href="/zodiac-systems" className="text-stardust-400 hover:underline">Learn the difference →</a>
+        </p>
+        <div className="flex flex-col gap-2">
+          {CHART_SYSTEM_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={[
+                'flex items-start gap-3 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors text-sm',
+                chartSystem === opt.value
+                  ? 'border-stardust-400/50 bg-stardust-400/10 text-stardust-200'
+                  : 'border-cosmos-700 text-slate-300 hover:border-cosmos-600',
+              ].join(' ')}
+            >
+              <input
+                type="radio"
+                name="chartSystem"
+                value={opt.value}
+                checked={chartSystem === opt.value}
+                onChange={() => void handleChartSystemChange(opt.value)}
+                className="accent-stardust-400 mt-0.5"
+              />
+              <span>
+                <span className="block">{opt.label}</span>
+                <span className="block text-slate-500 text-xs mt-0.5">{opt.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        {chartSaved && <p className="text-emerald-400 text-xs mt-2">Saved ✓</p>}
       </div>
 
       {/* Free daily horoscope lens */}
