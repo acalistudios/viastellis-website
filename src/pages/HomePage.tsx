@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { TodayCard } from '@/components/home/TodayCard'
 import { TarotSection } from '@/components/home/TarotSection'
+import { FullMoonCard } from '@/components/home/FullMoonCard'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MoonPhase } from '@/components/ui/MoonPhase'
 import { getPanchanga } from '@/lib/panchanga'
@@ -58,6 +59,7 @@ export function HomePage() {
           <TodayCard chart={chart} />
 
           {/* Daily tarot */}
+          <FullMoonCard chart={chart} />
           <TarotSection chart={chart} />
 
           {/* Combined blueprint — what your three pillars mean together */}

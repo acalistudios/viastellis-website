@@ -4,7 +4,8 @@
  * Fully deterministic, no AI, no credits.
  */
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   lifePathNumber,
   expressionNumber,
@@ -12,6 +13,10 @@ import {
   birthdayNumber,
   NUMBER_MEANINGS,
 } from '@/lib/numerology'
+import { getReport } from '@/lib/report'
+import { creditLabel } from '@/config/creditCosts'
+import { useUser } from '@/store/UserContext'
+import { CREDIT_COSTS } from '@/config/creditCosts'
 import type { NatalChart } from '@/types'
 
 interface Props {
@@ -19,6 +24,9 @@ interface Props {
 }
 
 export function NumerologySection({ chart }: Props) {
+  const { profile } = useUser()
+  const isPremium = profile?.subscription_tier === 'premium'
+
   const numbers = useMemo(() => {
     const name = chart.birth_data.name
     const date = chart.birth_data.date
@@ -30,6 +38,14 @@ export function NumerologySection({ chart }: Props) {
     ]
   }, [chart])
 
+  const numerologyContext = useMemo(() => ({
+    name: chart.birth_data.name,
+    life_path: String(numbers[0].n),
+    expression: String(numbers[1].n),
+    soul_urge: String(numbers[2].n),
+    birthday: String(numbers[3].n),
+  }), [chart, numbers])
+
   return (
     <div className="mt-6 mb-2">
       <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-3 px-1">Numerology</p>
@@ -38,6 +54,7 @@ export function NumerologySection({ chart }: Props) {
           <NumberCard key={key} label={label} number={n} subLabel={desc} />
         ))}
       </div>
+      <NumerologyReportCard context={numerologyContext} isPremium={isPremium} />
     </div>
   )
 }
@@ -90,5 +107,82 @@ function NumberCard({ label, number, subLabel }: { label: string; number: number
         </div>
       )}
     </button>
+  )
+}
+
+// ── Paid report card ─────────────────────────────────────────────────────────
+
+interface NumerologyContext {
+  name: string
+  life_path: string
+  expression: string
+  soul_urge: string
+  birthday: string
+}
+
+function NumerologyReportCard({ context, isPremium }: { context: NumerologyContext; isPremium: boolean }) {
+  const COST = CREDIT_COSTS.report_numerology
+  const [body, setBody] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [locked, setLocked] = useState(false)
+  const [error, setError] = useState('')
+
+  async function load(unlock = false) {
+    setError('')
+    if (unlock) setLoading(true)
+    try {
+      const res = await getReport({ kind: 'numerology', context, unlock })
+      if (res.body) { setBody(res.body); setLocked(false) }
+      else if (res.locked) setLocked(true)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load the report.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void load(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div className="mt-4 bg-gradient-to-br from-cosmos-800/80 to-cosmos-900/80 border border-stellar-300/30 rounded-2xl px-5 py-5">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11px] uppercase tracking-widest text-stellar-300">Full Reading</p>
+        <span className="text-base">🔢</span>
+      </div>
+      <h2 className="text-slate-100 font-display text-xl mb-1">Your Numerology Portrait</h2>
+
+      {body ? (
+        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-3">{body}</p>
+      ) : loading ? (
+        <p className="text-slate-500 text-xs mt-2">Checking…</p>
+      ) : locked ? (
+        <>
+          <p className="text-slate-400 text-sm mt-1 mb-4">
+            A full ~600-word synthesis of all four of your core numbers — how they interact,
+            where they harmonise, and where they create productive tension.
+          </p>
+          <button
+            onClick={() => void load(true)}
+            disabled={loading}
+            className="rounded-full px-5 py-2 bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold disabled:opacity-60"
+          >
+            {isPremium ? 'Generate report (free on Premium)' : `Unlock report · ${creditLabel(COST)}`}
+          </button>
+          {!isPremium && (
+            <p className="text-[10px] text-slate-600 mt-2">
+              One-time · about ${(COST * 0.1).toFixed(2)} in credits · yours to keep · free on{' '}
+              <Link to="/upgrade" className="underline">Premium</Link>
+            </p>
+          )}
+        </>
+      ) : null}
+
+      {error && (
+        <p className="text-rose-400 text-xs mt-2">
+          {error}{' '}
+          {error.includes('credit') && <Link to="/upgrade" className="underline">Get credits</Link>}
+        </p>
+      )}
+    </div>
   )
 }
