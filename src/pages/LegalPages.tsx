@@ -149,13 +149,19 @@ export function PrivacyPage() {
         sent to generate Stella’s responses). These providers process data on our behalf.
       </p>
 
-      <h2>4. Data retention & deletion</h2>
+      <h2 id="data-deletion">4. Data retention & deletion</h2>
       <p>
         We keep your data while your account is active. You can request access to, correction of,
         or deletion of your personal data at any time by emailing{' '}
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. Deleting your account removes your
         charts, journal entries, and profile, subject to limited records we must retain (e.g.,
         payment records for accounting).
+      </p>
+      <p>
+        <strong>To request deletion of your data:</strong> email{' '}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with the subject line
+        "Data Deletion Request" and include the email address associated with your account.
+        We will process your request within 30 days and confirm when complete.
       </p>
 
       <h2>5. Security</h2>
