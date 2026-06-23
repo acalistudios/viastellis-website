@@ -59,7 +59,7 @@ export function ShareCardButton({ chart, svgContainerRef }: Props) {
       ctx.fillText('ViaStellis', W / 2, 110)
       ctx.fillStyle = '#64748b'
       ctx.font = '28px system-ui, sans-serif'
-      ctx.fillText('Your path through the stars', W / 2, 155)
+      ctx.fillText('Wisdom from the stars', W / 2, 155)
 
       // Name
       ctx.fillStyle = '#e2e8f0'

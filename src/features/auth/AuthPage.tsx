@@ -118,7 +118,7 @@ export function AuthPage() {
           ViaStellis
         </h1>
         <p className="text-slate-300 mt-2 text-sm font-light tracking-widest">
-          YOUR PATH THROUGH THE STARS
+          WISDOM FROM THE STARS
         </p>
       </Link>
 
