@@ -575,6 +575,18 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
           </>
         )}
       </div>
+
+      {mode !== 'edit' && (
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut()
+            navigate('/auth', { replace: true })
+          }}
+          className="mt-10 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+        >
+          Not you? Sign out
+        </button>
+      )}
     </div>
   )
 }
