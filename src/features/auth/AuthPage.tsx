@@ -170,6 +170,22 @@ export function AuthPage() {
                 </svg>
                 Continue with Google
               </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setError('')
+                  await supabase.auth.signInWithOAuth({
+                    provider: 'facebook',
+                    options: { redirectTo: `${window.location.origin}/home` },
+                  })
+                }}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stardust-400/20 bg-white/5 hover:bg-white/10 transition-all text-sm font-medium text-slate-200 hover:text-white"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M18 9c0-4.97-4.03-9-9-9S0 4.03 0 9c0 4.49 3.29 8.21 7.59 8.89v-6.29H5.31V9h2.28V7.02c0-2.25 1.34-3.49 3.39-3.49.98 0 2.01.17 2.01.17v2.21h-1.13c-1.11 0-1.46.69-1.46 1.4V9h2.49l-.4 2.6h-2.09v6.29C14.71 17.21 18 13.49 18 9z" fill="#1877F2"/>
+                </svg>
+                Continue with Facebook
+              </button>
               <div className="flex items-center gap-3 my-1">
                 <div className="flex-1 h-px bg-stardust-400/10" />
                 <span className="text-xs text-slate-600">or</span>
