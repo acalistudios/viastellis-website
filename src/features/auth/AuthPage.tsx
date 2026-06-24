@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { useUser } from '@/store/UserContext'
 import { Starfield } from '@/components/ui/Starfield'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -16,6 +17,7 @@ interface RememberedEmail {
 
 export function AuthPage() {
   const navigate = useNavigate()
+  const { session, loading: sessionLoading } = useUser()
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -97,6 +99,12 @@ export function AuthPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Already signed in (e.g. just completed an OAuth round-trip that landed here) →
+  // send them into the app. AuthGuard then routes to /onboarding if no chart yet.
+  if (!sessionLoading && session) {
+    return <Navigate to="/home" replace />
   }
 
   return (
