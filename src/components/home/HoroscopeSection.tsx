@@ -22,7 +22,6 @@ interface Props {
 const META: Record<HoroscopeLens, { emoji: string; title: string; tag: string; alwaysFree?: boolean }> = {
   western_sun: { emoji: '☀️', title: 'Sun',          tag: 'Western' },
   vedic_moon:  { emoji: '🌙', title: 'Moon',         tag: 'Vedic' },
-  vedic_sun:   { emoji: '✶',  title: 'Sun',          tag: 'Vedic' },
   personalized:{ emoji: '✨', title: 'Personalized', tag: 'Your chart' },
   love:        { emoji: '💗', title: 'Love',         tag: 'Daily', alwaysFree: true },
   career:      { emoji: '💼', title: 'Career',       tag: 'Daily', alwaysFree: true },
@@ -33,7 +32,11 @@ const TOPIC_LENSES: HoroscopeLens[] = ['love', 'career', 'money']
 
 export function HoroscopeSection({ chart, transitSummary }: Props) {
   const { profile } = useUser()
-  const defaultLens = (profile?.default_horoscope_lens ?? 'western_sun') as HoroscopeLens
+  // Legacy guard: the retired 'vedic_sun' lens maps to the traditional Vedic
+  // Moon-sign reading (same system) so old profiles don't break.
+  const rawLens = profile?.default_horoscope_lens
+  const defaultLens: HoroscopeLens =
+    rawLens === 'vedic_sun' ? 'vedic_moon' : ((rawLens ?? 'western_sun') as HoroscopeLens)
   const isPremium = profile?.subscription_tier === 'premium'
 
   const moonSign = chart.planets.find((p) => p.planet === 'Moon')?.sign
@@ -45,7 +48,6 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
     lens === 'western_sun' || TOPIC_LENSES.includes(lens)
       ? western
       : lens === 'vedic_moon' ? moonSign
-      : lens === 'vedic_sun' ? sunSign
       : undefined
 
   const costFor = (lens: HoroscopeLens) =>
@@ -108,7 +110,7 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
 
       {/* Lens tabs — astrological then topic */}
       <div className="flex flex-wrap gap-1.5 mb-3">
-        {(['western_sun', 'vedic_moon', 'vedic_sun', 'personalized'] as HoroscopeLens[]).map((lens) => {
+        {(['western_sun', 'vedic_moon', 'personalized'] as HoroscopeLens[]).map((lens) => {
           const m = META[lens]
           const free = isPremium || lens === defaultLens || bodies[lens] != null
           const isActive = active === lens

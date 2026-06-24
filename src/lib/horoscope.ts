@@ -10,7 +10,7 @@ const PROXY_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
   : '/api'
 
-export type HoroscopeLens = 'western_sun' | 'vedic_moon' | 'vedic_sun' | 'personalized' | 'love' | 'career' | 'money'
+export type HoroscopeLens = 'western_sun' | 'vedic_moon' | 'personalized' | 'love' | 'career' | 'money'
 
 export interface HoroscopeResult {
   body?: string
