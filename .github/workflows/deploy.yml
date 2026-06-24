@@ -41,6 +41,16 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_APP_ENV: production
+          # Stripe Price IDs — empty until these repo secrets are added at go-live.
+          # While empty, /upgrade shows "not configured" (startCheckout guards on it).
+          # Add via: Settings → Secrets and variables → Actions → New repository secret,
+          # using the LIVE price IDs printed by scripts/setup-stripe-products.mjs.
+          VITE_STRIPE_PRICE_MONTHLY: ${{ secrets.VITE_STRIPE_PRICE_MONTHLY }}
+          VITE_STRIPE_PRICE_ANNUAL: ${{ secrets.VITE_STRIPE_PRICE_ANNUAL }}
+          VITE_STRIPE_PRICE_PACK_TASTER: ${{ secrets.VITE_STRIPE_PRICE_PACK_TASTER }}
+          VITE_STRIPE_PRICE_PACK_STANDARD: ${{ secrets.VITE_STRIPE_PRICE_PACK_STANDARD }}
+          VITE_STRIPE_PRICE_PACK_VALUE: ${{ secrets.VITE_STRIPE_PRICE_PACK_VALUE }}
+          VITE_STRIPE_PRICE_PACK_BULK: ${{ secrets.VITE_STRIPE_PRICE_PACK_BULK }}
 
       # SPA fallback: GitHub Pages has no redirect rules, so serve the app's
       # index.html for unknown paths. Copying it to 404.html means a refresh on
