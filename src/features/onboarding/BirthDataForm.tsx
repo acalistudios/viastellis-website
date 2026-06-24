@@ -29,6 +29,29 @@ interface FormData {
 
 const TOTAL_STEPS = 5
 
+// Daily horoscope lens choices shown on the confirm step. `help` powers the (?)
+// tooltips. Mirrors the picker in Settings; default is western_sun. Users can
+// always change this later in Settings, and switch per-day on the Home screen.
+const LENS_OPTIONS = [
+  {
+    value: 'western_sun',
+    label: '☀️ Sun sign (Western)',
+    help: 'The familiar zodiac sign from newspapers and most horoscope apps, based on the tropical Sun.',
+  },
+  {
+    value: 'vedic_moon',
+    label: '🌙 Moon sign (Vedic)',
+    help: 'Your Vedic rashi, based on the sidereal Moon — the traditional basis for Indian (Vedic) astrology.',
+  },
+  {
+    value: 'vedic_sun',
+    label: '✶ Sun sign (Vedic)',
+    help: 'Your Sun placed in the sidereal zodiac used in Vedic astrology — often one sign earlier than your Western sign.',
+  },
+] as const
+
+type LensValue = (typeof LENS_OPTIONS)[number]['value']
+
 const emptyForm: FormData = {
   name: '',
   birth_date: '',
@@ -330,11 +353,17 @@ function StepLocation({
 
 function StepConfirm({
   formData,
+  lens,
+  onLensChange,
+  showLens,
   onBack,
   onSubmit,
   saving,
 }: {
   formData: FormData
+  lens: LensValue
+  onLensChange: (v: LensValue) => void
+  showLens: boolean
   onBack: () => void
   onSubmit: () => void
   saving: boolean
@@ -366,6 +395,47 @@ function StepConfirm({
         ))}
       </div>
 
+      {/* Default daily-horoscope lens. Changeable later in Settings. */}
+      {showLens && (
+      <div>
+        <p className="text-slate-300 text-sm font-medium mb-1">Your free daily horoscope</p>
+        <p className="text-slate-500 text-xs mb-3">
+          Which sign should your free daily reading use? You can change this anytime in Settings.
+        </p>
+        <div className="flex flex-col gap-2">
+          {LENS_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={[
+                'flex items-center gap-3 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors text-sm',
+                lens === opt.value
+                  ? 'border-stardust-400/50 bg-stardust-400/10 text-stardust-200'
+                  : 'border-cosmos-700 text-slate-300 hover:border-cosmos-600',
+              ].join(' ')}
+            >
+              <input
+                type="radio"
+                name="onboardingLens"
+                value={opt.value}
+                checked={lens === opt.value}
+                onChange={() => onLensChange(opt.value)}
+                className="accent-stardust-400"
+              />
+              <span className="flex-1">{opt.label}</span>
+              <span
+                role="img"
+                aria-label={opt.help}
+                title={opt.help}
+                className="flex-shrink-0 w-4 h-4 rounded-full border border-slate-500 text-slate-400 text-[10px] leading-[14px] text-center cursor-help"
+              >
+                ?
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+      )}
+
       <div className="flex gap-3">
         <Button variant="secondary" onClick={onBack} className="flex-1" disabled={saving}>
           ← Back
@@ -390,6 +460,7 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
   const { user, refreshChartStatus } = useUser()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(emptyForm)
+  const [lens, setLens] = useState<LensValue>('western_sun')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [rowId, setRowId] = useState<string | null>(null)
@@ -482,6 +553,8 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
           ...values,
         })
         if (error) throw error
+        // Persist the chosen default daily-horoscope lens (non-fatal if it fails).
+        await supabase.from('profiles').update({ default_horoscope_lens: lens }).eq('id', user.id)
         // Refresh context so AuthGuard sees hasPrimaryChart=true immediately
         await refreshChartStatus()
         navigate('/', { replace: true })
@@ -565,6 +638,9 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
           <>
             <StepConfirm
               formData={formData}
+              lens={lens}
+              onLensChange={setLens}
+              showLens={mode === 'create'}
               onBack={() => setStep(4)}
               onSubmit={handleSubmit}
               saving={saving}
