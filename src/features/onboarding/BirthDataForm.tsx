@@ -29,28 +29,29 @@ interface FormData {
 
 const TOTAL_STEPS = 5
 
-// Daily horoscope lens choices shown on the confirm step. `help` powers the (?)
-// tooltips. Mirrors the picker in Settings; default is western_sun. Users can
-// always change this later in Settings, and switch per-day on the Home screen.
-const LENS_OPTIONS = [
+// The single astrology-system choice that drives the whole app: the birth chart
+// AND the default daily-horoscope lens. `help` powers the (?) tooltips. Users can
+// change this later in Settings. ViaStellis recommends Vedic.
+const SYSTEM_OPTIONS = [
   {
-    value: 'western_sun',
-    label: '☀️ Sun sign (Western)',
-    help: 'The familiar zodiac sign from newspapers and most horoscope apps, based on the tropical Sun.',
+    value: 'vedic',
+    label: '🪔 Vedic (sidereal)',
+    help: 'The traditional Indian system: a star-aligned (sidereal) zodiac with nakshatras and dashas. Daily readings use your Moon sign (rashi). Recommended.',
   },
   {
-    value: 'vedic_moon',
-    label: '🌙 Moon sign (Vedic)',
-    help: 'Your Vedic rashi, based on the sidereal Moon — the traditional basis for Indian (Vedic) astrology.',
-  },
-  {
-    value: 'vedic_sun',
-    label: '✶ Sun sign (Vedic)',
-    help: 'Your Sun placed in the sidereal zodiac used in Vedic astrology — often one sign earlier than your Western sign.',
+    value: 'western',
+    label: '♈ Western (tropical)',
+    help: 'The familiar Western system: the tropical zodiac from newspapers and most apps, with Placidus houses and aspects. Daily readings use your Sun sign.',
   },
 ] as const
 
-type LensValue = (typeof LENS_OPTIONS)[number]['value']
+type SystemValue = (typeof SYSTEM_OPTIONS)[number]['value']
+
+// One source of truth: the chosen system determines the default daily lens.
+// Vedic → Moon sign (rashi, the traditional Vedic daily reading); Western → Sun sign.
+function defaultLensFor(system: SystemValue): 'vedic_moon' | 'western_sun' {
+  return system === 'western' ? 'western_sun' : 'vedic_moon'
+}
 
 const emptyForm: FormData = {
   name: '',
@@ -353,17 +354,17 @@ function StepLocation({
 
 function StepConfirm({
   formData,
-  lens,
-  onLensChange,
-  showLens,
+  system,
+  onSystemChange,
+  showSystem,
   onBack,
   onSubmit,
   saving,
 }: {
   formData: FormData
-  lens: LensValue
-  onLensChange: (v: LensValue) => void
-  showLens: boolean
+  system: SystemValue
+  onSystemChange: (v: SystemValue) => void
+  showSystem: boolean
   onBack: () => void
   onSubmit: () => void
   saving: boolean
@@ -395,30 +396,31 @@ function StepConfirm({
         ))}
       </div>
 
-      {/* Default daily-horoscope lens. Changeable later in Settings. */}
-      {showLens && (
+      {/* Astrology system — drives both the chart and the daily horoscope.
+          Changeable later in Settings. */}
+      {showSystem && (
       <div>
-        <p className="text-slate-300 text-sm font-medium mb-1">Your free daily horoscope</p>
+        <p className="text-slate-300 text-sm font-medium mb-1">Your astrology system</p>
         <p className="text-slate-500 text-xs mb-3">
-          Which sign should your free daily reading use? You can change this anytime in Settings.
+          This sets your birth chart and your daily horoscope. You can change it anytime in Settings.
         </p>
         <div className="flex flex-col gap-2">
-          {LENS_OPTIONS.map((opt) => (
+          {SYSTEM_OPTIONS.map((opt) => (
             <label
               key={opt.value}
               className={[
                 'flex items-center gap-3 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors text-sm',
-                lens === opt.value
+                system === opt.value
                   ? 'border-stardust-400/50 bg-stardust-400/10 text-stardust-200'
                   : 'border-cosmos-700 text-slate-300 hover:border-cosmos-600',
               ].join(' ')}
             >
               <input
                 type="radio"
-                name="onboardingLens"
+                name="onboardingSystem"
                 value={opt.value}
-                checked={lens === opt.value}
-                onChange={() => onLensChange(opt.value)}
+                checked={system === opt.value}
+                onChange={() => onSystemChange(opt.value)}
                 className="accent-stardust-400"
               />
               <span className="flex-1">{opt.label}</span>
@@ -460,7 +462,7 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
   const { user, refreshChartStatus } = useUser()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(emptyForm)
-  const [lens, setLens] = useState<LensValue>('western_sun')
+  const [system, setSystem] = useState<SystemValue>('vedic')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [rowId, setRowId] = useState<string | null>(null)
@@ -553,8 +555,12 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
           ...values,
         })
         if (error) throw error
-        // Persist the chosen default daily-horoscope lens (non-fatal if it fails).
-        await supabase.from('profiles').update({ default_horoscope_lens: lens }).eq('id', user.id)
+        // One source of truth: the chosen system sets both the chart system and
+        // the derived default daily-horoscope lens (non-fatal if it fails).
+        await supabase
+          .from('profiles')
+          .update({ chart_system: system, default_horoscope_lens: defaultLensFor(system) })
+          .eq('id', user.id)
         // Refresh context so AuthGuard sees hasPrimaryChart=true immediately
         await refreshChartStatus()
         navigate('/', { replace: true })
@@ -638,9 +644,9 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
           <>
             <StepConfirm
               formData={formData}
-              lens={lens}
-              onLensChange={setLens}
-              showLens={mode === 'create'}
+              system={system}
+              onSystemChange={setSystem}
+              showSystem={mode === 'create'}
               onBack={() => setStep(4)}
               onSubmit={handleSubmit}
               saving={saving}

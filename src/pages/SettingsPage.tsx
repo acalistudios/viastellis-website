@@ -4,23 +4,21 @@ import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { Button } from '@/components/ui/Button'
 
-const LENS_OPTIONS = [
-  { value: 'western_sun', label: '☀️ Sun sign (Western)' },
-  { value: 'vedic_moon', label: '🌙 Moon sign (Vedic)' },
-  { value: 'vedic_sun', label: '✶ Sun sign (Vedic)' },
+const CHART_SYSTEM_OPTIONS = [
+  { value: 'vedic', label: '🪔 Vedic (sidereal)', hint: 'Recommended · star-aligned zodiac, nakshatras, dashas · daily reading by Moon sign' },
+  { value: 'western', label: '♈ Western (tropical)', hint: 'Familiar sun-sign zodiac, Placidus houses, aspects · daily reading by Sun sign' },
 ] as const
 
-const CHART_SYSTEM_OPTIONS = [
-  { value: 'vedic', label: '🪔 Vedic (sidereal)', hint: 'Recommended · star-aligned zodiac, nakshatras, dashas' },
-  { value: 'western', label: '♈ Western (tropical)', hint: 'Familiar sun-sign zodiac, Placidus houses, aspects' },
-] as const
+// One source of truth: the chosen system sets the default daily-horoscope lens.
+// Vedic → Moon sign (rashi, the traditional Vedic daily reading); Western → Sun sign.
+function defaultLensFor(system: 'vedic' | 'western'): 'vedic_moon' | 'western_sun' {
+  return system === 'western' ? 'western_sun' : 'vedic_moon'
+}
 
 export function SettingsPage() {
   const navigate = useNavigate()
   const { user, profile } = useUser()
   const [signingOut, setSigningOut] = useState(false)
-  const [lens, setLens] = useState(profile?.default_horoscope_lens ?? 'western_sun')
-  const [lensSaved, setLensSaved] = useState(false)
   const [chartSystem, setChartSystem] = useState(profile?.chart_system ?? 'vedic')
   const [chartSaved, setChartSaved] = useState(false)
 
@@ -30,24 +28,14 @@ export function SettingsPage() {
     navigate('/auth', { replace: true })
   }
 
-  async function handleLensChange(value: typeof lens) {
-    setLens(value)
-    setLensSaved(false)
-    if (!user) return
-    const { error } = await supabase
-      .from('profiles')
-      .update({ default_horoscope_lens: value })
-      .eq('id', user.id)
-    if (!error) setLensSaved(true)
-  }
-
   async function handleChartSystemChange(value: typeof chartSystem) {
     setChartSystem(value)
     setChartSaved(false)
     if (!user) return
+    // The system choice drives both the chart and the default daily-horoscope lens.
     const { error } = await supabase
       .from('profiles')
-      .update({ chart_system: value })
+      .update({ chart_system: value, default_horoscope_lens: defaultLensFor(value) })
       .eq('id', user.id)
     if (!error) setChartSaved(true)
   }
@@ -71,12 +59,13 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {/* Chart system: Vedic (default) vs Western */}
+      {/* Astrology system — drives both the chart and the daily horoscope */}
       <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
-        <p className="text-slate-300 text-sm font-medium mb-1">Chart system</p>
+        <p className="text-slate-300 text-sm font-medium mb-1">Astrology system</p>
         <p className="text-slate-500 text-xs mb-3">
-          We recommend Vedic. Prefer the familiar tropical zodiac? Switch to Western for a full
-          chart with Placidus houses and aspects.{' '}
+          This sets both your birth chart and your free daily horoscope. We recommend Vedic; prefer
+          the familiar tropical zodiac? Switch to Western for a full chart with Placidus houses and
+          aspects.{' '}
           <a href="/zodiac-systems" className="text-stardust-400 hover:underline">Learn the difference →</a>
         </p>
         <div className="flex flex-col gap-2">
@@ -106,38 +95,10 @@ export function SettingsPage() {
           ))}
         </div>
         {chartSaved && <p className="text-emerald-400 text-xs mt-2">Saved ✓</p>}
-      </div>
-
-      {/* Free daily horoscope lens */}
-      <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
-        <p className="text-slate-300 text-sm font-medium mb-1">Free daily horoscope</p>
-        <p className="text-slate-500 text-xs mb-3">
-          Pick the lens you get free each day. Other lenses cost credits (free on Premium).
+        <p className="text-slate-500 text-xs mt-3">
+          Want a different daily reading now and then? You can switch lenses (including Love, Career
+          & Money) right on the Home screen anytime.
         </p>
-        <div className="flex flex-col gap-2">
-          {LENS_OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className={[
-                'flex items-center gap-3 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors text-sm',
-                lens === opt.value
-                  ? 'border-stardust-400/50 bg-stardust-400/10 text-stardust-200'
-                  : 'border-cosmos-700 text-slate-300 hover:border-cosmos-600',
-              ].join(' ')}
-            >
-              <input
-                type="radio"
-                name="lens"
-                value={opt.value}
-                checked={lens === opt.value}
-                onChange={() => void handleLensChange(opt.value)}
-                className="accent-stardust-400"
-              />
-              {opt.label}
-            </label>
-          ))}
-        </div>
-        {lensSaved && <p className="text-emerald-400 text-xs mt-2">Saved ✓</p>}
       </div>
 
       <div className="flex flex-col gap-3">
