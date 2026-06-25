@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { TodayCard } from '@/components/home/TodayCard'
 import { TarotSection } from '@/components/home/TarotSection'
@@ -19,6 +19,8 @@ const SIGN_GLYPHS: Record<string, string> = {
 
 export function HomePage() {
   const { chart, loading } = useNatalChart()
+  const [params] = useSearchParams()
+  const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(params.get('checkout') === 'success')
 
   const moon = chart?.planets.find(p => p.planet === 'Moon')
   const sun = chart?.planets.find(p => p.planet === 'Sun')
@@ -35,6 +37,25 @@ export function HomePage() {
       >
         ⚙
       </Link>
+      {showCheckoutSuccess && (
+        <div className="w-full mb-6 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-left flex items-start gap-3">
+          <span className="text-lg leading-none mt-0.5">✨</span>
+          <div className="flex-1">
+            <p className="text-emerald-200 text-sm font-medium">Payment successful — thank you!</p>
+            <p className="text-emerald-200/70 text-xs mt-0.5">
+              Your credits have been added to your account. Enjoy your readings with Stella.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCheckoutSuccess(false)}
+            aria-label="Dismiss"
+            className="text-emerald-200/60 hover:text-emerald-100 text-sm"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <img src="/logo.svg" alt="" className="w-14 h-14 mb-2" />
       <h1 className="text-4xl font-display text-stardust-300 mb-1">ViaStellis</h1>
       <p className="text-slate-500 text-sm mb-8">Wisdom from the stars</p>
