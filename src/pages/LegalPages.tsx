@@ -59,7 +59,7 @@ export function TermsPage() {
 
       <h2>2. Eligibility & accounts</h2>
       <p>
-        You must be at least 16 years old to use the Service. You are responsible for the activity
+        You must be at least 18 years old to use the Service. You are responsible for the activity
         on your account and for keeping your login credentials secure. Provide accurate information
         (including birth details, which power your chart) and keep it current.
       </p>
@@ -172,7 +172,7 @@ export function PrivacyPage() {
       </p>
 
       <h2>6. Children</h2>
-      <p>The Service is not directed to children under 16, and we do not knowingly collect their data.</p>
+      <p>The Service is not directed to anyone under 18, and we do not knowingly collect their data.</p>
 
       <h2>7. Changes & contact</h2>
       <p>
