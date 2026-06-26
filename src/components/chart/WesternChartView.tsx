@@ -317,7 +317,7 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
       {body ? (
         <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-3">{body}</p>
       ) : loading ? (
-        <p className="text-slate-500 text-xs mt-2">{locked ? 'Loading…' : 'Checking…'}</p>
+        <p className="text-slate-500 text-xs mt-2">{locked ? 'Loading…' : 'Calculating…'}</p>
       ) : locked ? (
         <>
           <p className="text-slate-400 text-sm mt-1 mb-4">

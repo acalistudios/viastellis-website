@@ -100,7 +100,7 @@ function FullMoonContent({
       {body ? (
         <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{body}</p>
       ) : loading ? (
-        <p className="text-slate-500 text-xs">Checking…</p>
+        <p className="text-slate-500 text-xs">Calculating…</p>
       ) : locked ? (
         <>
           <p className="text-slate-400 text-sm mb-4">
