@@ -163,7 +163,7 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
         {active === 'personalized'
           ? "Personalized horoscope based on your full Vedic chart -- your Moon, Sun, and Lagna, woven with today's transits."
           : TOPIC_LENSES.includes(active)
-          ? `Today's ${META[active].title} horoscope for ${western ?? 'your sign'} - always free.`
+          ? `Today's ${META[active].title} horoscope for ${western ?? 'your sign'} · free for everyone.`
           : `Today's ${META[active].tag} ${META[active].title}-sign reading${signFor(active) ? (' - ' + signFor(active)) : ''}.`}
       </p>
 
