@@ -74,8 +74,9 @@ export function UpgradePage() {
         </div>
 
         <p className="text-[11px] text-slate-600 mt-8">
-          Payments are securely processed by Stripe. Subscriptions renew automatically; cancel
-          anytime. See our <Link to="/refund" className="underline">Refund Policy</Link>.
+          Premium includes all of Stella's AI readings, subject to fair-use limits. Payments are
+          securely processed by Stripe. Subscriptions renew automatically; cancel anytime. See our{' '}
+          <Link to="/refund" className="underline">Refund Policy</Link>.
         </p>
       </div>
     </div>
