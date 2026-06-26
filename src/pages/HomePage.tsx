@@ -29,7 +29,7 @@ export function HomePage() {
   const moonPhase = useMemo(() => getPanchanga(new Date()).moonPhase, [])
 
   return (
-    <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg lg:max-w-2xl mx-auto">
+    <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg lg:max-w-3xl mx-auto">
       <Link
         to="/settings"
         aria-label="Settings"

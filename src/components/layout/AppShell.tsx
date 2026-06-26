@@ -8,17 +8,17 @@ import { BottomNav } from './BottomNav'
 export function AppShell() {
   return (
     <div className="relative flex flex-col h-full bg-cosmos-950 text-slate-200">
-      {/* Decorative cosmic side panels — desktop only, behind the content. Wider on
-          large screens so the art reaches toward the reading column and fades into the
-          background, filling the page instead of leaving hard black gutters. */}
-      <div className="hidden lg:block fixed left-0 top-0 h-screen w-[32vw] max-w-[600px] z-0 pointer-events-none select-none">
-        <img src="/border-left.png" alt="" aria-hidden className="h-full w-full object-cover opacity-75" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 38%, #04030a 100%)' }} />
+      {/* Decorative cosmic side panels — desktop only, behind the content. Kept
+          narrow (≤18vw) so the figures aren't stretched or cropped; inner edge fades
+          into the background. */}
+      <div className="hidden lg:block fixed left-0 top-0 h-screen max-w-[18vw] w-auto z-0 pointer-events-none select-none">
+        <img src="/border-left.png" alt="" aria-hidden className="h-full w-full object-cover opacity-70" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, transparent 60%, #04030a 100%)' }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #04030a 0%, transparent 8%, transparent 92%, #04030a 100%)' }} />
       </div>
-      <div className="hidden lg:block fixed right-0 top-0 h-screen w-[32vw] max-w-[600px] z-0 pointer-events-none select-none">
-        <img src="/border-right.png" alt="" aria-hidden className="h-full w-full object-cover opacity-75" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, transparent 38%, #04030a 100%)' }} />
+      <div className="hidden lg:block fixed right-0 top-0 h-screen max-w-[18vw] w-auto z-0 pointer-events-none select-none">
+        <img src="/border-right.png" alt="" aria-hidden className="h-full w-full object-cover opacity-70" />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, transparent 60%, #04030a 100%)' }} />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #04030a 0%, transparent 8%, transparent 92%, #04030a 100%)' }} />
       </div>
 
