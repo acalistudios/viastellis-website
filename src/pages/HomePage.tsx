@@ -29,7 +29,7 @@ export function HomePage() {
   const moonPhase = useMemo(() => getPanchanga(new Date()).moonPhase, [])
 
   return (
-    <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg mx-auto">
+    <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg lg:max-w-2xl mx-auto">
       <Link
         to="/settings"
         aria-label="Settings"
@@ -71,8 +71,16 @@ export function HomePage() {
           {/* Tonight's moon */}
           <div className="flex flex-col items-center mb-6">
             <MoonPhase illumination={moonPhase.illumination} name={moonPhase.name} size={64} />
-            <p className="text-slate-400 text-xs mt-1.5">
-              {moonPhase.name} · <span className="text-slate-500">{moonPhase.illumination}% lit</span>
+            <p className="text-slate-400 text-xs mt-1.5 inline-flex items-center gap-1.5">
+              <span>{moonPhase.name} · <span className="text-slate-500">{moonPhase.illumination}% lit</span></span>
+              <InfoBubble title="Tonight's Moon" align="center">
+                This is the Moon's illuminated fraction right <em>now</em>. It changes continuously,
+                so it can differ by a few percent from sources that fix it to a set time of day — ours
+                is computed for the current moment. As for meaning: a <strong>waxing</strong> (growing)
+                Moon favors building, intention-setting, and starting things; the <strong>Full Moon</strong>
+                brings culmination and release; a <strong>waning</strong> (shrinking) Moon is for letting
+                go and rest; the <strong>New Moon</strong> is for fresh starts.
+              </InfoBubble>
             </p>
           </div>
 
