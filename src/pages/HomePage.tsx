@@ -77,7 +77,7 @@ export function HomePage() {
                 This is the Moon's illuminated fraction right <em>now</em>. It changes continuously,
                 so it can differ by a few percent from sources that fix it to a set time of day — ours
                 is computed for the current moment. As for meaning: a <strong>waxing</strong> (growing)
-                Moon favors building, intention-setting, and starting things; the <strong>Full Moon</strong>
+                Moon favors building, intention-setting, and starting things; the <strong>Full Moon</strong>{' '}
                 brings culmination and release; a <strong>waning</strong> (shrinking) Moon is for letting
                 go and rest; the <strong>New Moon</strong> is for fresh starts.
               </InfoBubble>

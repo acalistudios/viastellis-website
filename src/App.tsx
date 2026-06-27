@@ -13,6 +13,7 @@ import { SettingsPage } from '@/pages/SettingsPage'
 import { JournalPage } from '@/pages/JournalPage'
 import { TermsPage, PrivacyPage, RefundPage, ContactPage } from '@/pages/LegalPages'
 import { ZodiacSystemsPage } from '@/pages/ZodiacSystemsPage'
+import { PublicHoroscopesPage } from '@/pages/PublicHoroscopesPage'
 import { UpgradePage } from '@/pages/UpgradePage'
 
 // Auth + Onboarding features
@@ -42,6 +43,8 @@ function App() {
       <Route path="/contact" element={<ContactPage />} />
       {/* Public explainer: Western vs Vedic zodiac systems */}
       <Route path="/zodiac-systems" element={<ZodiacSystemsPage />} />
+      {/* Public "Today's Horoscopes" demo — all 12 signs, no signup */}
+      <Route path="/horoscopes" element={<PublicHoroscopesPage />} />
 
       {/* ── Auth-gated: birth data entry (needs account, no chart yet) ── */}
       <Route
