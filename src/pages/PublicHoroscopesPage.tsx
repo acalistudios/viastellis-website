@@ -17,6 +17,15 @@ const SIGN_GLYPHS: Record<string, string> = {
 }
 const ORDER = Object.keys(SIGN_GLYPHS)
 
+// Tropical Sun-sign date ranges — shown only in Western mode (the Vedic Moon sign
+// is not determined by birthdate, so ranges don't apply there).
+const SIGN_DATES: Record<string, string> = {
+  Aries: 'Mar 21 – Apr 19', Taurus: 'Apr 20 – May 20', Gemini: 'May 21 – Jun 20',
+  Cancer: 'Jun 21 – Jul 22', Leo: 'Jul 23 – Aug 22', Virgo: 'Aug 23 – Sep 22',
+  Libra: 'Sep 23 – Oct 22', Scorpio: 'Oct 23 – Nov 21', Sagittarius: 'Nov 22 – Dec 21',
+  Capricorn: 'Dec 22 – Jan 19', Aquarius: 'Jan 20 – Feb 18', Pisces: 'Feb 19 – Mar 20',
+}
+
 /** The visitor's LOCAL date as YYYY-MM-DD. */
 function localDateStr(): string {
   const d = new Date()
@@ -85,7 +94,7 @@ export function PublicHoroscopesPage() {
           </div>
           <p className="text-slate-500 text-xs mt-3 max-w-md mx-auto">
             {system === 'western'
-              ? 'Western readings use your tropical Sun sign — the one in most horoscopes.'
+              ? 'Western readings use your tropical Sun sign — the one in most European and American horoscopes.'
               : 'Vedic readings use your sidereal Moon sign (rashi) — the traditional Indian basis.'}
           </p>
         </div>
@@ -110,6 +119,9 @@ export function PublicHoroscopesPage() {
                 <div className="flex items-center gap-2.5 mb-2">
                   <span className="text-2xl text-stardust-300">{SIGN_GLYPHS[h.sign]}</span>
                   <span className="font-display text-xl text-stardust-200">{h.sign}</span>
+                  {system === 'western' && (
+                    <span className="text-slate-500 text-xs">{SIGN_DATES[h.sign]}</span>
+                  )}
                 </div>
                 <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                   {h.body || 'Today’s reading is being prepared — check back shortly.'}
