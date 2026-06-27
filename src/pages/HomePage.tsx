@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
+import { useUser } from '@/store/UserContext'
+import { calculateWesternChart } from '@/lib/westernChart'
 import { TodayCard } from '@/components/home/TodayCard'
 import { TarotSection } from '@/components/home/TarotSection'
 import { FullMoonCard } from '@/components/home/FullMoonCard'
@@ -24,6 +26,21 @@ export function HomePage() {
 
   const moon = chart?.planets.find(p => p.planet === 'Moon')
   const sun = chart?.planets.find(p => p.planet === 'Sun')
+
+  // When the user prefers the Western (tropical) system, the blueprint + placement
+  // cards should use tropical Sun/Moon/Rising (and drop nakshatras), not the Vedic chart.
+  const { profile } = useUser()
+  const isWestern = profile?.chart_system === 'western'
+  const westernChart = useMemo(
+    () => (isWestern && chart ? calculateWesternChart(chart.birth_data) : null),
+    [isWestern, chart],
+  )
+  const timeKnown = chart ? !chart.birth_data.time_unknown : false
+  const wSun = westernChart?.planets.find(p => p.body === 'Sun')?.sign
+  const wMoon = westernChart?.planets.find(p => p.body === 'Moon')?.sign
+  const bpSun = isWestern ? wSun : sun?.sign
+  const bpMoon = isWestern ? wMoon : moon?.sign
+  const bpRising = !timeKnown ? undefined : (isWestern ? westernChart?.ascendant.sign : chart?.ascendant.sign)
 
   // Tonight's moon phase (global — same everywhere on Earth).
   const moonPhase = useMemo(() => getPanchanga(new Date()).moonPhase, [])
@@ -92,40 +109,51 @@ export function HomePage() {
           <TarotSection chart={chart} />
 
           {/* Combined blueprint — what your three pillars mean together */}
-          {sun && moon && (
+          {bpSun && bpMoon && (
             <BlueprintCard
-              sunSign={sun.sign}
-              moonSign={moon.sign}
-              lagnaSign={chart.birth_data.time_unknown ? undefined : chart.ascendant.sign}
+              sunSign={bpSun}
+              moonSign={bpMoon}
+              lagnaSign={bpRising}
+              isWestern={isWestern}
             />
           )}
 
-          {/* Key placements */}
+          {/* Key placements — tropical Sun/Moon/Rising for Western, rashi + nakshatra for Vedic */}
           <div className="grid grid-cols-1 gap-3 w-full mb-8">
-            {moon && (
-              <PlacementCard
-                role="moon"
-                label="Moon Sign (Rashi)"
-                sign={moon.sign}
-                nakshatra={moon.nakshatra}
-                pada={moon.nakshatra_pada}
-              />
-            )}
-            {sun && (
-              <PlacementCard
-                role="sun"
-                label="Sun Sign"
-                sign={sun.sign}
-                nakshatra={sun.nakshatra}
-                pada={sun.nakshatra_pada}
-              />
-            )}
-            {!chart.birth_data.time_unknown && (
-              <PlacementCard
-                role="lagna"
-                label="Lagna (Rising)"
-                sign={chart.ascendant.sign}
-              />
+            {isWestern ? (
+              <>
+                {bpSun && <PlacementCard role="sun" label="Sun Sign (Tropical)" sign={bpSun} />}
+                {bpMoon && <PlacementCard role="moon" label="Moon Sign (Tropical)" sign={bpMoon} />}
+                {bpRising && <PlacementCard role="lagna" label="Rising (Ascendant)" sign={bpRising} />}
+              </>
+            ) : (
+              <>
+                {moon && (
+                  <PlacementCard
+                    role="moon"
+                    label="Moon Sign (Rashi)"
+                    sign={moon.sign}
+                    nakshatra={moon.nakshatra}
+                    pada={moon.nakshatra_pada}
+                  />
+                )}
+                {sun && (
+                  <PlacementCard
+                    role="sun"
+                    label="Sun Sign"
+                    sign={sun.sign}
+                    nakshatra={sun.nakshatra}
+                    pada={sun.nakshatra_pada}
+                  />
+                )}
+                {!chart.birth_data.time_unknown && (
+                  <PlacementCard
+                    role="lagna"
+                    label="Lagna (Rising)"
+                    sign={chart.ascendant.sign}
+                  />
+                )}
+              </>
             )}
           </div>
 
@@ -167,9 +195,10 @@ interface BlueprintCardProps {
   sunSign: ZodiacSign
   moonSign: ZodiacSign
   lagnaSign?: ZodiacSign
+  isWestern?: boolean
 }
 
-function BlueprintCard({ sunSign, moonSign, lagnaSign }: BlueprintCardProps) {
+function BlueprintCard({ sunSign, moonSign, lagnaSign, isWestern }: BlueprintCardProps) {
   const synth = getChartSynthesis(sunSign, moonSign, lagnaSign)
 
   return (
@@ -192,7 +221,7 @@ function BlueprintCard({ sunSign, moonSign, lagnaSign }: BlueprintCardProps) {
 
       <p className="text-[10px] text-slate-600 mt-3 italic">
         A blended reading of your rising, Sun, and Moon signs. Inclinations, not rules — your full
-        chart (houses, dashas, yogas) refines all of this.
+        chart ({isWestern ? 'houses and aspects' : 'houses, dashas, yogas'}) refines all of this.
       </p>
     </div>
   )
