@@ -17,34 +17,34 @@ import { getReport } from '@/lib/report'
 import { creditLabel } from '@/config/creditCosts'
 import { useUser } from '@/store/UserContext'
 import { CREDIT_COSTS } from '@/config/creditCosts'
-import type { NatalChart } from '@/types'
+import type { BirthData } from '@/types'
 
 interface Props {
-  chart: NatalChart
+  birthData: BirthData
 }
 
-export function NumerologySection({ chart }: Props) {
+export function NumerologySection({ birthData }: Props) {
   const { profile } = useUser()
   const isPremium = profile?.subscription_tier === 'premium'
 
   const numbers = useMemo(() => {
-    const name = chart.birth_data.name
-    const date = chart.birth_data.date
+    const name = birthData.name
+    const date = birthData.date
     return [
       { key: 'lifePath',    label: 'Life Path',   n: lifePathNumber(date),    desc: 'The core lesson and purpose you are here to fulfil.' },
       { key: 'expression',  label: 'Expression',  n: expressionNumber(name),  desc: 'Your natural talents and the energy you project into the world.' },
       { key: 'soulUrge',    label: 'Soul Urge',   n: soulUrgeNumber(name),    desc: 'Your deepest inner motivation — what your heart truly craves.' },
       { key: 'birthday',    label: 'Birthday',    n: birthdayNumber(date),    desc: 'A special gift or skill you bring to this lifetime.' },
     ]
-  }, [chart])
+  }, [birthData])
 
   const numerologyContext = useMemo(() => ({
-    name: chart.birth_data.name,
+    name: birthData.name,
     life_path: String(numbers[0].n),
     expression: String(numbers[1].n),
     soul_urge: String(numbers[2].n),
     birthday: String(numbers[3].n),
-  }), [chart, numbers])
+  }), [birthData, numbers])
 
   return (
     <div className="mt-6 mb-2">

@@ -564,7 +564,7 @@ export function ChartPage() {
       </div>
 
       {/* Numerology */}
-      <NumerologySection chart={chart} />
+      <NumerologySection birthData={chart.birth_data} />
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>

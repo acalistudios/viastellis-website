@@ -15,6 +15,7 @@ import { getReport } from '@/lib/report'
 import { creditLabel } from '@/config/creditCosts'
 import { useUser } from '@/store/UserContext'
 import { InfoBubble } from '@/components/ui/InfoBubble'
+import { NumerologySection } from '@/components/chart/NumerologySection'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType, WesternChart } from '@/types'
 
@@ -254,6 +255,9 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
 
       {/* Deep-dive report */}
       {!timeUnknown && <WesternReportCard chart={chart} />}
+
+      {/* Numerology — system-independent (birth date + name), shown on both chart views. */}
+      <NumerologySection birthData={birthData} />
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>
