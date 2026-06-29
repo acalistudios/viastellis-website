@@ -84,7 +84,7 @@ export function UpgradePage() {
         <h2 className="text-slate-300 text-sm uppercase tracking-widest mt-4 mb-3">Subscribe & save</h2>
         <div className="grid sm:grid-cols-2 gap-3 mb-8">
           {SUBSCRIPTIONS.map(plan => (
-            <PlanCard key={plan.id} plan={plan} busy={busyId === plan.id} onChoose={choose} />
+            <PlanCard key={plan.id} plan={plan} busy={busyId === plan.id} onChoose={choose} isPremium={isPremium} />
           ))}
         </div>
 
@@ -147,12 +147,15 @@ function PlanCard({
   busy,
   onChoose,
   compact,
+  isPremium = false,
 }: {
   plan: PlanOption
   busy: boolean
   onChoose: (p: PlanOption) => void
   compact?: boolean
+  isPremium?: boolean
 }) {
+  const isCurrent = isPremium && plan.mode === 'subscription'
   return (
     <div
       className={[
@@ -171,11 +174,11 @@ function PlanCard({
       <p className="text-stardust-300 text-sm">{plan.priceLabel}</p>
       <p className={`text-slate-500 ${compact ? 'text-[11px]' : 'text-xs'} mt-1 mb-3 flex-1`}>{plan.detail}</p>
       <button
-        onClick={() => onChoose(plan)}
-        disabled={busy}
+        onClick={() => !isCurrent && onChoose(plan)}
+        disabled={busy || isCurrent}
         className="w-full rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-medium py-2 disabled:opacity-60 transition-opacity"
       >
-        {busy ? 'Starting…' : plan.mode === 'subscription' ? 'Subscribe' : 'Buy'}
+        {busy ? 'Starting…' : isCurrent ? 'Active Plan' : plan.mode === 'subscription' ? 'Subscribe' : 'Buy'}
       </button>
     </div>
   )

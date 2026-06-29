@@ -48,7 +48,7 @@ export function DashaTimeline({ chart }: { chart: NatalChart }) {
   }, [chart])
 
   const { mahadashas, current } = data
-  const now = Date.now()
+  const [now] = useState(() => Date.now())
 
   return (
     <div className="mt-6">

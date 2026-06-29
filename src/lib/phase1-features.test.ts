@@ -64,7 +64,7 @@ describe('gemstone recommendations', () => {
   it('returns gem data for all planets', () => {
     const planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Rahu', 'Ketu']
     for (const p of planets) {
-      const gem = getGemForPlanet(p as any)
+      const gem = getGemForPlanet(p as 'Sun')
       expect(gem.primary).toBeTruthy()
       expect(gem.secondary).toBeTruthy()
     }

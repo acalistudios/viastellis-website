@@ -142,7 +142,7 @@ export function nextSolarReturn(
 ): SolarReturn {
   // Initial guess: when is the Sun next at natalSunDeg? Start from `from`.
   let t = from.getTime()
-  let diff = norm360(natalSunDeg - sunSiderealDeg(new Date(t)))
+  const diff = norm360(natalSunDeg - sunSiderealDeg(new Date(t)))
   t += (diff / 0.9856) * DAY_MS
 
   // Refine (signed correction now that we're close)

@@ -304,10 +304,9 @@ export function calculateNatalChart(birthData: BirthData): NatalChart {
   })
 
   // ── Ascendant ─────────────────────────────────────────────────────────────
-  let ascTropical: number | null = null
   let ascSidereal: number | null = null
   if (!birthData.time_unknown) {
-    ascTropical = calculateAscendant(jde, birthData.latitude, birthData.longitude)
+    const ascTropical = calculateAscendant(jde, birthData.latitude, birthData.longitude)
     ascSidereal = norm360(ascTropical - ayanamsa)
   }
 

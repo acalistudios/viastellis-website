@@ -37,7 +37,7 @@ export function PublicHoroscopesPage() {
   const [data, setData] = useState<PublicHoroscope[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const date = useMemo(localDateStr, [])
+  const date = useMemo(() => localDateStr(), [])
 
   const prettyDate = useMemo(
     () => new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {

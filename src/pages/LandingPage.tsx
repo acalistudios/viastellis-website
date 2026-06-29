@@ -7,6 +7,7 @@
 
 import { Link } from 'react-router-dom'
 import { Starfield } from '@/components/ui/Starfield'
+import { useUser } from '@/store/UserContext'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 
 const OFFERINGS = [
@@ -80,6 +81,8 @@ const PRICING_TIERS = [
 ]
 
 export function LandingPage() {
+  const { session } = useUser()
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-100 relative overflow-hidden">
       <Starfield count={150} />
@@ -106,10 +109,10 @@ export function LandingPage() {
               Free Horoscopes
             </Link>
             <Link
-              to="/auth"
+              to={session ? '/home' : '/auth'}
               className="whitespace-nowrap px-4 sm:px-6 py-2 bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 hover:from-stardust-400/30 hover:to-stellar-300/30 border border-stardust-400/50 text-stardust-300 rounded-full text-sm font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/20"
             >
-              Sign In
+              {session ? 'Go to App' : 'Sign In'}
             </Link>
           </nav>
         </div>
@@ -133,10 +136,10 @@ export function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  to="/auth"
+                  to={session ? '/home' : '/auth'}
                   className="px-8 py-4 bg-gradient-to-r from-stardust-400 to-stellar-300 hover:from-stardust-300 hover:to-stellar-200 text-[#0a0e27] font-semibold rounded-full transition-all hover:shadow-lg hover:shadow-stardust-400/30 text-center"
                 >
-                  Get Started Free
+                  {session ? 'Go to Dashboard' : 'Get Started Free'}
                 </Link>
                 <Link
                   to="/horoscopes"
