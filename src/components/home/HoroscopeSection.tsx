@@ -23,9 +23,9 @@ const META: Record<HoroscopeLens, { emoji: string; title: string; tag: string; a
   western_sun: { emoji: '☀️', title: 'Sun',          tag: 'Western' },
   vedic_moon:  { emoji: '🌙', title: 'Moon',         tag: 'Vedic' },
   personalized:{ emoji: '✨', title: 'Personalized', tag: 'Your chart' },
-  love:        { emoji: '💗', title: 'Love',         tag: 'Daily', alwaysFree: true },
-  career:      { emoji: '💼', title: 'Career',       tag: 'Daily', alwaysFree: true },
-  money:       { emoji: '💰', title: 'Money',        tag: 'Daily', alwaysFree: true },
+  love:        { emoji: '💗', title: 'Love',         tag: 'Daily' },
+  career:      { emoji: '💼', title: 'Career',       tag: 'Daily' },
+  money:       { emoji: '💰', title: 'Money',        tag: 'Daily' },
 }
 
 const TOPIC_LENSES: HoroscopeLens[] = ['love', 'career', 'money']
@@ -51,7 +51,7 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
       : undefined
 
   const costFor = (lens: HoroscopeLens) =>
-    META[lens].alwaysFree ? 0 : lens === 'personalized' ? 2 : lens === defaultLens ? 0 : 1
+    lens === 'personalized' ? 2 : lens === defaultLens ? 0 : 1
 
   const [active, setActive] = useState<HoroscopeLens>(defaultLens)
   const [bodies, setBodies] = useState<Partial<Record<HoroscopeLens, string>>>({})
@@ -134,10 +134,11 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
         })}
       </div>
 
-      {/* Topic lenses — always free */}
+      {/* Topic lenses */}
       <div className="flex gap-1.5 mb-3">
         {TOPIC_LENSES.map((lens) => {
           const m = META[lens]
+          const free = isPremium || bodies[lens] != null
           const isActive = active === lens
           return (
             <button
@@ -152,7 +153,9 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
             >
               <span>{m.emoji}</span>
               <span>{m.title}</span>
-              <span className="text-emerald-500 text-[9px]">free</span>
+              {free
+                ? <span className="text-emerald-500 text-[9px]">free</span>
+                : <span className="text-stellar-300 text-[9px]">🔒{costFor(lens)}</span>}
             </button>
           )
         })}
@@ -163,7 +166,7 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
         {active === 'personalized'
           ? "Personalized horoscope based on your full Vedic chart -- your Moon, Sun, and Lagna, woven with today's transits."
           : TOPIC_LENSES.includes(active)
-          ? `Today's ${META[active].title} horoscope for ${western ?? 'your sign'} · free for everyone.`
+          ? `Today's ${META[active].title} horoscope for ${western ?? 'your sign'}.`
           : `Today's ${META[active].tag} ${META[active].title}-sign reading${signFor(active) ? (' - ' + signFor(active)) : ''}.`}
       </p>
 

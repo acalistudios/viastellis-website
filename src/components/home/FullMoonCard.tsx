@@ -12,7 +12,7 @@ import { getPanchanga } from '@/lib/panchanga'
 import { getNakshatra } from '@/lib/ephemeris'
 import type { NatalChart } from '@/types'
 
-const COST = 40
+const COST = 10
 
 interface Props {
   chart: NatalChart
@@ -116,7 +116,7 @@ function FullMoonContent({
           </button>
           {!isPremium && (
             <p className="text-[10px] text-slate-600 mt-2">
-              Once per month · about $4.00 in credits · free on{' '}
+              Once per month · about $1.00 in credits · free on{' '}
               <Link to="/upgrade" className="underline">Premium</Link>
             </p>
           )}

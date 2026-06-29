@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { BottomNav } from './BottomNav'
+import { TopNav } from './TopNav'
 
 /**
  * AppShell wraps all authenticated pages.
@@ -22,13 +22,13 @@ export function AppShell() {
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #04030a 0%, transparent 8%, transparent 92%, #04030a 100%)' }} />
       </div>
 
+      {/* Persistent top navigation */}
+      <TopNav />
+
       {/* Page content */}
-      <main className="relative z-10 flex-1 overflow-y-auto pb-20">
+      <main className="relative z-10 flex-1 overflow-y-auto pt-14">
         <Outlet />
       </main>
-
-      {/* Persistent bottom navigation */}
-      <BottomNav />
     </div>
   )
 }
