@@ -16,7 +16,7 @@ const NAV_ITEMS = [
 export function TopNav() {
   const { profile } = useUser()
   const isPremium = profile?.subscription_tier === 'premium'
-  const credits = profile?.credits ?? 0
+  const credits = profile?.credits_remaining ?? 0
 
   return (
     <nav className="fixed top-0 inset-x-0 bg-cosmos-900/95 backdrop-blur border-b border-cosmos-700 z-50 print:hidden">

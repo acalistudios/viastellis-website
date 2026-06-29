@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { Button } from '@/components/ui/Button'
@@ -66,7 +66,7 @@ export function SettingsPage() {
           This sets both your birth chart and your free daily horoscope. We recommend Vedic; prefer
           the familiar tropical zodiac? Switch to Western for a full chart with Placidus houses and
           aspects.{' '}
-          <a href="/zodiac-systems" className="text-stardust-400 hover:underline">Learn the difference →</a>
+          <Link to="/zodiac-systems" className="text-stardust-400 hover:underline">Learn the difference →</Link>
         </p>
         <div className="flex flex-col gap-2">
           {CHART_SYSTEM_OPTIONS.map((opt) => (
@@ -123,13 +123,13 @@ export function SettingsPage() {
       </div>
 
       <div className="flex items-center justify-center gap-3 text-[11px] text-slate-600 mt-8">
-        <a href="/terms" className="hover:text-stardust-400">Terms</a>
+        <Link to="/terms" className="hover:text-stardust-400">Terms</Link>
         <span>·</span>
-        <a href="/privacy" className="hover:text-stardust-400">Privacy</a>
+        <Link to="/privacy" className="hover:text-stardust-400">Privacy</Link>
         <span>·</span>
-        <a href="/refund" className="hover:text-stardust-400">Refunds</a>
+        <Link to="/refund" className="hover:text-stardust-400">Refunds</Link>
         <span>·</span>
-        <a href="/contact" className="hover:text-stardust-400">Contact</a>
+        <Link to="/contact" className="hover:text-stardust-400">Contact</Link>
       </div>
       <p className="text-xs text-slate-600 text-center mt-3">
         ViaStellis · v0.1.0

@@ -50,7 +50,6 @@ export function TarotSection({ chart }: Props) {
 
   const [spreadBody, setSpreadBody] = useState('')
   const [spreadLoading, setSpreadLoading] = useState(false)
-  const [, setSpreadOwned] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [error, setError] = useState('')
 
@@ -65,7 +64,7 @@ export function TarotSection({ chart }: Props) {
           context,
           unlock: false,
         })
-        if (res.body) { setSpreadBody(res.body); setSpreadOwned(true); setExpanded(true) }
+        if (res.body) { setSpreadBody(res.body); setExpanded(true) }
       } catch { /* not yet unlocked — that's fine */ }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,7 +81,7 @@ export function TarotSection({ chart }: Props) {
         context,
         unlock: true,
       })
-      if (res.body) { setSpreadBody(res.body); setSpreadOwned(true); setExpanded(true) }
+      if (res.body) { setSpreadBody(res.body); setExpanded(true) }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not unlock your spread.')
     } finally {
