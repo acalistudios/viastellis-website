@@ -66,12 +66,29 @@ export function PublicHoroscopesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-200 relative overflow-hidden">
       <Starfield count={90} />
+
+      {/* Nav bar */}
+      <nav className="relative z-20 sticky top-0 bg-[#0f0817]/90 backdrop-blur-md border-b border-stardust-400/10 px-6 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 text-stardust-300 font-display text-lg hover:text-stardust-200 transition-colors">
+          <img src="/logo.svg" alt="" className="w-6 h-6" />
+          ViaStellis
+        </Link>
+        <div className="flex items-center gap-4 text-sm">
+          <Link to="/" className="text-slate-400 hover:text-stardust-300 transition-colors hidden sm:inline">
+            ← Back
+          </Link>
+          <Link
+            to="/auth"
+            className="px-4 py-1.5 rounded-full bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 border border-stardust-400/40 text-stardust-300 hover:border-stardust-400/70 transition-all text-sm font-medium"
+          >
+            Sign In
+          </Link>
+        </div>
+      </nav>
+
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center">
-          <Link to="/" className="inline-block" aria-label="ViaStellis home">
-            <img src="/logo.svg" alt="" className="w-12 h-12 mx-auto mb-3" />
-          </Link>
           <h1 className="font-display text-4xl text-stardust-300">Today's Horoscopes</h1>
           <p className="text-slate-400 text-sm mt-1">{prettyDate}</p>
 
@@ -95,7 +112,7 @@ export function PublicHoroscopesPage() {
           <p className="text-slate-500 text-xs mt-3 max-w-md mx-auto">
             {system === 'western'
               ? 'Western readings use your tropical Sun sign — the one in most European and American horoscopes.'
-              : 'Vedic readings use your sidereal Moon sign (rashi) — the traditional Indian basis.'}
+              : 'Vedic readings use your sidereal Moon sign (rashi). Unlike Sun signs, the Moon changes sign every ~2½ days, so there are no fixed birth-date ranges — you need a full chart to know yours.'}
           </p>
         </div>
 

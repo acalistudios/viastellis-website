@@ -49,7 +49,7 @@ const PRICING_TIERS = [
     name: 'Free',
     price: 'Forever',
     features: [
-      'Your personal Vedic birth chart',
+      'Your personal birth chart — Vedic & Western',
       'Real-time transit data (panchanga, gochara, eclipses)',
       'Yogas & classical astrological combinations',
       'Deterministic vibe scores & verdicts',
@@ -126,7 +126,7 @@ export function LandingPage() {
                 Your Personal Guide Through the Stars
               </h1>
               <p className="text-lg text-slate-400 mb-8 leading-relaxed">
-                Meet Stella, your AI astrologer. Using your Vedic birth chart, she helps you navigate daily transits, understand your relationships, make confident decisions, and sync your life with cosmic timing.
+                Meet Stella, your AI astrologer. Using your Vedic or Western birth chart, she helps you navigate daily transits, understand your relationships, make confident decisions, and sync your life with cosmic timing.
               </p>
               <p className="text-sm text-slate-500 mb-8">
                 All insights are for entertainment purposes only.
@@ -209,7 +209,7 @@ export function LandingPage() {
                   Tell us your birth details
                 </h3>
                 <p className="text-slate-400">
-                  Date, time, and location. This generates your Vedic birth chart — a snapshot of the sky at your birth.
+                  Date, time, and location. This generates your birth chart — a snapshot of the sky at your birth, available in both Vedic and Western traditions.
                 </p>
               </div>
             </div>
@@ -222,7 +222,7 @@ export function LandingPage() {
                   Explore your chart
                 </h3>
                 <p className="text-slate-400">
-                  View your kundali, yogas, dasha cycles, and more. All deterministic — no AI costs.
+                  Vedic: view your kundali, yogas, dasha cycles, and nakshatra placements. Western: your tropical positions, Placidus houses, and aspect grid. All deterministic — no AI costs.
                 </p>
               </div>
             </div>

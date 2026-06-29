@@ -316,7 +316,7 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
         <p className="text-[11px] uppercase tracking-widest text-stellar-300">Deep-Dive Report</p>
         <span className="text-base">♈</span>
       </div>
-      <h2 className="text-slate-100 font-display text-xl mb-1">Your Western Birth Chart</h2>
+      <h2 className="text-slate-100 font-display text-xl mb-1">Western Chart Deep-Dive Reading</h2>
 
       {body ? (
         <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-3">{body}</p>

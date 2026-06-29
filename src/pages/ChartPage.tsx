@@ -52,6 +52,10 @@ export function ChartPage() {
   const { session, profile } = useUser()
   const { chart, loading, error } = useNatalChart()
   const [variant, setVariant] = useState<'D1' | 'D9'>('D1')
+  // Local system view — defaults to the user's preference but can be toggled
+  const [viewSystem, setViewSystem] = useState<'vedic' | 'western'>(
+    profile?.chart_system === 'western' ? 'western' : 'vedic'
+  )
   const kundaliRef = useRef<HTMLDivElement>(null)
 
   // Placement deep-dives: expanded row + per-planet cached readings
@@ -115,9 +119,36 @@ export function ChartPage() {
     )
   }
 
-  // Western (tropical) chart is a fully separate view; branch before the Vedic UI.
-  if (profile?.chart_system === 'western') {
-    return <WesternChartView birthData={chart.birth_data} />
+  // System toggle pill — shown on both chart views
+  const SystemToggle = (
+    <div className="flex justify-center mb-2">
+      <div className="inline-flex bg-cosmos-900 rounded-full p-1 border border-cosmos-700">
+        {(['vedic', 'western'] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setViewSystem(s)}
+            className={[
+              'px-4 py-1.5 rounded-full text-xs font-medium transition-all',
+              viewSystem === s
+                ? 'bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950'
+                : 'text-slate-400 hover:text-stardust-300',
+            ].join(' ')}
+          >
+            {s === 'vedic' ? '🌙 Vedic' : '☀️ Western'}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  // Western (tropical) chart is a fully separate view.
+  if (viewSystem === 'western') {
+    return (
+      <div>
+        {SystemToggle}
+        <WesternChartView birthData={chart.birth_data} />
+      </div>
+    )
   }
 
   const timeUnknown = chart.birth_data.time_unknown
@@ -134,6 +165,7 @@ export function ChartPage() {
 
   return (
     <div className="px-5 py-8 max-w-lg mx-auto">
+      {SystemToggle}
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="font-display text-3xl text-stardust-300">Your Vedic Chart</h1>

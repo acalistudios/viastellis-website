@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
+import { ScrollToTop } from '@/components/ScrollToTop'
 
 // Pages
 import { LandingPage } from '@/pages/LandingPage'
@@ -27,6 +28,8 @@ import { AuthGuard } from '@/components/layout/AuthGuard'
 
 function App() {
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       {/* ── Public routes (no shell, no auth required) ── */}
       <Route path="/" element={<LandingPage />} />
@@ -97,6 +100,7 @@ function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }
 
