@@ -68,7 +68,7 @@ export function MatchInvitePage() {
     if (!inviter || !city || !date || !name.trim()) return
     setWorking(true)
     try {
-      const timezone = await getTimezone(city.latitude, city.longitude)
+      const timezone = getTimezone(city.latitude, city.longitude)
       const me: BirthData = {
         name: name.trim(),
         date,

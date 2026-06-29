@@ -281,7 +281,7 @@ function StepLocation({
     setResults([])
     setFetchingTz(true)
     try {
-      const tz = await getTimezone(result.latitude, result.longitude)
+      const tz = getTimezone(result.latitude, result.longitude)
       onSelect(result, tz)
     } finally {
       setFetchingTz(false)

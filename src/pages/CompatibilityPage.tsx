@@ -134,7 +134,7 @@ export function CompatibilityPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!city || !date || !name.trim()) return
-    const timezone = await getTimezone(city.latitude, city.longitude)
+    const timezone = getTimezone(city.latitude, city.longitude)
     await runMatch({
       name: name.trim(),
       date,

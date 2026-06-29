@@ -1,9 +1,10 @@
 /**
  * Geocoding utilities using Nominatim (OpenStreetMap) — free, no API key.
- * Timezone lookup via TimeAPI.io — free, no API key.
+ * Timezone lookup via tz-lookup — fully offline, no API call required.
  *
  * Rate limit: max 1 request/second to Nominatim. Always debounce user input.
  */
+import tzlookup from 'tz-lookup'
 
 export interface CityResult {
   display_name: string   // full formatted label for the dropdown
@@ -84,21 +85,13 @@ export async function searchCities(query: string): Promise<CityResult[]> {
 
 /**
  * Get the IANA timezone for a lat/lng coordinate.
- * Falls back to the browser's local timezone if the API is unavailable.
+ * Uses tz-lookup — a local database, no network call, no rate limits.
+ * Falls back to the browser's local timezone only if coordinates are invalid.
  */
-export async function getTimezone(
-  latitude: number,
-  longitude: number
-): Promise<string> {
+export function getTimezone(latitude: number, longitude: number): string {
   try {
-    const res = await fetch(
-      `https://timeapi.io/api/timezone/coordinate?latitude=${latitude}&longitude=${longitude}`
-    )
-    if (!res.ok) throw new Error('Timezone API error')
-    const data = await res.json()
-    return data.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+    return tzlookup(latitude, longitude)
   } catch {
-    // Graceful fallback — better than crashing onboarding
     return Intl.DateTimeFormat().resolvedOptions().timeZone
   }
 }
