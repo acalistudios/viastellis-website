@@ -42,3 +42,28 @@ export async function startCheckout(priceId: string, mode: 'subscription' | 'pay
 
   window.location.href = url
 }
+
+/**
+ * Cancel the current user's subscription at period end.
+ * The user keeps Premium access until the billing cycle ends.
+ */
+export async function cancelSubscription(): Promise<{ cancel_at: string | null }> {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Please sign in to continue.')
+
+  const res = await fetch(`${PROXY_BASE}/cancel-subscription`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({}),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error ?? 'Could not cancel subscription. Please try again.')
+  }
+
+  return res.json() as Promise<{ cancel_at: string | null }>
+}
