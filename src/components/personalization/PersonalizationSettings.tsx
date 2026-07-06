@@ -80,6 +80,18 @@ export function PersonalizationSettings() {
 
   const personalized = draft.personalization_mode === 'personalized'
 
+  // A plain-language recap of everything Stella currently knows (declared facts).
+  // 'prefer_not' and unset are omitted — she genuinely doesn't know those.
+  const labelFor = <T extends string>(opts: Array<{ v: T; label: string }>, v: T | null) =>
+    v && v !== 'prefer_not' ? (opts.find(o => o.v === v)?.label ?? null) : null
+  const known: string[] = [
+    labelFor(PRONOUN_OPTS, draft.pronouns),
+    ...draft.focus_areas.map(f => FOCUS_OPTS.find(o => o.v === f)?.label ?? null),
+    labelFor(RELATIONSHIP_OPTS, draft.relationship_status),
+    labelFor(JOB_OPTS, draft.job_status),
+    labelFor(KIDS_OPTS, draft.kids),
+  ].filter((x): x is string => Boolean(x))
+
   return (
     <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
       <p className="text-slate-300 text-sm font-medium mb-1">Personalization</p>
@@ -180,9 +192,26 @@ export function PersonalizationSettings() {
         </button>
       )}
 
-      {/* What Stella remembers (personalized mode only) */}
-      {personalized && memories.length > 0 && (
-        <MemoryList memories={memories} onChanged={refreshPersonalization} />
+      {/* What Stella knows about you — declared facts recap + free-text notes */}
+      {(known.length > 0 || (personalized && memories.length > 0)) && (
+        <div className="mt-4 border-t border-cosmos-800 pt-4">
+          <p className="text-slate-400 text-xs mb-2">What Stella knows about you</p>
+          {known.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {known.map((k, i) => (
+                <span key={i} className="rounded-full px-3 py-1 text-xs bg-cosmos-950 border border-cosmos-800 text-slate-300">
+                  {k}
+                </span>
+              ))}
+            </div>
+          )}
+          {personalized && (
+            memories.length > 0
+              ? <MemoryList memories={memories} onChanged={refreshPersonalization} />
+              : <p className="text-slate-600 text-xs mt-1">No saved notes yet — use “Tell Stella about yourself” to add some.</p>
+          )}
+          <p className="text-slate-600 text-[10px] mt-2">Edit the chips above to change what she knows.</p>
+        </div>
       )}
     </div>
   )
@@ -206,9 +235,9 @@ function MemoryList({ memories, onChanged }: { memories: StellaMemory[]; onChang
   }
 
   return (
-    <div className="mt-4 border-t border-cosmos-800 pt-4">
+    <div className="mt-1">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-slate-400 text-xs">What Stella remembers</p>
+        <p className="text-slate-500 text-[11px] uppercase tracking-wider">Notes you&apos;ve shared</p>
         <button onClick={() => void clearAll()} className="text-rose-400/80 text-xs hover:text-rose-300">Clear all</button>
       </div>
       <ul className="flex flex-col gap-2">

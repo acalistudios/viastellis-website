@@ -48,13 +48,6 @@ export function HomePage() {
 
   return (
     <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg lg:max-w-3xl mx-auto">
-      <Link
-        to="/settings"
-        aria-label="Settings"
-        className="absolute top-4 right-4 text-slate-600 hover:text-slate-300 transition-colors text-xl"
-      >
-        ⚙
-      </Link>
       {showCheckoutSuccess && (
         <div className="w-full mb-6 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-left flex items-start gap-3">
           <span className="text-lg leading-none mt-0.5">✨</span>
