@@ -29,6 +29,18 @@ function todayStr(): string {
   return new Date().toISOString().split('T')[0]
 }
 
+// One reveal per user, per category, per day — persisted so revisits show the
+// cards already turned over (no re-animation, no re-charge) until the date rolls.
+function revealKey(userId: string | undefined, category: 'daily' | 'spread', date: string): string {
+  return `viastellis-tarot-${category}-${userId ?? 'anon'}-${date}`
+}
+function wasRevealed(key: string): boolean {
+  try { return localStorage.getItem(key) === '1' } catch { return false }
+}
+function markRevealed(key: string): void {
+  try { localStorage.setItem(key, '1') } catch { /* ignore */ }
+}
+
 interface Props {
   chart: NatalChart
 }
@@ -68,14 +80,32 @@ export function TarotSection({ chart }: Props) {
     sunSign: chart.planets.find(p => p.planet === 'Sun')?.sign ?? '',
   }), [chart])
 
+  const dailyKey = revealKey(user?.id, 'daily', date)
+  const spreadKey = revealKey(user?.id, 'spread', date)
+
+  // Daily card: free & deterministic, so reveal is purely client-side.
+  const [dailyRevealed, setDailyRevealed] = useState(() => wasRevealed(dailyKey))
+  const [dailyAnimate, setDailyAnimate] = useState(false)
+
   const [spreadBody, setSpreadBody] = useState('')
   const [spreadLoading, setSpreadLoading] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  // Animate the flip only on a fresh reveal (a click) — not when restoring an
+  // already-revealed spread on a same-day revisit.
+  const [spreadAnimate, setSpreadAnimate] = useState(false)
   const [error, setError] = useState('')
 
-  // Check if today's spread is already unlocked (free re-view).
+  function revealDaily() {
+    setDailyAnimate(true)
+    setDailyRevealed(true)
+    markRevealed(dailyKey)
+  }
+
+  // On mount, only restore the spread if it was already revealed today (this
+  // device). Otherwise we wait for the click, so premium/owners still get the
+  // flip instead of an auto-revealed board.
   useEffect(() => {
-    if (!spreadCards) return
+    if (!spreadCards || !wasRevealed(spreadKey)) return
     void (async () => {
       try {
         const res = await getTarotSpread({
@@ -87,7 +117,7 @@ export function TarotSection({ chart }: Props) {
           context,
           unlock: false,
         })
-        if (res.body) { setSpreadBody(res.body); setExpanded(true) }
+        if (res.body) { setSpreadBody(res.body); setExpanded(true) } // spreadAnimate stays false → no re-flip
       } catch { /* not yet unlocked — that's fine */ }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,6 +127,7 @@ export function TarotSection({ chart }: Props) {
     if (!spreadCards) return
     setError('')
     setSpreadLoading(true)
+    setSpreadAnimate(true)
     try {
       const res = await getTarotSpread({
         date,
@@ -107,7 +138,7 @@ export function TarotSection({ chart }: Props) {
         context,
         unlock: true,
       })
-      if (res.body) { setSpreadBody(res.body); setExpanded(true) }
+      if (res.body) { setSpreadBody(res.body); setExpanded(true); markRevealed(spreadKey) }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not unlock your spread.')
     } finally {
@@ -125,8 +156,14 @@ export function TarotSection({ chart }: Props) {
         <span className="text-base">🃏</span>
       </div>
 
-      {/* Free daily card */}
-      <DailyCardDisplay card={dailyCard} reversed={dailyReversed} />
+      {/* Free daily card — click to reveal (once/day), then stays turned over */}
+      <DailyCardDisplay
+        card={dailyCard}
+        reversed={dailyReversed}
+        revealed={dailyRevealed}
+        animate={dailyAnimate}
+        onReveal={revealDaily}
+      />
 
       {/* 3-card spread */}
       {spreadCards && (
@@ -142,7 +179,7 @@ export function TarotSection({ chart }: Props) {
               return (
                 <div key={i} className="text-center">
                   <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{SPREAD_POSITIONS[i]}</p>
-                  <FlipCard card={card} flipped={revealed} reversed={rev} delayMs={i * 160} />
+                  <FlipCard card={card} flipped={revealed} reversed={rev} delayMs={i * 160} animate={spreadAnimate} />
                   {/* Name + keyword fade in after the flip lands */}
                   <div
                     className={`transition-opacity duration-500 ${revealed ? 'opacity-100' : 'opacity-0'}`}
@@ -216,33 +253,36 @@ function cardImg(card: TarotCard): string {
   return `${import.meta.env.BASE_URL}tarot/${card.index}.jpg`
 }
 
-function CardFace({ card, size = 'sm', reversed = false }: { card: TarotCard; size?: 'sm' | 'lg'; reversed?: boolean }) {
-  const isLg = size === 'lg'
-  return (
-    <img
-      src={cardImg(card)}
-      alt={reversed ? `${card.name} (reversed)` : card.name}
-      loading="lazy"
-      className={`object-cover rounded-lg border border-stardust-400/20 shadow-lg shadow-cosmos-950/50
-        ${reversed ? 'rotate-180' : ''}
-        ${isLg ? 'w-10 h-14' : 'w-full aspect-[300/525]'}`}
-    />
-  )
-}
-
-function DailyCardDisplay({ card, reversed = false }: { card: TarotCard; reversed?: boolean }) {
+function DailyCardDisplay({ card, reversed = false, revealed, animate, onReveal }: {
+  card: TarotCard; reversed?: boolean; revealed: boolean; animate: boolean; onReveal: () => void
+}) {
   return (
     <div className="flex items-start gap-4">
       <div className="flex-shrink-0 w-24">
-        <CardFace card={card} reversed={reversed} />
+        <FlipCard card={card} flipped={revealed} reversed={reversed} animate={animate} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-slate-100 font-display text-base leading-snug">
-          {card.name}
-          {reversed && <span className="text-amber-400/80 text-xs font-sans font-normal ml-2 align-middle">Reversed</span>}
-        </p>
-        <p className={`${SUIT_STYLE[card.suit].text} text-xs mt-0.5`}>{card.keywords.join(' · ')}</p>
-        <p className="text-slate-400 text-xs mt-1 leading-relaxed">{cardMeaning(card, reversed)}</p>
+        {revealed ? (
+          <>
+            <p className="text-slate-100 font-display text-base leading-snug">
+              {card.name}
+              {reversed && <span className="text-amber-400/80 text-xs font-sans font-normal ml-2 align-middle">Reversed</span>}
+            </p>
+            <p className={`${SUIT_STYLE[card.suit].text} text-xs mt-0.5`}>{card.keywords.join(' · ')}</p>
+            <p className="text-slate-400 text-xs mt-1 leading-relaxed">{cardMeaning(card, reversed)}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-slate-100 font-display text-base leading-snug">Your card for today</p>
+            <p className="text-slate-500 text-xs mt-0.5">Turn it over to see what the day holds.</p>
+            <button
+              onClick={onReveal}
+              className="mt-2 rounded-full px-4 py-1.5 bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-xs font-semibold"
+            >
+              Reveal today&apos;s card
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
@@ -256,16 +296,18 @@ function DailyCardDisplay({ card, reversed = false }: { card: TarotCard; reverse
  * `delayMs` staggers the three spread cards. Reduced-motion users get an
  * instant swap (no rotation animation).
  */
-function FlipCard({ card, flipped, reversed = false, delayMs = 0 }: { card: TarotCard; flipped: boolean; reversed?: boolean; delayMs?: number }) {
+function FlipCard({ card, flipped, reversed = false, delayMs = 0, animate = true }: { card: TarotCard; flipped: boolean; reversed?: boolean; delayMs?: number; animate?: boolean }) {
   const faceClasses =
     'absolute inset-0 w-full h-full object-cover rounded-lg border border-stardust-400/20 shadow-lg shadow-cosmos-950/50 [backface-visibility:hidden]'
   return (
     <div className="[perspective:1000px]">
       <div
-        className="relative w-full aspect-[300/525] transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none motion-reduce:duration-0"
+        className={`relative w-full aspect-[300/525] [transform-style:preserve-3d] ${
+          animate ? 'transition-transform duration-700 ease-out motion-reduce:transition-none motion-reduce:duration-0' : ''
+        }`}
         style={{
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-          transitionDelay: flipped ? `${delayMs}ms` : '0ms',
+          transitionDelay: animate && flipped ? `${delayMs}ms` : '0ms',
         }}
       >
         <img
