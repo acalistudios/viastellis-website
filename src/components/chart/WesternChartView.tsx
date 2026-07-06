@@ -12,6 +12,7 @@ import { calculateWesternChart } from '@/lib/westernChart'
 import { signCuspFlag } from '@/lib/boundaryFlags'
 import { streamStella } from '@/lib/gemini'
 import { getReport } from '@/lib/report'
+import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { creditLabel } from '@/config/creditCosts'
 import { useUser } from '@/store/UserContext'
 import { InfoBubble } from '@/components/ui/InfoBubble'
@@ -292,12 +293,13 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
   const [loading, setLoading] = useState(true)
   const [locked, setLocked] = useState(false)
   const [error, setError] = useState('')
+  const personaBlock = usePersonaBlock()
 
   async function load(unlock = false) {
     setError('')
     if (unlock) setLoading(true)
     try {
-      const res = await getReport({ kind: 'western_birth_chart', context, unlock })
+      const res = await getReport({ kind: 'western_birth_chart', context, persona: personaBlock || undefined, unlock })
       if (res.body) { setBody(res.body); setLocked(false) }
       else if (res.locked) setLocked(true)
     } catch (e) {

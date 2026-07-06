@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { Button } from '@/components/ui/Button'
+import { PersonalizationSettings } from '@/components/personalization/PersonalizationSettings'
 
 const CHART_SYSTEM_OPTIONS = [
   { value: 'vedic', label: '🪔 Vedic (sidereal)', hint: 'Recommended · star-aligned zodiac, nakshatras, dashas · daily reading by Moon sign' },
@@ -100,6 +101,9 @@ export function SettingsPage() {
           & Money) right on the Home screen anytime.
         </p>
       </div>
+
+      {/* Personalization — mode, pronouns, focus, memories, and the intake flow */}
+      <PersonalizationSettings />
 
       <div className="flex flex-col gap-3">
         <Button size="lg" onClick={() => navigate('/upgrade')}>

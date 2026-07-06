@@ -15,6 +15,7 @@ import { useNatalChart } from '@/hooks/useNatalChart'
 import { birthDataToJde } from '@/lib/ephemeris'
 import { calculateVimshottari, findCurrentDasha } from '@/lib/dasha'
 import { streamStella } from '@/lib/gemini'
+import { buildPersonaContext } from '@/lib/personalization'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ChatMessage, StellaPersona } from '@/types'
 
@@ -31,10 +32,20 @@ const SUGGESTIONS = [
 ]
 
 export function StellaPage() {
-  const { session, profile } = useUser()
+  const { session, profile, personalization, memories } = useUser()
   const { chart } = useNatalChart()
 
   const [persona, setPersona] = useState<StellaPersona>('warm')
+
+  // Personalization block injected into Stella's system prompt (see personalization.ts).
+  const personaBlock = useMemo(
+    () => buildPersonaContext({
+      personalization,
+      birthDate: chart?.birth_data.date ?? null,
+      memories: memories.map(m => m.note),
+    }),
+    [personalization, memories, chart],
+  )
 
   // Current Vimshottari period — gives Stella life-chapter context
   const currentDasha = useMemo(() => {
@@ -116,7 +127,7 @@ export function StellaPage() {
 
       for await (const chunk of streamStella(
         trimmed,
-        { chartData, persona, history },
+        { chartData, persona, history, profile: personaBlock || undefined },
         session.access_token
       )) {
         setMessages(prev =>

@@ -28,6 +28,8 @@ export function moonCycleKey(): string {
 export async function getMoonReading(args: {
   cycleKey: string
   context: MoonReadingContext
+  /** Compact "about the seeker" block from buildPersonaContext (may be ''). */
+  persona?: string
   unlock?: boolean
 }): Promise<MoonReadingResult> {
   const { data: { session } } = await supabase.auth.getSession()

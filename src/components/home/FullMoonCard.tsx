@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useUser } from '@/store/UserContext'
 import { getMoonReading, moonCycleKey, type MoonReadingContext } from '@/lib/moonReading'
+import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { getPanchanga } from '@/lib/panchanga'
 import { getNakshatra } from '@/lib/ephemeris'
 import type { NatalChart } from '@/types'
@@ -68,12 +69,13 @@ function FullMoonContent({
   const [loading, setLoading] = useState(true)
   const [locked, setLocked] = useState(false)
   const [error, setError] = useState('')
+  const personaBlock = usePersonaBlock()
 
   async function load(unlock = false) {
     setError('')
     if (unlock) setLoading(true)
     try {
-      const res = await getMoonReading({ cycleKey, context, unlock })
+      const res = await getMoonReading({ cycleKey, context, persona: personaBlock || undefined, unlock })
       if (res.body) { setBody(res.body); setLocked(false) }
       else if (res.locked) setLocked(true)
     } catch (e) {

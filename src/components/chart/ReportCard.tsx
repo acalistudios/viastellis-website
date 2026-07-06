@@ -10,6 +10,7 @@ import { useUser } from '@/store/UserContext'
 import { birthDataToJde } from '@/lib/ephemeris'
 import { calculateVimshottari, findCurrentDasha } from '@/lib/dasha'
 import { getReport, type ReportKind } from '@/lib/report'
+import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { creditLabel } from '@/config/creditCosts'
 import type { NatalChart } from '@/types'
 
@@ -59,12 +60,13 @@ export function ReportCard({ chart, kind, emoji, title, description, cost }: Pro
   const [loading, setLoading] = useState(true)
   const [owned, setOwned] = useState(false)
   const [error, setError] = useState('')
+  const personaBlock = usePersonaBlock()
 
   async function load(unlock = false) {
     setError('')
     if (unlock) setLoading(true)
     try {
-      const res = await getReport({ kind, context, unlock })
+      const res = await getReport({ kind, context, persona: personaBlock || undefined, unlock })
       if (res.body) { setBody(res.body); setOwned(true) }
       else if (res.locked) setOwned(false)
     } catch (e) {

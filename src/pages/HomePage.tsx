@@ -5,6 +5,7 @@ import { useUser } from '@/store/UserContext'
 import { calculateWesternChart } from '@/lib/westernChart'
 import { TodayCard } from '@/components/home/TodayCard'
 import { TarotSection } from '@/components/home/TarotSection'
+import { TellStellaInvite } from '@/components/personalization/TellStellaInvite'
 import { FullMoonCard } from '@/components/home/FullMoonCard'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MoonPhase } from '@/components/ui/MoonPhase'
@@ -100,6 +101,9 @@ export function HomePage() {
               </InfoBubble>
             </p>
           </div>
+
+          {/* Optional: invite the user to personalize (dismissible, hides once engaged) */}
+          <TellStellaInvite />
 
           {/* Daily horoscope */}
           <TodayCard chart={chart} />

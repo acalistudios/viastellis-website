@@ -1,27 +1,37 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import type { UserProfile } from '@/types'
+import { DEFAULT_PERSONALIZATION, type StellaMemory, type UserPersonalization, type UserProfile } from '@/types'
+import { fetchMemories, fetchPersonalization } from '@/lib/personalizationApi'
 
 interface UserContextValue {
   session: Session | null
   user: User | null
   profile: UserProfile | null
+  /** Declared personalization profile (defaults until set / before migration). */
+  personalization: UserPersonalization
+  /** Stella's memories about the user (empty in chart_only mode or before migration). */
+  memories: StellaMemory[]
   /** True only on the very first hydration with no cached data; cached loads render instantly. */
   loading: boolean
   /** True if the signed-in user has at least one primary birth chart saved. */
   hasPrimaryChart: boolean
   /** Re-check whether the user has a primary chart (call after saving one). */
   refreshChartStatus: () => Promise<void>
+  /** Re-fetch personalization + memories (call after editing the profile). */
+  refreshPersonalization: () => Promise<void>
 }
 
 const UserContext = createContext<UserContextValue>({
   session: null,
   user: null,
   profile: null,
+  personalization: DEFAULT_PERSONALIZATION,
+  memories: [],
   loading: true,
   hasPrimaryChart: false,
   refreshChartStatus: async () => {},
+  refreshPersonalization: async () => {},
 })
 
 // localStorage keys — cached so revisits render instantly (stale-while-revalidate).
@@ -59,6 +69,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return false
     }
   })
+  const [personalization, setPersonalization] = useState<UserPersonalization>(DEFAULT_PERSONALIZATION)
+  const [memories, setMemories] = useState<StellaMemory[]>([])
   const [loading, setLoading] = useState(true)
 
   // ── Initial session + auth listener ──────────────────────────────────────
@@ -73,6 +85,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (!session) {
         setProfile(null)
         setHasPrimaryChart(false)
+        setPersonalization(DEFAULT_PERSONALIZATION)
+        setMemories([])
         clearCache()
         setLoading(false)
       }
@@ -86,6 +100,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (!session?.user) {
       setProfile(null)
       setHasPrimaryChart(false)
+      setPersonalization(DEFAULT_PERSONALIZATION)
+      setMemories([])
       setLoading(false)
       return
     }
@@ -126,11 +142,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
       } finally {
         if (!cancelled) setLoading(false)
       }
+
+      // Personalization is non-critical and fails soft — load it after the
+      // blocking profile/chart fetch so it never delays first paint.
+      const [pers, mems] = await Promise.all([
+        fetchPersonalization(userId),
+        fetchMemories(userId),
+      ])
+      if (cancelled) return
+      setPersonalization(pers)
+      setMemories(pers.personalization_mode === 'personalized' ? mems : [])
     }
 
     revalidate()
     return () => { cancelled = true }
   }, [session])
+
+  // ── Manual refresh of the personalization profile + memories ──────────────
+  async function refreshPersonalization() {
+    if (!session?.user) return
+    const userId = session.user.id
+    const [pers, mems] = await Promise.all([
+      fetchPersonalization(userId),
+      fetchMemories(userId),
+    ])
+    setPersonalization(pers)
+    setMemories(pers.personalization_mode === 'personalized' ? mems : [])
+  }
 
   // ── Manual refresh (called after saving a new birth chart) ────────────────
   async function refreshChartStatus() {
@@ -154,9 +192,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         profile,
+        personalization,
+        memories,
         loading,
         hasPrimaryChart,
         refreshChartStatus,
+        refreshPersonalization,
       }}
     >
       {children}

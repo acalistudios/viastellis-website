@@ -43,6 +43,8 @@ export async function getHoroscope(args: {
   lens: HoroscopeLens
   sign?: string
   context?: HoroscopeContext
+  /** Compact "about the seeker" block from buildPersonaContext (may be ''). */
+  persona?: string
   unlock?: boolean
 }): Promise<HoroscopeResult> {
   const { data: { session } } = await supabase.auth.getSession()

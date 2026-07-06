@@ -110,6 +110,101 @@ export const TAROT_CARDS: TarotCard[] = [
   { index: 77, suit: 'pentacles', label: 'King',   name: 'King of Pentacles',   keywords: ['wealth', 'security', 'success'],               upright: 'Disciplined stewardship of resources creates enduring security.' },
 ]
 
+/**
+ * Reversed (upside-down) meanings, keyed by card index. A reversed card softens,
+ * blocks, or inverts its upright message — same authorial voice as `upright`.
+ */
+export const REVERSED_MEANINGS: Record<number, string> = {
+  // Major Arcana
+  0:  'Recklessness or hesitation — look before you leap, or you may freeze at the edge.',
+  1:  'Scattered energy or manipulation; the power is there but misdirected.',
+  2:  'Ignored intuition and hidden truths; you are out of touch with your inner voice.',
+  3:  'Creative block or smothering; nurture yourself before pouring into others.',
+  4:  'Rigidity or control; structure has hardened into domination.',
+  5:  'Rebellion against convention; question the dogma and find your own path.',
+  6:  'Disharmony or misaligned values; a bond or choice is out of balance.',
+  7:  'Loss of direction or willpower; you are pulling against yourself.',
+  8:  'Self-doubt or raw impulse; inner courage wavers under pressure.',
+  9:  'Isolation or avoidance; withdrawal has tipped into loneliness.',
+  10: 'Resisting change or poor timing; the wheel turns against your grip.',
+  11: 'Unfairness or dodged accountability; the scales are skewed.',
+  12: 'Stalling or needless sacrifice; you are stuck rather than surrendered.',
+  13: 'Clinging to what must end; resistance only prolongs the change.',
+  14: 'Imbalance or excess; patience has given way to extremes.',
+  15: 'Breaking free from what binds you; the chains are loosening.',
+  16: 'Delayed upheaval or fear of change; disaster avoided is only postponed.',
+  17: 'Fading hope or self-doubt; reconnect with faith after disappointment.',
+  18: 'The fog is lifting — or deepening; illusion and clarity trade places.',
+  19: 'Dimmed joy or delayed success; the light is temporarily clouded.',
+  20: 'Self-doubt or ignoring the call; a reckoning is being avoided.',
+  21: 'Loose ends and near-completion; the cycle is almost, but not yet, whole.',
+  // Wands
+  22: 'A false start or creative block; the spark sputters before it catches.',
+  23: 'Fear of the unknown or thin planning; the vision stays on paper.',
+  24: 'Delays or narrow foresight; expansion meets unexpected obstacles.',
+  25: 'Fragile foundations or a muted celebration; harmony feels incomplete.',
+  26: 'Avoided conflict or inner tension; the friction has turned inward.',
+  27: 'Little recognition or wounded ego; victory feels hollow or unsure.',
+  28: 'Overwhelm or losing ground; standing firm has grown exhausting.',
+  29: 'Delays and crossed wires; momentum stalls and messages misfire.',
+  30: 'Depleted resilience or defensiveness; you are guarded past the point of use.',
+  31: 'Burnout or refusing to delegate; the load has become too much to carry.',
+  32: 'Aimless enthusiasm or bad news; passion without direction.',
+  33: 'Recklessness or frustration; drive curdles into haste and conflict.',
+  34: 'Insecurity or jealousy; confidence masks quiet self-doubt.',
+  35: 'Domineering or impulsive leadership; vision without patience.',
+  // Cups
+  36: 'Blocked or repressed emotion; the heart holds back what it feels.',
+  37: 'Disharmony or broken trust; a bond is strained or one-sided.',
+  38: 'Overindulgence or gossip; celebration tips into excess.',
+  39: 'A quiet turn inward; you withdraw to reflect and reassess what truly matters.',
+  40: 'Acceptance and self-forgiveness; you make peace with past mistakes and turn toward what remains.',
+  41: 'Stuck in the past or naive nostalgia; memory clouds the present.',
+  42: 'Clarity emerging, or lost in illusion; scattered choices come into focus.',
+  43: 'Fear of moving on, or aimless drifting; you linger where you should not.',
+  44: 'Smugness or a wish unfulfilled; contentment rings shallow.',
+  45: 'Disconnection or strained harmony; the ideal and the real diverge.',
+  46: 'Emotional immaturity or creative block; feelings are unclear or stuck.',
+  47: 'Moodiness or unrealistic ideals; the heart leads you astray.',
+  48: 'Emotional overwhelm or dependency; empathy tips into martyrdom.',
+  49: 'Suppressed feeling or volatility; the calm surface hides turbulence.',
+  // Swords
+  50: 'Confusion or misused logic; clarity is clouded and truth twisted.',
+  51: 'The stalemate breaking, or information overload; a choice can no longer wait.',
+  52: 'Healing from heartbreak, or gripping the pain; the wound begins to close.',
+  53: 'Restlessness or forced rest; recovery is resisted or overdue.',
+  54: 'A chance to reconcile, or lingering conflict; lay down the sword.',
+  55: 'Resistance to change or an unfinished passage; troubled waters linger.',
+  56: 'Coming clean, or deeper deceit; hidden motives rise to the surface.',
+  57: 'Freeing yourself, or deeper entrapment; the mental cage is opening.',
+  58: 'Anxiety easing, or dread at its peak; fear loosens or tightens its hold.',
+  59: 'Recovery and survival; the worst is behind you and you begin to rise.',
+  60: 'Scattered thinking or deception; curiosity sours into cynicism.',
+  61: 'Recklessness or aggression; haste overrides good judgment.',
+  62: 'Coldness or harsh judgment; clarity has hardened into cruelty.',
+  63: 'Manipulation or misused authority; intellect without compassion.',
+  // Pentacles
+  64: 'A missed opportunity or poor investment; prosperity slips through your fingers.',
+  65: 'Overwhelm or lost balance; juggling too much, you drop something.',
+  66: 'Weak teamwork or unready skill; the collaboration falters.',
+  67: 'Greed or reckless spending; you grasp too tightly, or let go too loosely.',
+  68: 'Recovery from hardship, or deepening worry; help is near if you look up.',
+  69: 'Strings-attached giving or debt; the exchange has become unequal.',
+  70: 'Impatience or wasted effort; the harvest disappoints.',
+  71: 'Cut corners or lost focus; mastery stalls without care.',
+  72: 'Overwork or hollow luxury; independence has begun to isolate.',
+  73: 'Family friction or fleeting wealth; the legacy stands on unstable ground.',
+  74: 'Distraction or squandered potential; goals go unpursued.',
+  75: 'Stagnation or boredom; reliability has hardened into a rut.',
+  76: 'Self-neglect or smothering; you nurture everyone but yourself.',
+  77: 'Greed or control disguised as security; wealth becomes an anchor.',
+}
+
+/** The meaning to show for a card in a given orientation. */
+export function cardMeaning(card: TarotCard, reversed: boolean): string {
+  return reversed ? (REVERSED_MEANINGS[card.index] ?? card.upright) : card.upright
+}
+
 // ─── Pickers ─────────────────────────────────────────────────────────────────
 
 /** Today's shared card — same for every user on the same date. */
@@ -134,19 +229,56 @@ function strHash(s: string): number {
   return h
 }
 
-/** 3 unique cards for this user on this date (deterministic). */
-export function getSpreadCards(userId: string, dateStr: string): [TarotCard, TarotCard, TarotCard] {
+/**
+ * 3 unique cards for this user on this date (deterministic).
+ * `excludeIndices` (e.g. today's daily card) are skipped so the spread never
+ * repeats a card already shown — the daily draw + spread act as one 78-card deck.
+ */
+export function getSpreadCards(
+  userId: string,
+  dateStr: string,
+  excludeIndices: number[] = [],
+): [TarotCard, TarotCard, TarotCard] {
   let n = strHash(userId + dateStr)
+  const used = new Set(excludeIndices)
   const picked: number[] = []
   while (picked.length < 3) {
     n = lcg(n)
     const idx = n % 78
-    if (!picked.includes(idx)) picked.push(idx)
+    if (!used.has(idx)) {
+      used.add(idx)
+      picked.push(idx)
+    }
   }
   return [TAROT_CARDS[picked[0]], TAROT_CARDS[picked[1]], TAROT_CARDS[picked[2]]]
 }
 
 export const SPREAD_POSITIONS = ['Past', 'Present', 'Future'] as const
+
+/**
+ * ~20% of cards drawn come up reversed — the common tarot convention of
+ * "reverse roughly a fifth of the deck" (reversals as punctuation, not the norm).
+ * strHash's low bit is just a char-code parity (skewed), so fold the well-mixed
+ * high bits down first, then take 1-in-5.
+ */
+const REVERSAL_DENOMINATOR = 5 // 1 / 5 = 20%
+function isReversedFor(seed: string): boolean {
+  let h = strHash(seed)
+  h ^= h >>> 16
+  return (h >>> 0) % REVERSAL_DENOMINATOR === 0
+}
+
+/** Whether today's shared daily card is reversed (same for everyone, by date). */
+export function isDailyReversed(dateStr: string): boolean {
+  return isReversedFor(dateStr + '|rev')
+}
+
+/** Reversed flags for the 3 spread cards (deterministic per user+date). */
+export function getSpreadReversed(userId: string, dateStr: string): [boolean, boolean, boolean] {
+  return [0, 1, 2].map(
+    (i) => isReversedFor(`${userId}|${dateStr}|rev|${i}`),
+  ) as [boolean, boolean, boolean]
+}
 
 // ─── API client ──────────────────────────────────────────────────────────────
 
@@ -166,6 +298,11 @@ export interface SpreadResult {
 export async function getTarotSpread(args: {
   date: string
   cardIndices: [number, number, number]
+  reversed?: [boolean, boolean, boolean]
+  /** Canonical per-card meanings (upright/reversed) — ground truth for the AI. */
+  meanings?: [string, string, string]
+  /** Compact "about the seeker" block from buildPersonaContext (may be ''). */
+  persona?: string
   context: SpreadContext
   unlock?: boolean
 }): Promise<SpreadResult> {

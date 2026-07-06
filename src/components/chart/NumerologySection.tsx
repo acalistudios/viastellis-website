@@ -14,6 +14,7 @@ import {
   NUMBER_MEANINGS,
 } from '@/lib/numerology'
 import { getReport } from '@/lib/report'
+import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { creditLabel } from '@/config/creditCosts'
 import { useUser } from '@/store/UserContext'
 import { CREDIT_COSTS } from '@/config/creditCosts'
@@ -126,12 +127,13 @@ function NumerologyReportCard({ context, isPremium }: { context: NumerologyConte
   const [loading, setLoading] = useState(true)
   const [locked, setLocked] = useState(false)
   const [error, setError] = useState('')
+  const personaBlock = usePersonaBlock()
 
   async function load(unlock = false) {
     setError('')
     if (unlock) setLoading(true)
     try {
-      const res = await getReport({ kind: 'numerology', context, unlock })
+      const res = await getReport({ kind: 'numerology', context, persona: personaBlock || undefined, unlock })
       if (res.body) { setBody(res.body); setLocked(false) }
       else if (res.locked) setLocked(true)
     } catch (e) {

@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useUser } from '@/store/UserContext'
+import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { westernSunSign } from '@/lib/westernSign'
 import { getHoroscope, type HoroscopeLens } from '@/lib/horoscope'
 import type { NatalChart } from '@/types'
@@ -58,6 +59,7 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
   const [lockedCost, setLockedCost] = useState<Partial<Record<HoroscopeLens, number>>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const personaBlock = usePersonaBlock()
 
   async function load(lens: HoroscopeLens, unlock = false) {
     setError('')
@@ -71,6 +73,9 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
           lens === 'personalized' && sunSign && moonSign
             ? { sun: sunSign, moon: moonSign, rising, transits: transitSummary, name: chart.birth_data.name }
             : undefined,
+        // Persona only affects the per-user 'personalized' lens; generic lenses
+        // are shared-cached, so never send it there.
+        persona: lens === 'personalized' ? (personaBlock || undefined) : undefined,
         unlock,
       })
       if (res.locked) {

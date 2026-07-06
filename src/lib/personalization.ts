@@ -1,0 +1,87 @@
+/**
+ * Personalization context builder.
+ *
+ * Assembles a compact, human-readable "about the seeker" block that the client
+ * passes into every AI edge function (same approach as the tarot canonical
+ * meanings). Deterministic-first: facts + declared prefs here; the AI is the
+ * overlay. See ViaStellis Private/personalization-design.md.
+ */
+import type { FocusArea, Pronouns, UserPersonalization } from '@/types'
+
+/** Whole years from an ISO birth date (YYYY-MM-DD). Null if unparseable. */
+export function ageFromBirthDate(birthDate: string | null | undefined, now = new Date()): number | null {
+  if (!birthDate) return null
+  const [y, m, d] = birthDate.split('-').map(Number)
+  if (!y || !m || !d) return null
+  let age = now.getFullYear() - y
+  // Subtract a year if this year's birthday hasn't happened yet.
+  const hadBirthday =
+    now.getMonth() + 1 > m || (now.getMonth() + 1 === m && now.getDate() >= d)
+  if (!hadBirthday) age -= 1
+  return age >= 0 && age < 130 ? age : null
+}
+
+const PRONOUN_LABEL: Record<Pronouns, string> = {
+  she: 'she/her',
+  he: 'he/him',
+  they: 'they/them',
+  prefer_not: '',
+}
+
+const FOCUS_LABEL: Record<FocusArea, string> = {
+  love: 'love & relationships',
+  career: 'career',
+  money: 'money',
+  health: 'health',
+  growth: 'personal growth',
+}
+
+export interface PersonaInput {
+  personalization: UserPersonalization
+  birthDate?: string | null
+  /** Phase 2+ (personalized mode only): one-line inferred interest summary. */
+  interestSummary?: string | null
+  /** Phase 3 (personalized mode only): short conversation memories. */
+  memories?: string[]
+}
+
+/**
+ * Build the persona block injected into AI prompts. Returns '' when there is
+ * nothing to add beyond the base guardrail-free prompt.
+ *
+ * In `chart_only` mode, only declared setup info (age, pronouns, focus) is
+ * included — never inferred interests or memories.
+ */
+export function buildPersonaContext(input: PersonaInput, now = new Date()): string {
+  const { personalization: p, birthDate, interestSummary, memories } = input
+  const personalized = p.personalization_mode === 'personalized'
+  const lines: string[] = []
+
+  // Line 1 — demographics (declared, both modes).
+  const age = ageFromBirthDate(birthDate, now)
+  const pronoun = p.pronouns && p.pronouns !== 'prefer_not' ? PRONOUN_LABEL[p.pronouns] : ''
+  const bits = [age != null ? String(age) : '', pronoun].filter(Boolean)
+  if (bits.length) lines.push(`About the seeker: ${bits.join(', ')}.`)
+
+  // Line 2 — declared focus areas (both modes).
+  if (p.focus_areas.length) {
+    const labels = p.focus_areas.map((f) => FOCUS_LABEL[f]).filter(Boolean)
+    if (labels.length) lines.push(`Interested in: ${labels.join(', ')}.`)
+  }
+
+  // Lines 3-4 — inferred layer (personalized mode only).
+  if (personalized && interestSummary?.trim()) {
+    lines.push(`Current focus (recent): ${interestSummary.trim()}`)
+  }
+  if (personalized && memories?.length) {
+    lines.push(`Stella remembers: ${memories.join('; ')}.`)
+  }
+
+  if (!lines.length) return ''
+
+  // Always close with a tone guardrail — soft, not a hard demographic rule.
+  lines.push(
+    "Guidance: be age-appropriate and specific to this person; don't assume their family structure or life circumstances.",
+  )
+  return lines.join('\n')
+}

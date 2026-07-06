@@ -12,11 +12,15 @@ import { useUser } from '@/store/UserContext'
 import {
   getDailyCard,
   getSpreadCards,
+  getSpreadReversed,
   getTarotSpread,
+  isDailyReversed,
+  cardMeaning,
   SPREAD_POSITIONS,
   type TarotCard,
 } from '@/lib/tarot'
 import { creditLabel } from '@/config/creditCosts'
+import { buildPersonaContext } from '@/lib/personalization'
 import type { NatalChart } from '@/types'
 
 const COST = 2
@@ -30,16 +34,32 @@ interface Props {
 }
 
 export function TarotSection({ chart }: Props) {
-  const { user, profile } = useUser()
+  const { user, profile, personalization, memories } = useUser()
   const isPremium = profile?.subscription_tier === 'premium'
   const date = todayStr()
 
+  const personaBlock = useMemo(
+    () => buildPersonaContext({
+      personalization,
+      birthDate: chart.birth_data.date,
+      memories: memories.map(m => m.note),
+    }),
+    [personalization, memories, chart],
+  )
+
   const dailyCard = useMemo(() => getDailyCard(date), [date])
+  const dailyReversed = useMemo(() => isDailyReversed(date), [date])
 
   const spreadCards = useMemo(() => {
     if (!user) return null
-    return getSpreadCards(user.id, date)
-  }, [user, date])
+    // Exclude the daily card so the spread never repeats it (daily + 3 = 4 unique).
+    return getSpreadCards(user.id, date, [dailyCard.index])
+  }, [user, date, dailyCard])
+
+  const spreadReversed = useMemo(
+    () => (user ? getSpreadReversed(user.id, date) : null),
+    [user, date],
+  )
 
   const context = useMemo(() => ({
     name: chart.birth_data.name,
@@ -61,6 +81,9 @@ export function TarotSection({ chart }: Props) {
         const res = await getTarotSpread({
           date,
           cardIndices: spreadCards.map(c => c.index) as [number, number, number],
+          reversed: spreadReversed ?? undefined,
+          meanings: spreadCards.map((c, i) => cardMeaning(c, spreadReversed?.[i] ?? false)) as [string, string, string],
+          persona: personaBlock || undefined,
           context,
           unlock: false,
         })
@@ -78,6 +101,9 @@ export function TarotSection({ chart }: Props) {
       const res = await getTarotSpread({
         date,
         cardIndices: spreadCards.map(c => c.index) as [number, number, number],
+        reversed: spreadReversed ?? undefined,
+        meanings: spreadCards.map((c, i) => cardMeaning(c, spreadReversed?.[i] ?? false)) as [string, string, string],
+        persona: personaBlock || undefined,
         context,
         unlock: true,
       })
@@ -89,6 +115,8 @@ export function TarotSection({ chart }: Props) {
     }
   }
 
+  const revealed = Boolean(spreadBody) && expanded
+
   return (
     <div className="w-full bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-3 text-left">
       {/* Header */}
@@ -98,21 +126,43 @@ export function TarotSection({ chart }: Props) {
       </div>
 
       {/* Free daily card */}
-      <DailyCardDisplay card={dailyCard} />
+      <DailyCardDisplay card={dailyCard} reversed={dailyReversed} />
 
       {/* 3-card spread */}
       {spreadCards && (
         <div className="mt-4 border-t border-cosmos-800 pt-4">
-          {spreadBody && expanded ? (
+          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-3">
+            {revealed ? 'Your spread today' : "Today's spread"} · Past · Present · Future
+          </p>
+
+          {/* Card row — always mounted so backs can flip to faces in place */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {spreadCards.map((card, i) => {
+              const rev = spreadReversed?.[i] ?? false
+              return (
+                <div key={i} className="text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{SPREAD_POSITIONS[i]}</p>
+                  <FlipCard card={card} flipped={revealed} reversed={rev} delayMs={i * 160} />
+                  {/* Name + keyword fade in after the flip lands */}
+                  <div
+                    className={`transition-opacity duration-500 ${revealed ? 'opacity-100' : 'opacity-0'}`}
+                    style={{ transitionDelay: revealed ? `${i * 160 + 400}ms` : '0ms' }}
+                  >
+                    <p className="text-slate-200 text-[11px] font-medium leading-tight mt-1.5">{card.name}</p>
+                    <p className="text-slate-500 text-[10px] mt-0.5 leading-tight">
+                      {card.keywords[0]}{rev && <span className="text-amber-400/80"> · Reversed</span>}
+                    </p>
+                    {/* Canonical per-card meaning (deterministic, from the table) */}
+                    <p className="text-slate-400 text-[10px] mt-1 leading-snug">{cardMeaning(card, rev)}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {revealed ? (
             <>
-              <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-3">
-                Your spread today · Past · Present · Future
-              </p>
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                {spreadCards.map((card, i) => (
-                  <MiniCard key={i} card={card} position={SPREAD_POSITIONS[i]} />
-                ))}
-              </div>
+              <p className="text-[10px] uppercase tracking-widest text-stardust-400 mb-1.5">Stella's reading</p>
               <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                 {spreadBody}
               </p>
@@ -152,50 +202,87 @@ export function TarotSection({ chart }: Props) {
   )
 }
 
-// Per-suit colour palette for the card face
-const SUIT_STYLE: Record<string, { bg: string; border: string; text: string; symbol: string }> = {
-  major:     { bg: 'from-stardust-400/20 to-stellar-300/20', border: 'border-stardust-400/40', text: 'text-stardust-300', symbol: '★' },
-  wands:     { bg: 'from-amber-500/20 to-orange-500/20',     border: 'border-amber-400/40',    text: 'text-amber-300',    symbol: '🔥' },
-  cups:      { bg: 'from-sky-500/20 to-cyan-500/20',         border: 'border-sky-400/40',      text: 'text-sky-300',      symbol: '🌊' },
-  swords:    { bg: 'from-slate-400/20 to-blue-300/20',       border: 'border-slate-400/40',    text: 'text-slate-300',    symbol: '⚔' },
-  pentacles: { bg: 'from-emerald-500/20 to-green-400/20',    border: 'border-emerald-400/40',  text: 'text-emerald-300',  symbol: '⬟' },
+// Per-suit accent colour for card labels/keywords (matches the artwork palette).
+const SUIT_STYLE: Record<string, { text: string }> = {
+  major:     { text: 'text-stardust-300' },
+  wands:     { text: 'text-amber-300' },
+  cups:      { text: 'text-sky-300' },
+  swords:    { text: 'text-slate-300' },
+  pentacles: { text: 'text-emerald-300' },
 }
 
-function CardFace({ card, size = 'sm' }: { card: TarotCard; size?: 'sm' | 'lg' }) {
-  const s = SUIT_STYLE[card.suit]
+/** Card artwork lives in public/tarot/<index>.jpg (index matches TAROT_CARDS). */
+function cardImg(card: TarotCard): string {
+  return `${import.meta.env.BASE_URL}tarot/${card.index}.jpg`
+}
+
+function CardFace({ card, size = 'sm', reversed = false }: { card: TarotCard; size?: 'sm' | 'lg'; reversed?: boolean }) {
   const isLg = size === 'lg'
   return (
-    <div className={`bg-gradient-to-br ${s.bg} border ${s.border} rounded-lg flex flex-col items-center justify-between
-      ${isLg ? 'w-10 h-14 px-1 py-1' : 'w-full aspect-[2/3] px-1 py-1'}`}>
-      <span className={`${s.text} ${isLg ? 'text-[9px]' : 'text-[10px]'} font-bold leading-none mt-0.5`}>{card.label}</span>
-      <span className={isLg ? 'text-base' : 'text-lg'}>{s.symbol}</span>
-      <span className={`${s.text} ${isLg ? 'text-[9px]' : 'text-[10px]'} font-bold leading-none mb-0.5`}>{card.label}</span>
-    </div>
+    <img
+      src={cardImg(card)}
+      alt={reversed ? `${card.name} (reversed)` : card.name}
+      loading="lazy"
+      className={`object-cover rounded-lg border border-stardust-400/20 shadow-lg shadow-cosmos-950/50
+        ${reversed ? 'rotate-180' : ''}
+        ${isLg ? 'w-10 h-14' : 'w-full aspect-[300/525]'}`}
+    />
   )
 }
 
-function DailyCardDisplay({ card }: { card: TarotCard }) {
+function DailyCardDisplay({ card, reversed = false }: { card: TarotCard; reversed?: boolean }) {
   return (
     <div className="flex items-start gap-3">
       <div className="flex-shrink-0 w-10 h-14">
-        <CardFace card={card} size="lg" />
+        <CardFace card={card} size="lg" reversed={reversed} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-slate-100 font-display text-base leading-snug">{card.name}</p>
+        <p className="text-slate-100 font-display text-base leading-snug">
+          {card.name}
+          {reversed && <span className="text-amber-400/80 text-xs font-sans font-normal ml-2 align-middle">Reversed</span>}
+        </p>
         <p className={`${SUIT_STYLE[card.suit].text} text-xs mt-0.5`}>{card.keywords.join(' · ')}</p>
-        <p className="text-slate-400 text-xs mt-1 leading-relaxed">{card.upright}</p>
+        <p className="text-slate-400 text-xs mt-1 leading-relaxed">{cardMeaning(card, reversed)}</p>
       </div>
     </div>
   )
 }
 
-function MiniCard({ card, position }: { card: TarotCard; position: string }) {
+/**
+ * FlipCard — a 3D card that shows its back and flips to reveal the face.
+ * Both images stay mounted; `flipped` rotates the container 180° so the
+ * hidden-backface faces swap. A `reversed` card's face carries an extra
+ * in-plane 180° (rotateZ) so it lands physically upside-down once revealed.
+ * `delayMs` staggers the three spread cards. Reduced-motion users get an
+ * instant swap (no rotation animation).
+ */
+function FlipCard({ card, flipped, reversed = false, delayMs = 0 }: { card: TarotCard; flipped: boolean; reversed?: boolean; delayMs?: number }) {
+  const faceClasses =
+    'absolute inset-0 w-full h-full object-cover rounded-lg border border-stardust-400/20 shadow-lg shadow-cosmos-950/50 [backface-visibility:hidden]'
   return (
-    <div className="bg-cosmos-800 border border-cosmos-700 rounded-xl p-2 text-center">
-      <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{position}</p>
-      <CardFace card={card} />
-      <p className="text-slate-200 text-[11px] font-medium leading-tight mt-1.5">{card.name}</p>
-      <p className="text-slate-500 text-[10px] mt-0.5 leading-tight">{card.keywords[0]}</p>
+    <div className="[perspective:1000px]">
+      <div
+        className="relative w-full aspect-[300/525] transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none motion-reduce:duration-0"
+        style={{
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          transitionDelay: flipped ? `${delayMs}ms` : '0ms',
+        }}
+      >
+        <img
+          src={`${import.meta.env.BASE_URL}tarot/card-back.png`}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          className={faceClasses}
+        />
+        <img
+          src={cardImg(card)}
+          alt={reversed ? `${card.name} (reversed)` : card.name}
+          loading="lazy"
+          style={{ transform: reversed ? 'rotateY(180deg) rotateZ(180deg)' : 'rotateY(180deg)' }}
+          className={faceClasses}
+        />
+      </div>
     </div>
   )
 }

@@ -12,6 +12,8 @@ export interface StellaContext {
   chartData?: Record<string, unknown>
   persona?: 'stoic' | 'sassy' | 'warm'
   history?: Array<{ role: 'user' | 'model'; text: string }>
+  /** Compact "about the seeker" block from buildPersonaContext (may be ''). */
+  profile?: string
 }
 
 const PROXY_BASE = import.meta.env.VITE_SUPABASE_URL

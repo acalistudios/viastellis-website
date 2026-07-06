@@ -44,6 +44,8 @@ export interface ReportResult {
 export async function getReport(args: {
   kind: ReportKind
   context: ReportContext | NumerologyContext | WesternReportContext
+  /** Compact "about the seeker" block from buildPersonaContext (may be ''). */
+  persona?: string
   unlock?: boolean
 }): Promise<ReportResult> {
   const { data: { session } } = await supabase.auth.getSession()

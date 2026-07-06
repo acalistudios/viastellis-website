@@ -12,6 +12,35 @@ export interface UserProfile {
   created_at: string
 }
 
+// ─── Personalization ─────────────────────────────────────────────────────────
+// Declared profile that enriches AI readings. See ViaStellis Private/personalization-design.md.
+
+export type PersonalizationMode = 'chart_only' | 'personalized'
+export type Pronouns = 'she' | 'he' | 'they' | 'prefer_not'
+export type FocusArea = 'love' | 'career' | 'money' | 'health' | 'growth'
+
+export interface UserPersonalization {
+  personalization_mode: PersonalizationMode
+  pronouns: Pronouns | null
+  focus_areas: FocusArea[]
+}
+
+/** Privacy-preserving defaults for a user who hasn't set anything yet. */
+export const DEFAULT_PERSONALIZATION: UserPersonalization = {
+  personalization_mode: 'chart_only',
+  pronouns: null,
+  focus_areas: [],
+}
+
+/** A short, user-visible note Stella keeps (personalized mode only). */
+export interface StellaMemory {
+  id: string
+  note: string
+  source: 'intake' | 'chat'
+  created_at: string
+  updated_at: string
+}
+
 // ─── Birth Data ───────────────────────────────────────────────────────────────
 
 export interface BirthData {

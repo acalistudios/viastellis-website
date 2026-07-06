@@ -47,6 +47,31 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['profiles']['Row']>
         Relationships: []
       }
+      user_personalization: {
+        Row: {
+          user_id: string
+          personalization_mode: 'chart_only' | 'personalized'
+          pronouns: 'she' | 'he' | 'they' | 'prefer_not' | null
+          focus_areas: string[]
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['user_personalization']['Row']> & { user_id: string }
+        Update: Partial<Database['public']['Tables']['user_personalization']['Row']>
+        Relationships: []
+      }
+      stella_memories: {
+        Row: {
+          id: string
+          user_id: string
+          note: string
+          source: 'intake' | 'chat'
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['stella_memories']['Row']> & { user_id: string; note: string }
+        Update: Partial<Database['public']['Tables']['stella_memories']['Row']>
+        Relationships: []
+      }
       birth_charts: {
         Row: {
           id: string
