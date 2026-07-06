@@ -101,9 +101,10 @@ export function buildPersonaContext(input: PersonaInput, now = new Date()): stri
 
   if (!lines.length) return ''
 
-  // Always close with a tone guardrail — soft, not a hard demographic rule.
+  // Always close with a tone guardrail. These details shape the reading's
+  // appropriateness but must never be echoed back — users find that intrusive.
   lines.push(
-    "Guidance: be age-appropriate and specific to this person; don't assume their family structure or life circumstances.",
+    'Use these details only to keep your guidance relevant and appropriate. Never state or restate them back to the person — do NOT mention their age, birth year, pronouns, relationship status, job, or children in your reply. Where you would refer to who they are, say "a person with your astrological makeup" instead of naming any personal detail.',
   )
   return lines.join('\n')
 }

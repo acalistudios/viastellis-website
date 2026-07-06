@@ -41,6 +41,20 @@ function markRevealed(key: string): void {
   try { localStorage.setItem(key, '1') } catch { /* ignore */ }
 }
 
+/**
+ * Render Stella's reading. The model wraps card names in markdown bold (**The
+ * Moon**); we strip the asterisks and show those in a brighter accent colour
+ * (matching the card labels) instead of leaking literal ** into the text.
+ */
+function renderReading(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((seg, i) => {
+    const m = /^\*\*([^*]+)\*\*$/.exec(seg)
+    return m
+      ? <span key={i} className="text-stardust-300 font-semibold">{m[1]}</span>
+      : <span key={i}>{seg}</span>
+  })
+}
+
 interface Props {
   chart: NatalChart
 }
@@ -201,7 +215,7 @@ export function TarotSection({ chart }: Props) {
             <>
               <p className="text-[10px] uppercase tracking-widest text-stardust-400 mb-1.5">Stella's reading</p>
               <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {spreadBody}
+                {renderReading(spreadBody)}
               </p>
             </>
           ) : spreadLoading ? (
