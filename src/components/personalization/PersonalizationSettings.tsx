@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useUser } from '@/store/UserContext'
+import { useNatalChart } from '@/hooks/useNatalChart'
 import {
   clearMemories,
   deleteMemory,
@@ -54,8 +55,18 @@ const KIDS_OPTS: Array<{ v: Kids; label: string }> = [
   { v: 'prefer_not', label: 'prefer not to say' },
 ]
 
+/** Format an ISO birth date (YYYY-MM-DD) as "March 15, 1990" without TZ drift. */
+function formatBirthday(iso: string | null | undefined): string | null {
+  if (!iso) return null
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return null
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
 export function PersonalizationSettings() {
   const { user, personalization, memories, refreshPersonalization } = useUser()
+  const { chart } = useNatalChart()
+  const birthday = formatBirthday(chart?.birth_data.date)
   const [draft, setDraft] = useState<UserPersonalization>(personalization)
   const [flowOpen, setFlowOpen] = useState(false)
   const [savedTick, setSavedTick] = useState(false)
@@ -193,9 +204,14 @@ export function PersonalizationSettings() {
       )}
 
       {/* What Stella knows about you — declared facts recap + free-text notes */}
-      {(known.length > 0 || (personalized && memories.length > 0)) && (
+      {(birthday || known.length > 0 || (personalized && memories.length > 0)) && (
         <div className="mt-4 border-t border-cosmos-800 pt-4">
           <p className="text-slate-400 text-xs mb-2">What Stella knows about you</p>
+          {birthday && (
+            <p className="text-slate-400 text-xs mb-2">
+              🎂 Born {birthday} <span className="text-slate-600">· used for your birth chart</span>
+            </p>
+          )}
           {known.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {known.map((k, i) => (
