@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Star, Calendar, Users, HelpCircle, BookOpen, MessageCircle, Crown } from 'lucide-react'
+import { Home, Star, Calendar, Users, HelpCircle, BookOpen, MessageCircle, Settings, Crown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/store/UserContext'
 
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/decision',      icon: HelpCircle,    label: 'Decide'   },
   { to: '/journal',       icon: BookOpen,      label: 'Journal'  },
   { to: '/stella',        icon: MessageCircle, label: 'Stella'   },
+  { to: '/settings',      icon: Settings,      label: 'Settings' },
 ]
 
 export function TopNav() {

@@ -11,7 +11,9 @@ import {
   savePersonalization,
   updateMemory,
 } from '@/lib/personalizationApi'
-import type { FocusArea, Pronouns, StellaMemory, UserPersonalization } from '@/types'
+import type {
+  FocusArea, JobStatus, Kids, Pronouns, RelationshipStatus, StellaMemory, UserPersonalization,
+} from '@/types'
 import { TellStellaFlow } from './TellStellaFlow'
 
 const PRONOUN_OPTS: Array<{ v: Pronouns; label: string }> = [
@@ -26,6 +28,30 @@ const FOCUS_OPTS: Array<{ v: FocusArea; label: string }> = [
   { v: 'money', label: '💰 Money' },
   { v: 'health', label: '🌿 Health' },
   { v: 'growth', label: '🌱 Growth' },
+]
+const RELATIONSHIP_OPTS: Array<{ v: RelationshipStatus; label: string }> = [
+  { v: 'single', label: 'Single' },
+  { v: 'dating', label: 'In a relationship' },
+  { v: 'married', label: 'Married' },
+  { v: 'divorced', label: 'Divorced' },
+  { v: 'widowed', label: 'Widowed' },
+  { v: 'prefer_not', label: 'prefer not to say' },
+]
+const JOB_OPTS: Array<{ v: JobStatus; label: string }> = [
+  { v: 'student', label: 'Student' },
+  { v: 'employed', label: 'Employed' },
+  { v: 'self_employed', label: 'Self-employed' },
+  { v: 'between_jobs', label: 'Between jobs' },
+  { v: 'retired', label: 'Retired' },
+  { v: 'prefer_not', label: 'prefer not to say' },
+]
+const KIDS_OPTS: Array<{ v: Kids; label: string }> = [
+  { v: 'none', label: 'No kids' },
+  { v: 'trying', label: 'None, but trying' },
+  { v: 'young', label: 'Young kids' },
+  { v: 'teen', label: 'Teens' },
+  { v: 'adult', label: 'Adult kids' },
+  { v: 'prefer_not', label: 'prefer not to say' },
 ]
 
 export function PersonalizationSettings() {
@@ -107,6 +133,39 @@ export function PersonalizationSettings() {
             </Chip>
           )
         })}
+      </div>
+
+      {/* Relationship status (single-select; click active to clear) */}
+      <p className="text-slate-400 text-xs mb-2">Relationship</p>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {RELATIONSHIP_OPTS.map(o => (
+          <Chip key={o.v} active={draft.relationship_status === o.v}
+            onClick={() => void save({ ...draft, relationship_status: draft.relationship_status === o.v ? null : o.v })}>
+            {o.label}
+          </Chip>
+        ))}
+      </div>
+
+      {/* Work */}
+      <p className="text-slate-400 text-xs mb-2">Work</p>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {JOB_OPTS.map(o => (
+          <Chip key={o.v} active={draft.job_status === o.v}
+            onClick={() => void save({ ...draft, job_status: draft.job_status === o.v ? null : o.v })}>
+            {o.label}
+          </Chip>
+        ))}
+      </div>
+
+      {/* Kids */}
+      <p className="text-slate-400 text-xs mb-2">Children</p>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {KIDS_OPTS.map(o => (
+          <Chip key={o.v} active={draft.kids === o.v}
+            onClick={() => void save({ ...draft, kids: draft.kids === o.v ? null : o.v })}>
+            {o.label}
+          </Chip>
+        ))}
       </div>
 
       {savedTick && <p className="text-emerald-400 text-xs mb-3">Saved ✓</p>}

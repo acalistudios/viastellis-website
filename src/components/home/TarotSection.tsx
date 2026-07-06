@@ -232,9 +232,9 @@ function CardFace({ card, size = 'sm', reversed = false }: { card: TarotCard; si
 
 function DailyCardDisplay({ card, reversed = false }: { card: TarotCard; reversed?: boolean }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex-shrink-0 w-10 h-14">
-        <CardFace card={card} size="lg" reversed={reversed} />
+    <div className="flex items-start gap-4">
+      <div className="flex-shrink-0 w-24">
+        <CardFace card={card} reversed={reversed} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-slate-100 font-display text-base leading-snug">

@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Starfield } from '@/components/ui/Starfield'
+import { useUser } from '@/store/UserContext'
 import { getPublicHoroscopes, type HoroscopeSystem, type PublicHoroscope } from '@/lib/publicHoroscopes'
 
 const SIGN_GLYPHS: Record<string, string> = {
@@ -33,6 +34,7 @@ function localDateStr(): string {
 }
 
 export function PublicHoroscopesPage() {
+  const { session } = useUser()
   const [system, setSystem] = useState<HoroscopeSystem>('western')
   const [data, setData] = useState<PublicHoroscope[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,10 +80,10 @@ export function PublicHoroscopesPage() {
             ← Back
           </Link>
           <Link
-            to="/auth"
+            to={session ? '/home' : '/auth'}
             className="px-4 py-1.5 rounded-full bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 border border-stardust-400/40 text-stardust-300 hover:border-stardust-400/70 transition-all text-sm font-medium"
           >
-            Sign In
+            {session ? 'Go to App' : 'Sign In'}
           </Link>
         </div>
       </nav>

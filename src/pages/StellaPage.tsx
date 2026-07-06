@@ -19,12 +19,6 @@ import { buildPersonaContext } from '@/lib/personalization'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ChatMessage, StellaPersona } from '@/types'
 
-const PERSONAS: Array<{ id: StellaPersona; label: string; emoji: string; blurb: string }> = [
-  { id: 'warm',  label: 'Warm',  emoji: '🌸', blurb: 'Supportive & encouraging' },
-  { id: 'stoic', label: 'Stoic', emoji: '🪐', blurb: 'Calm ancient wisdom' },
-  { id: 'sassy', label: 'Sassy', emoji: '⚡', blurb: 'Bold & witty' },
-]
-
 const SUGGESTIONS = [
   'What does my Moon nakshatra say about me?',
   'Tell me about my rising sign',
@@ -35,7 +29,8 @@ export function StellaPage() {
   const { session, profile, personalization, memories } = useUser()
   const { chart } = useNatalChart()
 
-  const [persona, setPersona] = useState<StellaPersona>('warm')
+  // Stella's personality is chosen in Settings (defaults to warm); no in-chat picker.
+  const persona: StellaPersona = profile?.stella_persona ?? 'warm'
 
   // Personalization block injected into Stella's system prompt (see personalization.ts).
   const personaBlock = useMemo(
@@ -157,31 +152,13 @@ export function StellaPage() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-5rem)] max-w-lg mx-auto w-full">
-      {/* Header with persona selector */}
+      {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-cosmos-800">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <h1 className="font-display text-2xl text-stardust-300">Stella</h1>
           <span className="text-[10px] text-slate-600 max-w-[55%] text-right leading-tight">
             {ENTERTAINMENT_DISCLAIMER}
           </span>
-        </div>
-        <div className="flex gap-2">
-          {PERSONAS.map(p => (
-            <button
-              key={p.id}
-              onClick={() => setPersona(p.id)}
-              disabled={streaming}
-              title={p.blurb}
-              className={[
-                'flex-1 rounded-xl px-2 py-2 text-xs font-medium transition-colors border',
-                persona === p.id
-                  ? 'bg-stardust-400/15 border-stardust-400/60 text-stardust-300'
-                  : 'bg-cosmos-900 border-cosmos-700 text-slate-500 hover:text-slate-300',
-              ].join(' ')}
-            >
-              {p.emoji} {p.label}
-            </button>
-          ))}
         </div>
       </div>
 

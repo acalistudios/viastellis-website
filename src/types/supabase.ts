@@ -53,6 +53,9 @@ export type Database = {
           personalization_mode: 'chart_only' | 'personalized'
           pronouns: 'she' | 'he' | 'they' | 'prefer_not' | null
           focus_areas: string[]
+          relationship_status: string | null
+          job_status: string | null
+          kids: string | null
           updated_at: string
         }
         Insert: Partial<Database['public']['Tables']['user_personalization']['Row']> & { user_id: string }

@@ -9,7 +9,10 @@ import { supabase } from './supabase'
 import {
   DEFAULT_PERSONALIZATION,
   type FocusArea,
+  type JobStatus,
+  type Kids,
   type Pronouns,
+  type RelationshipStatus,
   type StellaMemory,
   type UserPersonalization,
 } from '@/types'
@@ -18,7 +21,7 @@ export async function fetchPersonalization(userId: string): Promise<UserPersonal
   try {
     const { data, error } = await supabase
       .from('user_personalization')
-      .select('personalization_mode, pronouns, focus_areas')
+      .select('personalization_mode, pronouns, focus_areas, relationship_status, job_status, kids')
       .eq('user_id', userId)
       .maybeSingle()
     if (error || !data) return DEFAULT_PERSONALIZATION
@@ -26,6 +29,9 @@ export async function fetchPersonalization(userId: string): Promise<UserPersonal
       personalization_mode: data.personalization_mode === 'personalized' ? 'personalized' : 'chart_only',
       pronouns: (data.pronouns ?? null) as Pronouns | null,
       focus_areas: (data.focus_areas ?? []) as FocusArea[],
+      relationship_status: (data.relationship_status ?? null) as RelationshipStatus | null,
+      job_status: (data.job_status ?? null) as JobStatus | null,
+      kids: (data.kids ?? null) as Kids | null,
     }
   } catch {
     return DEFAULT_PERSONALIZATION
@@ -41,6 +47,9 @@ export async function savePersonalization(userId: string, p: UserPersonalization
         personalization_mode: p.personalization_mode,
         pronouns: p.pronouns,
         focus_areas: p.focus_areas,
+        relationship_status: p.relationship_status,
+        job_status: p.job_status,
+        kids: p.kids,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'user_id' },

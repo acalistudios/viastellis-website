@@ -22,6 +22,16 @@ export function SettingsPage() {
   const [signingOut, setSigningOut] = useState(false)
   const [chartSystem, setChartSystem] = useState(profile?.chart_system ?? 'vedic')
   const [chartSaved, setChartSaved] = useState(false)
+  const [persona, setPersona] = useState<'warm' | 'stoic' | 'sassy'>(profile?.stella_persona ?? 'warm')
+  const [personaSaved, setPersonaSaved] = useState(false)
+
+  async function handlePersonaChange(value: 'warm' | 'stoic' | 'sassy') {
+    setPersona(value)
+    setPersonaSaved(false)
+    if (!user) return
+    const { error } = await supabase.from('profiles').update({ stella_persona: value }).eq('id', user.id)
+    if (!error) setPersonaSaved(true)
+  }
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -100,6 +110,34 @@ export function SettingsPage() {
           Want a different daily reading now and then? You can switch lenses (including Love, Career
           & Money) right on the Home screen anytime.
         </p>
+      </div>
+
+      {/* Stella's personality — moved here from the chat page */}
+      <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
+        <p className="text-slate-300 text-sm font-medium mb-1">Stella&apos;s personality</p>
+        <p className="text-slate-500 text-xs mb-3">How Stella speaks with you across chat and readings.</p>
+        <div className="flex flex-col gap-2">
+          {([
+            ['warm', '🌸 Warm', 'Supportive & encouraging'],
+            ['stoic', '🪐 Stoic', 'Calm ancient wisdom'],
+            ['sassy', '⚡ Sassy', 'Bold & witty'],
+          ] as const).map(([value, label, hint]) => (
+            <label key={value} className={[
+              'flex items-start gap-3 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors text-sm',
+              persona === value
+                ? 'border-stardust-400/50 bg-stardust-400/10 text-stardust-200'
+                : 'border-cosmos-700 text-slate-300 hover:border-cosmos-600',
+            ].join(' ')}>
+              <input type="radio" name="persona" value={value} checked={persona === value}
+                onChange={() => void handlePersonaChange(value)} className="accent-stardust-400 mt-0.5" />
+              <span>
+                <span className="block">{label}</span>
+                <span className="block text-slate-500 text-xs mt-0.5">{hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+        {personaSaved && <p className="text-emerald-400 text-xs mt-2">Saved ✓</p>}
       </div>
 
       {/* Personalization — mode, pronouns, focus, memories, and the intake flow */}

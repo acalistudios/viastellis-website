@@ -9,6 +9,7 @@ export interface UserProfile {
   credits_remaining: number
   default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
   chart_system: 'vedic' | 'western'
+  stella_persona: 'stoic' | 'sassy' | 'warm'
   created_at: string
 }
 
@@ -18,11 +19,17 @@ export interface UserProfile {
 export type PersonalizationMode = 'chart_only' | 'personalized'
 export type Pronouns = 'she' | 'he' | 'they' | 'prefer_not'
 export type FocusArea = 'love' | 'career' | 'money' | 'health' | 'growth'
+export type RelationshipStatus = 'single' | 'dating' | 'married' | 'divorced' | 'widowed' | 'prefer_not'
+export type JobStatus = 'student' | 'employed' | 'self_employed' | 'between_jobs' | 'retired' | 'prefer_not'
+export type Kids = 'none' | 'trying' | 'young' | 'teen' | 'adult' | 'prefer_not'
 
 export interface UserPersonalization {
   personalization_mode: PersonalizationMode
   pronouns: Pronouns | null
   focus_areas: FocusArea[]
+  relationship_status: RelationshipStatus | null
+  job_status: JobStatus | null
+  kids: Kids | null
 }
 
 /** Privacy-preserving defaults for a user who hasn't set anything yet. */
@@ -30,6 +37,9 @@ export const DEFAULT_PERSONALIZATION: UserPersonalization = {
   personalization_mode: 'chart_only',
   pronouns: null,
   focus_areas: [],
+  relationship_status: null,
+  job_status: null,
+  kids: null,
 }
 
 /** A short, user-visible note Stella keeps (personalized mode only). */

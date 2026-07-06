@@ -6,7 +6,7 @@
  * meanings). Deterministic-first: facts + declared prefs here; the AI is the
  * overlay. See ViaStellis Private/personalization-design.md.
  */
-import type { FocusArea, Pronouns, UserPersonalization } from '@/types'
+import type { FocusArea, JobStatus, Kids, Pronouns, RelationshipStatus, UserPersonalization } from '@/types'
 
 /** Whole years from an ISO birth date (YYYY-MM-DD). Null if unparseable. */
 export function ageFromBirthDate(birthDate: string | null | undefined, now = new Date()): number | null {
@@ -34,6 +34,20 @@ const FOCUS_LABEL: Record<FocusArea, string> = {
   money: 'money',
   health: 'health',
   growth: 'personal growth',
+}
+
+// Natural-language phrasings for the AI. 'prefer_not' → '' (omitted entirely).
+const RELATIONSHIP_LABEL: Record<RelationshipStatus, string> = {
+  single: 'single', dating: 'in a relationship', married: 'married',
+  divorced: 'divorced', widowed: 'widowed', prefer_not: '',
+}
+const JOB_LABEL: Record<JobStatus, string> = {
+  student: 'a student', employed: 'employed', self_employed: 'self-employed',
+  between_jobs: 'between jobs', retired: 'retired', prefer_not: '',
+}
+const KIDS_LABEL: Record<Kids, string> = {
+  none: 'no children', trying: 'trying to conceive', young: 'young children',
+  teen: 'teenage children', adult: 'adult children', prefer_not: '',
 }
 
 export interface PersonaInput {
@@ -68,6 +82,14 @@ export function buildPersonaContext(input: PersonaInput, now = new Date()): stri
     const labels = p.focus_areas.map((f) => FOCUS_LABEL[f]).filter(Boolean)
     if (labels.length) lines.push(`Interested in: ${labels.join(', ')}.`)
   }
+
+  // Line 3 — life context (relationship / work / children). 'prefer_not' & null omitted.
+  const life = [
+    p.relationship_status ? RELATIONSHIP_LABEL[p.relationship_status] : '',
+    p.job_status ? JOB_LABEL[p.job_status] : '',
+    p.kids ? KIDS_LABEL[p.kids] : '',
+  ].filter(Boolean)
+  if (life.length) lines.push(`Life context: ${life.join(', ')}.`)
 
   // Lines 3-4 — inferred layer (personalized mode only).
   if (personalized && interestSummary?.trim()) {

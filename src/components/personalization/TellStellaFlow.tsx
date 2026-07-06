@@ -15,7 +15,9 @@ import {
   distillIntake,
   savePersonalization,
 } from '@/lib/personalizationApi'
-import type { FocusArea, PersonalizationMode, Pronouns, UserPersonalization } from '@/types'
+import type {
+  FocusArea, JobStatus, Kids, PersonalizationMode, Pronouns, RelationshipStatus, UserPersonalization,
+} from '@/types'
 
 const PRONOUN_OPTS: Array<{ v: Pronouns; label: string }> = [
   { v: 'she', label: 'she/her' },
@@ -32,7 +34,34 @@ const FOCUS_OPTS: Array<{ v: FocusArea; label: string }> = [
   { v: 'growth', label: '🌱 Growth' },
 ]
 
-type Step = 'mode' | 'pronouns' | 'focus' | 'memory' | 'done'
+const RELATIONSHIP_OPTS: Array<{ v: RelationshipStatus; label: string }> = [
+  { v: 'single', label: 'Single' },
+  { v: 'dating', label: 'In a relationship' },
+  { v: 'married', label: 'Married' },
+  { v: 'divorced', label: 'Divorced' },
+  { v: 'widowed', label: 'Widowed' },
+  { v: 'prefer_not', label: 'prefer not to say' },
+]
+
+const JOB_OPTS: Array<{ v: JobStatus; label: string }> = [
+  { v: 'student', label: 'Student' },
+  { v: 'employed', label: 'Employed' },
+  { v: 'self_employed', label: 'Self-employed' },
+  { v: 'between_jobs', label: 'Between jobs' },
+  { v: 'retired', label: 'Retired' },
+  { v: 'prefer_not', label: 'prefer not to say' },
+]
+
+const KIDS_OPTS: Array<{ v: Kids; label: string }> = [
+  { v: 'none', label: 'No kids' },
+  { v: 'trying', label: 'None, but trying' },
+  { v: 'young', label: 'Young kids' },
+  { v: 'teen', label: 'Teens' },
+  { v: 'adult', label: 'Adult kids' },
+  { v: 'prefer_not', label: 'prefer not to say' },
+]
+
+type Step = 'mode' | 'pronouns' | 'focus' | 'relationship' | 'work' | 'kids' | 'memory' | 'done'
 
 export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
   const { user, session, profile, personalization, refreshPersonalization } = useUser()
@@ -57,8 +86,8 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
   // Advance to the next step, skipping the memory step in chart_only mode.
   function advanceFrom(current: Step, mode: PersonalizationMode) {
     const order: Step[] = mode === 'personalized'
-      ? ['mode', 'pronouns', 'focus', 'memory', 'done']
-      : ['mode', 'pronouns', 'focus', 'done']
+      ? ['mode', 'pronouns', 'focus', 'relationship', 'work', 'kids', 'memory', 'done']
+      : ['mode', 'pronouns', 'focus', 'relationship', 'work', 'kids', 'done']
     const i = order.indexOf(current)
     setStep(order[Math.min(i + 1, order.length - 1)])
   }
@@ -141,6 +170,54 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
           </div>
           <NextRow onSkip={() => advanceFrom('focus', draft.personalization_mode)}
             onNext={() => advanceFrom('focus', draft.personalization_mode)} />
+        </Bubble>
+      )}
+
+      {step === 'relationship' && (
+        <Bubble>
+          <p>Where are you in your relationship life?</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            {RELATIONSHIP_OPTS.map(o => (
+              <Chip key={o.v} active={draft.relationship_status === o.v}
+                onClick={() => void persist({ ...draft, relationship_status: o.v })}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+          <NextRow onSkip={() => advanceFrom('relationship', draft.personalization_mode)}
+            onNext={() => advanceFrom('relationship', draft.personalization_mode)} />
+        </Bubble>
+      )}
+
+      {step === 'work' && (
+        <Bubble>
+          <p>And your work life?</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            {JOB_OPTS.map(o => (
+              <Chip key={o.v} active={draft.job_status === o.v}
+                onClick={() => void persist({ ...draft, job_status: o.v })}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+          <NextRow onSkip={() => advanceFrom('work', draft.personalization_mode)}
+            onNext={() => advanceFrom('work', draft.personalization_mode)} />
+        </Bubble>
+      )}
+
+      {step === 'kids' && (
+        <Bubble>
+          <p>Do you have children?</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            {KIDS_OPTS.map(o => (
+              <Chip key={o.v} active={draft.kids === o.v}
+                onClick={() => void persist({ ...draft, kids: o.v })}>
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+          <NextRow onSkip={() => advanceFrom('kids', draft.personalization_mode)}
+            onNext={() => advanceFrom('kids', draft.personalization_mode)} />
         </Bubble>
       )}
 
