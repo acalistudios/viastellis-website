@@ -29,9 +29,9 @@ export async function fetchPersonalization(userId: string): Promise<UserPersonal
       personalization_mode: data.personalization_mode === 'personalized' ? 'personalized' : 'chart_only',
       pronouns: (data.pronouns ?? null) as Pronouns | null,
       focus_areas: (data.focus_areas ?? []) as FocusArea[],
-      relationship_status: (data.relationship_status ?? null) as RelationshipStatus | null,
-      job_status: (data.job_status ?? null) as JobStatus | null,
-      kids: (data.kids ?? null) as Kids | null,
+      relationship_status: (data.relationship_status ?? []) as RelationshipStatus[],
+      job_status: (data.job_status ?? []) as JobStatus[],
+      kids: (data.kids ?? []) as Kids[],
     }
   } catch {
     return DEFAULT_PERSONALIZATION

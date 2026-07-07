@@ -83,11 +83,12 @@ export function buildPersonaContext(input: PersonaInput, now = new Date()): stri
     if (labels.length) lines.push(`Interested in: ${labels.join(', ')}.`)
   }
 
-  // Line 3 — life context (relationship / work / children). 'prefer_not' & null omitted.
+  // Line 3 — life context (relationship / work / children). Each is multi-select;
+  // 'prefer_not' maps to '' and is filtered out.
   const life = [
-    p.relationship_status ? RELATIONSHIP_LABEL[p.relationship_status] : '',
-    p.job_status ? JOB_LABEL[p.job_status] : '',
-    p.kids ? KIDS_LABEL[p.kids] : '',
+    ...p.relationship_status.map((r) => RELATIONSHIP_LABEL[r]),
+    ...p.job_status.map((j) => JOB_LABEL[j]),
+    ...p.kids.map((k) => KIDS_LABEL[k]),
   ].filter(Boolean)
   if (life.length) lines.push(`Life context: ${life.join(', ')}.`)
 

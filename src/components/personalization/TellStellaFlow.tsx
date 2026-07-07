@@ -63,6 +63,14 @@ const KIDS_OPTS: Array<{ v: Kids; label: string }> = [
 
 type Step = 'mode' | 'pronouns' | 'focus' | 'relationship' | 'work' | 'kids' | 'memory' | 'done'
 
+// Toggle a value in a multi-select array. 'prefer not to say' is exclusive:
+// choosing it clears the rest, and choosing anything else clears it.
+function toggleMulti<T extends string>(arr: T[], v: T): T[] {
+  if (arr.includes(v)) return arr.filter(x => x !== v)
+  if (v === 'prefer_not') return [v]
+  return [...arr.filter(x => x !== 'prefer_not'), v]
+}
+
 export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
   const { user, session, profile, personalization, refreshPersonalization } = useUser()
   const name = profile?.display_name?.trim() || 'friend'
@@ -175,11 +183,11 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
 
       {step === 'relationship' && (
         <Bubble>
-          <p>Where are you in your relationship life?</p>
+          <p>Where are you in your relationship life? Pick any that apply.</p>
           <div className="flex flex-wrap gap-2 mt-3">
             {RELATIONSHIP_OPTS.map(o => (
-              <Chip key={o.v} active={draft.relationship_status === o.v}
-                onClick={() => void persist({ ...draft, relationship_status: o.v })}>
+              <Chip key={o.v} active={draft.relationship_status.includes(o.v)}
+                onClick={() => void persist({ ...draft, relationship_status: toggleMulti(draft.relationship_status, o.v) })}>
                 {o.label}
               </Chip>
             ))}
@@ -191,11 +199,11 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
 
       {step === 'work' && (
         <Bubble>
-          <p>And your work life?</p>
+          <p>And your work life? Pick any that apply.</p>
           <div className="flex flex-wrap gap-2 mt-3">
             {JOB_OPTS.map(o => (
-              <Chip key={o.v} active={draft.job_status === o.v}
-                onClick={() => void persist({ ...draft, job_status: o.v })}>
+              <Chip key={o.v} active={draft.job_status.includes(o.v)}
+                onClick={() => void persist({ ...draft, job_status: toggleMulti(draft.job_status, o.v) })}>
                 {o.label}
               </Chip>
             ))}
@@ -207,11 +215,11 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
 
       {step === 'kids' && (
         <Bubble>
-          <p>Do you have children?</p>
+          <p>Do you have children? Pick any that apply.</p>
           <div className="flex flex-wrap gap-2 mt-3">
             {KIDS_OPTS.map(o => (
-              <Chip key={o.v} active={draft.kids === o.v}
-                onClick={() => void persist({ ...draft, kids: o.v })}>
+              <Chip key={o.v} active={draft.kids.includes(o.v)}
+                onClick={() => void persist({ ...draft, kids: toggleMulti(draft.kids, o.v) })}>
                 {o.label}
               </Chip>
             ))}

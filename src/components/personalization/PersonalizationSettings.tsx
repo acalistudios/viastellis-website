@@ -55,6 +55,13 @@ const KIDS_OPTS: Array<{ v: Kids; label: string }> = [
   { v: 'prefer_not', label: 'prefer not to say' },
 ]
 
+// Toggle a value in a multi-select array. 'prefer not to say' is exclusive.
+function toggleMulti<T extends string>(arr: T[], v: T): T[] {
+  if (arr.includes(v)) return arr.filter(x => x !== v)
+  if (v === 'prefer_not') return [v]
+  return [...arr.filter(x => x !== 'prefer_not'), v]
+}
+
 /** Format an ISO birth date (YYYY-MM-DD) as "March 15, 1990" without TZ drift. */
 function formatBirthday(iso: string | null | undefined): string | null {
   if (!iso) return null
@@ -93,14 +100,15 @@ export function PersonalizationSettings() {
 
   // A plain-language recap of everything Stella currently knows (declared facts).
   // 'prefer_not' and unset are omitted — she genuinely doesn't know those.
-  const labelFor = <T extends string>(opts: Array<{ v: T; label: string }>, v: T | null) =>
-    v && v !== 'prefer_not' ? (opts.find(o => o.v === v)?.label ?? null) : null
+  const labelsFor = <T extends string>(opts: Array<{ v: T; label: string }>, vs: T[]) =>
+    vs.filter(v => v !== 'prefer_not').map(v => opts.find(o => o.v === v)?.label ?? null)
   const known: string[] = [
-    labelFor(PRONOUN_OPTS, draft.pronouns),
+    draft.pronouns && draft.pronouns !== 'prefer_not'
+      ? (PRONOUN_OPTS.find(o => o.v === draft.pronouns)?.label ?? null) : null,
     ...draft.focus_areas.map(f => FOCUS_OPTS.find(o => o.v === f)?.label ?? null),
-    labelFor(RELATIONSHIP_OPTS, draft.relationship_status),
-    labelFor(JOB_OPTS, draft.job_status),
-    labelFor(KIDS_OPTS, draft.kids),
+    ...labelsFor(RELATIONSHIP_OPTS, draft.relationship_status),
+    ...labelsFor(JOB_OPTS, draft.job_status),
+    ...labelsFor(KIDS_OPTS, draft.kids),
   ].filter((x): x is string => Boolean(x))
 
   return (
@@ -158,34 +166,34 @@ export function PersonalizationSettings() {
         })}
       </div>
 
-      {/* Relationship status (single-select; click active to clear) */}
+      {/* Relationship status (multi-select) */}
       <p className="text-slate-400 text-xs mb-2">Relationship</p>
       <div className="flex flex-wrap gap-2 mb-4">
         {RELATIONSHIP_OPTS.map(o => (
-          <Chip key={o.v} active={draft.relationship_status === o.v}
-            onClick={() => void save({ ...draft, relationship_status: draft.relationship_status === o.v ? null : o.v })}>
+          <Chip key={o.v} active={draft.relationship_status.includes(o.v)}
+            onClick={() => void save({ ...draft, relationship_status: toggleMulti(draft.relationship_status, o.v) })}>
             {o.label}
           </Chip>
         ))}
       </div>
 
-      {/* Work */}
+      {/* Work (multi-select) */}
       <p className="text-slate-400 text-xs mb-2">Work</p>
       <div className="flex flex-wrap gap-2 mb-4">
         {JOB_OPTS.map(o => (
-          <Chip key={o.v} active={draft.job_status === o.v}
-            onClick={() => void save({ ...draft, job_status: draft.job_status === o.v ? null : o.v })}>
+          <Chip key={o.v} active={draft.job_status.includes(o.v)}
+            onClick={() => void save({ ...draft, job_status: toggleMulti(draft.job_status, o.v) })}>
             {o.label}
           </Chip>
         ))}
       </div>
 
-      {/* Kids */}
+      {/* Kids (multi-select) */}
       <p className="text-slate-400 text-xs mb-2">Children</p>
       <div className="flex flex-wrap gap-2 mb-4">
         {KIDS_OPTS.map(o => (
-          <Chip key={o.v} active={draft.kids === o.v}
-            onClick={() => void save({ ...draft, kids: draft.kids === o.v ? null : o.v })}>
+          <Chip key={o.v} active={draft.kids.includes(o.v)}
+            onClick={() => void save({ ...draft, kids: toggleMulti(draft.kids, o.v) })}>
             {o.label}
           </Chip>
         ))}

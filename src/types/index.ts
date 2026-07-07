@@ -27,9 +27,9 @@ export interface UserPersonalization {
   personalization_mode: PersonalizationMode
   pronouns: Pronouns | null
   focus_areas: FocusArea[]
-  relationship_status: RelationshipStatus | null
-  job_status: JobStatus | null
-  kids: Kids | null
+  relationship_status: RelationshipStatus[]
+  job_status: JobStatus[]
+  kids: Kids[]
 }
 
 /** Privacy-preserving defaults for a user who hasn't set anything yet. */
@@ -37,9 +37,9 @@ export const DEFAULT_PERSONALIZATION: UserPersonalization = {
   personalization_mode: 'chart_only',
   pronouns: null,
   focus_areas: [],
-  relationship_status: null,
-  job_status: null,
-  kids: null,
+  relationship_status: [],
+  job_status: [],
+  kids: [],
 }
 
 /** A short, user-visible note Stella keeps (personalized mode only). */
