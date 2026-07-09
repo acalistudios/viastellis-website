@@ -206,6 +206,35 @@ export function CompatibilityPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
+  // Open the user's own email client with a pre-filled summary of the match.
+  // We never send anything ourselves — the user reviews and sends it.
+  function emailMatch() {
+    if (!result || !myChart) return
+    const v = result.vibe
+    const myName = myChart.birth_data.name
+    const partnerName = result.chartB.birth_data.name
+    const stripMd = (s: string) => s.replace(/\*\*/g, '').replace(/^#{1,6}\s+/gm, '').trim()
+
+    const header =
+      `Hi,\n\n` +
+      `I ran our astrological compatibility on ViaStellis — here's the Vibe Match for ${myName} and ${partnerName}:\n\n` +
+      `✨ Vibe Score: ${v.score}/100\n\n` +
+      `☽ Moons: ${v.moon.label}\n` +
+      `☉ Suns: ${v.sun.label}\n` +
+      `♀♂ Spark: ${v.venusMars.label}\n`
+    const footer = `\n\nCurious about your own charts? Try it free at ${window.location.origin}\n\n(For reflection and entertainment only.)`
+
+    // Keep the body short enough that the encoded mailto URL stays well under the
+    // ~2000-char limit some older email clients impose (encoding inflates length).
+    let reading = stripMd(narrative)
+    const room = 1300 - header.length - footer.length
+    if (reading.length > room) reading = reading.slice(0, Math.max(0, room - 30)).trimEnd() + '…\n(full reading on ViaStellis)'
+    const body = header + (reading ? `\nStella's reading:\n${reading}` : '') + footer
+
+    const subject = `Our ViaStellis Vibe Match — ${v.score}/100 ✨`
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
   return (
     <div className="px-5 py-8 max-w-lg mx-auto">
       <h1 className="font-display text-3xl text-stardust-300 text-center mb-1">Vibe Match</h1>
@@ -364,6 +393,16 @@ export function CompatibilityPage() {
               />
             </div>
           )}
+
+          {/* Share this match via the user's own email client */}
+          <div className="border-t border-cosmos-700 pt-4 mt-1 text-center">
+            <button
+              onClick={emailMatch}
+              className="text-xs text-stardust-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-5 py-2.5 transition-colors"
+            >
+              📧 Email this match
+            </button>
+          </div>
 
           {/* Synastry deep-dive report (one-time, per-pair) */}
           {myChart && (
