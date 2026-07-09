@@ -20,6 +20,7 @@ import { SynastryReportCard } from '@/components/chart/SynastryReportCard'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, NatalChart } from '@/types'
 
@@ -354,12 +355,13 @@ export function CompatibilityPage() {
           {(narrative || narrativeLoading) && (
             <div className="border-t border-cosmos-700 pt-4">
               <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Stella's reading</p>
-              <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {narrative}
-                {narrativeLoading && (
+              <MarkdownText
+                text={narrative}
+                className="text-slate-300 text-sm"
+                trailing={narrativeLoading && (
                   <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
                 )}
-              </p>
+              />
             </div>
           )}
 

@@ -11,6 +11,7 @@ import { birthDataToJde } from '@/lib/ephemeris'
 import { calculateVimshottari, findCurrentDasha } from '@/lib/dasha'
 import { getReport, type ReportKind } from '@/lib/report'
 import { usePersonaBlock } from '@/hooks/usePersonaBlock'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { creditLabel } from '@/config/creditCosts'
 import type { NatalChart } from '@/types'
 
@@ -91,7 +92,7 @@ export function ReportCard({ chart, kind, emoji, title, description, cost }: Pro
       <h2 className="text-slate-100 font-display text-xl mb-1">{title}</h2>
 
       {body ? (
-        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-3">{body}</p>
+        <MarkdownText text={body} className="text-slate-300 text-sm mt-3" />
       ) : loading ? (
         <p className="text-slate-500 text-xs mt-2">{owned ? 'Loading…' : 'Stella is reading your chart…'}</p>
       ) : (

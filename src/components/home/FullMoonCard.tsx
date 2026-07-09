@@ -11,6 +11,7 @@ import { getMoonReading, moonCycleKey, type MoonReadingContext } from '@/lib/moo
 import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { getPanchanga } from '@/lib/panchanga'
 import { getNakshatra } from '@/lib/ephemeris'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import type { NatalChart } from '@/types'
 
 const COST = 10
@@ -100,7 +101,7 @@ function FullMoonContent({
       </p>
 
       {body ? (
-        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{body}</p>
+        <MarkdownText text={body} className="text-slate-300 text-sm" />
       ) : loading ? (
         <p className="text-slate-500 text-xs">Calculating…</p>
       ) : locked ? (

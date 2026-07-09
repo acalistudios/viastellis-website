@@ -16,6 +16,7 @@ import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { creditLabel } from '@/config/creditCosts'
 import { useUser } from '@/store/UserContext'
 import { InfoBubble } from '@/components/ui/InfoBubble'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { NumerologySection } from '@/components/chart/NumerologySection'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType, WesternChart } from '@/types'
@@ -190,12 +191,15 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
               {expanded === p.body && !isNode && (
                 <div className="px-4 pb-3">
                   {readings[p.body] ? (
-                    <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-wrap bg-cosmos-800/50 rounded-xl px-4 py-3">
-                      {readings[p.body]}
-                      {readingFor === p.body && (
-                        <span className="inline-block w-1.5 h-3 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
-                      )}
-                    </p>
+                    <div className="bg-cosmos-800/50 rounded-xl px-4 py-3">
+                      <MarkdownText
+                        text={readings[p.body] ?? ''}
+                        className="text-slate-300 text-xs"
+                        trailing={readingFor === p.body && (
+                          <span className="inline-block w-1.5 h-3 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
+                        )}
+                      />
+                    </div>
                   ) : (
                     <button
                       onClick={() => void askAboutPlacement(p.body)}
@@ -321,7 +325,7 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
       <h2 className="text-slate-100 font-display text-xl mb-1">Western Chart Deep-Dive Reading</h2>
 
       {body ? (
-        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-3">{body}</p>
+        <MarkdownText text={body} className="text-slate-300 text-sm mt-3" />
       ) : loading ? (
         <p className="text-slate-500 text-xs mt-2">{locked ? 'Loading…' : 'Calculating…'}</p>
       ) : locked ? (

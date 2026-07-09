@@ -16,6 +16,7 @@ import { birthDataToJde } from '@/lib/ephemeris'
 import { calculateVimshottari, findCurrentDasha } from '@/lib/dasha'
 import { streamStella } from '@/lib/gemini'
 import { buildPersonaContext } from '@/lib/personalization'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ChatMessage, StellaPersona } from '@/types'
 
@@ -189,16 +190,18 @@ export function StellaPage() {
           <div
             key={m.id}
             className={[
-              'max-w-[85%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed',
+              'max-w-[85%] rounded-2xl px-4 py-3 text-sm',
               m.role === 'user'
                 ? 'self-end bg-stardust-400/20 text-slate-100 rounded-br-sm'
                 : 'self-start bg-cosmos-800 text-slate-200 rounded-bl-sm border border-cosmos-700',
             ].join(' ')}
           >
-            {m.text}
-            {m.isStreaming && (
-              <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
-            )}
+            <MarkdownText
+              text={m.text}
+              trailing={m.isStreaming && (
+                <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
+              )}
+            />
           </div>
         ))}
 

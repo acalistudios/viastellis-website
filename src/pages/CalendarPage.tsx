@@ -26,6 +26,7 @@ import { CREDIT_COSTS } from '@/config/creditCosts'
 import { upcomingRetrogrades } from '@/lib/retrograde'
 import { getGemstoneRecommendations } from '@/lib/gemstones'
 import { Button } from '@/components/ui/Button'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ZodiacSign } from '@/types'
 
@@ -369,10 +370,15 @@ export function CalendarPage() {
 
           {/* Ask Stella about this day */}
           {dayReading ? (
-            <p className="text-slate-300 text-sm leading-relaxed mt-4 pt-4 border-t border-cosmos-800 whitespace-pre-wrap">
-              {dayReading}
-              {dayStreaming && <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />}
-            </p>
+            <div className="mt-4 pt-4 border-t border-cosmos-800">
+              <MarkdownText
+                text={dayReading}
+                className="text-slate-300 text-sm"
+                trailing={dayStreaming && (
+                  <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
+                )}
+              />
+            </div>
           ) : (
             <button
               onClick={() => void askAboutDay()}

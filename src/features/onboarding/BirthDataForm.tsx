@@ -87,6 +87,24 @@ function ProgressDots({ step }: { step: number }) {
   )
 }
 
+// ─── Shared: expandable "why do we need this" detail ──────────────────────────
+
+function WhyThis({ children }: { children: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="text-xs text-stardust-400 hover:text-stardust-300 underline underline-offset-2"
+      >
+        {open ? 'Hide details' : 'Why do we need this?'}
+      </button>
+      {open && <p className="text-xs text-slate-500 mt-2 leading-relaxed">{children}</p>}
+    </div>
+  )
+}
+
 // ─── Step 1: Name ─────────────────────────────────────────────────────────────
 
 function StepName({
@@ -120,6 +138,83 @@ function StepName({
 
 // ─── Step 2: Birth Date ───────────────────────────────────────────────────────
 
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
+function daysInMonth(month: number, year: number): number {
+  return new Date(year, month, 0).getDate() // day 0 of next month = last day of this month
+}
+
+/**
+ * Typeable month/day/year birth date entry. A native <input type="date"> forces
+ * many mobile browsers into a scrolling wheel picker that's painfully slow to
+ * reach a year decades back — typing "1978" directly is much faster.
+ */
+function BirthDateFields({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [y, m, d] = value ? value.split('-').map(Number) : [undefined, undefined, undefined]
+  const [month, setMonth] = useState<number | ''>(m || '')
+  const [day, setDay] = useState<number | ''>(d || '')
+  const [year, setYear] = useState<number | ''>(y || '')
+  const currentYear = new Date().getFullYear()
+
+  function emit(nextMonth: number | '', nextDay: number | '', nextYear: number | '') {
+    if (nextMonth === '' || nextDay === '' || nextYear === '' || String(nextYear).length < 4) {
+      onChange('')
+      return
+    }
+    const maxDay = daysInMonth(nextMonth, nextYear)
+    const clampedDay = Math.min(nextDay, maxDay)
+    if (clampedDay !== nextDay) setDay(clampedDay)
+    const iso = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`
+    // Can't be born in the future.
+    onChange(iso > new Date().toISOString().split('T')[0] ? '' : iso)
+  }
+
+  return (
+    <div className="grid grid-cols-[1fr_90px_110px] gap-2">
+      <select
+        value={month}
+        onChange={(e) => { const v = e.target.value ? Number(e.target.value) : ''; setMonth(v); emit(v, day, year) }}
+        className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-3 py-3 text-slate-100 focus:outline-none focus:border-stardust-400 focus:ring-1 focus:ring-stardust-400"
+      >
+        <option value="">Month</option>
+        {MONTH_NAMES.map((name, i) => (
+          <option key={name} value={i + 1}>{name}</option>
+        ))}
+      </select>
+      <input
+        type="number"
+        inputMode="numeric"
+        placeholder="Day"
+        min={1}
+        max={31}
+        value={day}
+        onChange={(e) => {
+          const v = e.target.value ? Math.max(1, Math.min(31, Number(e.target.value))) : ''
+          setDay(v); emit(month, v, year)
+        }}
+        className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-3 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-stardust-400 focus:ring-1 focus:ring-stardust-400"
+      />
+      <input
+        type="number"
+        inputMode="numeric"
+        placeholder="Year"
+        min={1900}
+        max={currentYear}
+        value={year}
+        onChange={(e) => {
+          const raw = e.target.value
+          const v = raw ? Number(raw) : ''
+          setYear(v); emit(month, day, v)
+        }}
+        className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-3 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-stardust-400 focus:ring-1 focus:ring-stardust-400"
+      />
+    </div>
+  )
+}
+
 function StepDate({
   value,
   onChange,
@@ -131,22 +226,16 @@ function StepDate({
   onNext: () => void
   onBack: () => void
 }) {
-  // Max date = today (can't be born in the future)
-  const today = new Date().toISOString().split('T')[0]
-
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-3xl text-stardust-300 mb-2">When were you born?</h2>
         <p className="text-slate-500 text-sm">Your birth date anchors your natal chart.</p>
       </div>
-      <Input
-        type="date"
-        value={value}
-        max={today}
-        onChange={(e) => onChange(e.target.value)}
-        className="[color-scheme:dark]"
-      />
+      <BirthDateFields value={value} onChange={onChange} />
+      <p className="text-slate-600 text-xs -mt-3">
+        Made a mistake? You can always update this later in Settings.
+      </p>
       <div className="flex gap-3">
         <Button variant="secondary" onClick={onBack} className="flex-1">← Back</Button>
         <Button onClick={onNext} disabled={!value} className="flex-1">Continue →</Button>
@@ -176,9 +265,15 @@ function StepTime({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-3xl text-stardust-300 mb-2">What time were you born?</h2>
-        <p className="text-slate-500 text-sm">
-          Birth time affects your Rising sign and house placements. Even an approximate time helps.
+        <p className="text-slate-500 text-sm mb-2">
+          Even an approximate time helps. Don't know it? No problem — skip it below.
         </p>
+        <WhyThis>
+          Birth time determines your Rising sign and house placements — the parts of your chart
+          tied to timing within the day. Without it, we can still calculate your Sun and Moon
+          signs and everything else; you'll just be missing the Rising sign and houses until you
+          add a time later.
+        </WhyThis>
       </div>
 
       <Input
@@ -216,6 +311,7 @@ function StepTime({
       {unknown && (
         <p className="text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-4 py-3">
           Without a birth time, your Rising sign and houses won't be calculated. Rising sign accuracy requires time within 2 hours.
+          Don't worry — you can add it anytime later in Settings → Edit Birth Details.
         </p>
       )}
 
@@ -294,9 +390,14 @@ function StepLocation({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-3xl text-stardust-300 mb-2">Where were you born?</h2>
-        <p className="text-slate-500 text-sm">
-          Your birth location determines your local sidereal time and house cusps.
+        <p className="text-slate-500 text-sm mb-2">
+          This helps Stella calculate your exact chart.
         </p>
+        <WhyThis>
+          Your birth location (and its time zone) determines your local sidereal time — the
+          precise angle of the sky at your moment of birth — which sets your Rising sign and
+          house cusps.
+        </WhyThis>
       </div>
 
       <div className="relative">
@@ -381,7 +482,10 @@ function StepConfirm({
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-3xl text-stardust-300 mb-2">Does this look right?</h2>
-        <p className="text-slate-500 text-sm">Stella will use this to calculate your natal chart.</p>
+        <p className="text-slate-500 text-sm">
+          Stella will use this to calculate your natal chart. Nothing here is permanent — you can
+          edit any of it later from Settings → Edit Birth Details.
+        </p>
       </div>
 
       <div className="bg-cosmos-800 border border-cosmos-600 rounded-2xl overflow-hidden">

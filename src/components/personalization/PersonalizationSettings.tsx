@@ -115,7 +115,8 @@ export function PersonalizationSettings() {
     <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
       <p className="text-slate-300 text-sm font-medium mb-1">Personalization</p>
       <p className="text-slate-500 text-xs mb-3">
-        Help Stella tailor your readings. Everything here is optional and private to you.
+        Help Stella tailor your readings. Everything here is optional. 🔒 It's never shared outside
+        the app, never sold, and you can edit or delete it yourself, anytime, right here.
       </p>
 
       {/* Mode toggle */}

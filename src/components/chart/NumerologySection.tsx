@@ -15,6 +15,7 @@ import {
 } from '@/lib/numerology'
 import { getReport } from '@/lib/report'
 import { usePersonaBlock } from '@/hooks/usePersonaBlock'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { creditLabel } from '@/config/creditCosts'
 import { useUser } from '@/store/UserContext'
 import { CREDIT_COSTS } from '@/config/creditCosts'
@@ -154,7 +155,7 @@ function NumerologyReportCard({ context, isPremium }: { context: NumerologyConte
       <h2 className="text-slate-100 font-display text-xl mb-1">Your Numerology Portrait</h2>
 
       {body ? (
-        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-3">{body}</p>
+        <MarkdownText text={body} className="text-slate-300 text-sm mt-3" />
       ) : loading ? (
         <p className="text-slate-500 text-xs mt-2">Calculating…</p>
       ) : locked ? (

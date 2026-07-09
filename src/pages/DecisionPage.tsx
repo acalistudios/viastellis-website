@@ -16,6 +16,7 @@ import { streamStella } from '@/lib/gemini'
 import { CreditCost } from '@/components/ui/CreditCost'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { DecisionAnswer, ZodiacSign } from '@/types'
 
@@ -220,12 +221,13 @@ export function DecisionPage() {
           {(narrative || streaming) && (
             <div className="border-t border-cosmos-700 pt-4">
               <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Stella's take</p>
-              <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                {narrative}
-                {streaming && (
+              <MarkdownText
+                text={narrative}
+                className="text-slate-300 text-sm"
+                trailing={streaming && (
                   <span className="inline-block w-2 h-4 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
                 )}
-              </p>
+              />
             </div>
           )}
         </div>

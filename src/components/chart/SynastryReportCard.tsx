@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import { useUser } from '@/store/UserContext'
 import { getSynastryReport, partnerKeyOf } from '@/lib/synastryReport'
 import { creditLabel } from '@/config/creditCosts'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import type { NatalChart } from '@/types'
 
 const cost = 40
@@ -80,7 +81,7 @@ export function SynastryReportCard({ myChart, partnerChart }: Props) {
       </div>
 
       {body ? (
-        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap mt-2">{body}</p>
+        <MarkdownText text={body} className="text-slate-300 text-sm mt-2" />
       ) : loading ? (
         <p className="text-slate-500 text-xs mt-2">{owned ? 'Loading…' : 'Stella is comparing your charts…'}</p>
       ) : (

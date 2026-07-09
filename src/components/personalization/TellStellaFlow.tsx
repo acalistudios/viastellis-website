@@ -138,7 +138,10 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
         <Bubble>
           <p>Hi {name}. Would you like me to <strong className="text-stardust-200">remember our conversations</strong> and
             tailor readings to you over time — or keep things to just your chart?</p>
-          <p className="text-slate-500 text-xs mt-2">You can change this anytime, and I only ever keep what you share.</p>
+          <p className="text-slate-500 text-xs mt-2">
+            🔒 Private by default: nothing you share here ever leaves the app, it's never sold, and
+            you can view, edit, or delete anything you tell me at any time in Settings.
+          </p>
           <div className="flex flex-col gap-2 mt-3">
             <Choice onClick={() => { void persist({ ...draft, personalization_mode: 'personalized' }); advanceFrom('mode', 'personalized') }}>
               Personalize my readings — remember me
