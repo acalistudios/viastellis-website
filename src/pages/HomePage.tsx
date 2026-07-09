@@ -184,6 +184,16 @@ export function HomePage() {
       )}
 
       <p className="mt-12 text-[11px] text-slate-600 max-w-xs">{ENTERTAINMENT_DISCLAIMER}</p>
+      {/* Legal links — static pages served from /public, so use plain anchors */}
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-slate-600">
+        <a href="/terms" className="hover:text-stardust-400 transition-colors">Terms</a>
+        <span className="text-cosmos-700">·</span>
+        <a href="/privacy" className="hover:text-stardust-400 transition-colors">Privacy</a>
+        <span className="text-cosmos-700">·</span>
+        <a href="/refund" className="hover:text-stardust-400 transition-colors">Refunds</a>
+        <span className="text-cosmos-700">·</span>
+        <a href="/contact" className="hover:text-stardust-400 transition-colors">Contact</a>
+      </div>
     </div>
   )
 }

@@ -52,6 +52,7 @@ export function CompatibilityPage() {
   const [narrativeLoading, setNarrativeLoading] = useState(false)
   const [error, setError] = useState('')
   const [inviteCopied, setInviteCopied] = useState(false)
+  const [summaryCopied, setSummaryCopied] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
 
   const loadHistory = useCallback(async () => {
@@ -206,18 +207,17 @@ export function CompatibilityPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Open the user's own email client with a pre-filled summary of the match.
-  // We never send anything ourselves — the user reviews and sends it.
-  function emailMatch() {
-    if (!result || !myChart) return
+  /** Plain-text summary of the match, shared by the email and copy actions. */
+  function matchSummaryText({ greeting }: { greeting: boolean }): string {
+    if (!result || !myChart) return ''
     const v = result.vibe
     const myName = myChart.birth_data.name
     const partnerName = result.chartB.birth_data.name
     const stripMd = (s: string) => s.replace(/\*\*/g, '').replace(/^#{1,6}\s+/gm, '').trim()
 
     const header =
-      `Hi,\n\n` +
-      `I ran our astrological compatibility on ViaStellis — here's the Vibe Match for ${myName} and ${partnerName}:\n\n` +
+      (greeting ? `Hi,\n\n` : '') +
+      `Our ViaStellis Vibe Match — ${myName} and ${partnerName}:\n\n` +
       `✨ Vibe Score: ${v.score}/100\n\n` +
       `☽ Moons: ${v.moon.label}\n` +
       `☉ Suns: ${v.sun.label}\n` +
@@ -229,10 +229,24 @@ export function CompatibilityPage() {
     let reading = stripMd(narrative)
     const room = 1300 - header.length - footer.length
     if (reading.length > room) reading = reading.slice(0, Math.max(0, room - 30)).trimEnd() + '…\n(full reading on ViaStellis)'
-    const body = header + (reading ? `\nStella's reading:\n${reading}` : '') + footer
+    return header + (reading ? `\nStella's reading:\n${reading}` : '') + footer
+  }
 
-    const subject = `Our ViaStellis Vibe Match — ${v.score}/100 ✨`
+  // Open the user's own email client, pre-filled. We never send anything ourselves.
+  function emailMatch() {
+    if (!result) return
+    const subject = `Our ViaStellis Vibe Match — ${result.vibe.score}/100 ✨`
+    const body = matchSummaryText({ greeting: true })
     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  }
+
+  async function copyMatch() {
+    if (!result) return
+    try {
+      await navigator.clipboard.writeText(matchSummaryText({ greeting: false }))
+      setSummaryCopied(true)
+      setTimeout(() => setSummaryCopied(false), 2500)
+    } catch { /* clipboard unavailable — ignore */ }
   }
 
   return (
@@ -394,13 +408,19 @@ export function CompatibilityPage() {
             </div>
           )}
 
-          {/* Share this match via the user's own email client */}
-          <div className="border-t border-cosmos-700 pt-4 mt-1 text-center">
+          {/* Share this match — email (own client) or copy the summary */}
+          <div className="border-t border-cosmos-700 pt-4 mt-1 flex items-center justify-center gap-3">
             <button
               onClick={emailMatch}
               className="text-xs text-stardust-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-5 py-2.5 transition-colors"
             >
               📧 Email this match
+            </button>
+            <button
+              onClick={() => void copyMatch()}
+              className="text-xs text-stardust-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-5 py-2.5 transition-colors"
+            >
+              {summaryCopied ? '✓ Copied!' : '📋 Copy summary'}
             </button>
           </div>
 
