@@ -18,6 +18,7 @@ import { useUser } from '@/store/UserContext'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MarkdownText } from '@/components/ui/MarkdownText'
 import { NumerologySection } from '@/components/chart/NumerologySection'
+import { WesternWheel } from '@/components/chart/WesternWheel'
 import { getChartSynthesis } from '@/lib/placementMeanings'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType, WesternChart } from '@/types'
@@ -209,6 +210,19 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
           No birth time on file — houses, Ascendant, and Midheaven need a birth time. Showing sign
           positions only.
         </p>
+      )}
+
+      {/* Chart wheel (needs a birth time for the Ascendant + houses) */}
+      {!timeUnknown && (
+        <div className="mb-6">
+          <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-3">
+            <WesternWheel chart={chart} className="w-full h-auto" />
+          </div>
+          <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-slate-500">
+            <span className="inline-flex items-center gap-1.5"><span className="inline-block w-3.5 h-0.5 rounded-full" style={{ background: '#38bdf8' }} /> harmonious (trine · sextile)</span>
+            <span className="inline-flex items-center gap-1.5"><span className="inline-block w-3.5 h-0.5 rounded-full" style={{ background: '#fb7185' }} /> challenging (square · opposition)</span>
+          </div>
+        </div>
       )}
 
       {/* Planet table */}
