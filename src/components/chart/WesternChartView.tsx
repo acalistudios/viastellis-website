@@ -120,6 +120,27 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
         </p>
       </div>
 
+      {/* What is this? — mirrors the Vedic view's intro blurb */}
+      <p className="text-slate-400 text-xs leading-relaxed bg-cosmos-900/60 border border-cosmos-800 rounded-xl px-4 py-3 mb-6">
+        This is your <span className="text-stardust-300">natal chart</span> — a snapshot of the sky at
+        the moment and place you were born, calculated with the tropical (season-based) zodiac of Western
+        astrology. The placements below are your cosmic blueprint: where each planet sat, and the angles
+        (aspects) between them, colors a different area of life. Stella reads from exactly this data.
+      </p>
+
+      {/* Export / Print */}
+      <div className="flex justify-end gap-2 mb-4 print:hidden">
+        <button
+          onClick={() => window.print()}
+          className="text-xs text-slate-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-4 py-2 transition-colors inline-flex items-center gap-1.5"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Export PDF
+        </button>
+      </div>
+
       {/* Ascendant / Midheaven summary */}
       {!timeUnknown && (
         <div className="grid grid-cols-2 gap-3 mb-6">
@@ -219,7 +240,7 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
       {/* Houses */}
       {!timeUnknown && (
         <div className="mb-6">
-          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2 px-1">House Cusps</p>
+          <h2 className="text-sm text-slate-400 font-medium mb-3 px-1">Houses ({houseSystemLabel})</h2>
           <div className="grid grid-cols-2 gap-2">
             {chart.houses.map((h) => (
               <div key={h.house} className="bg-cosmos-900 border border-cosmos-700 rounded-xl px-3 py-2 flex items-center justify-between">
@@ -236,9 +257,9 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
       {/* Aspects */}
       {chart.aspects.length > 0 && (
         <div className="mb-6">
-          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2 px-1">
-            Aspects <span className="text-slate-600">· {chart.aspects.length}</span>
-          </p>
+          <h2 className="text-sm text-slate-400 font-medium mb-3 px-1">
+            Aspects <span className="text-slate-600 font-normal">· {chart.aspects.length}</span>
+          </h2>
           <div className="flex flex-col gap-1.5">
             {chart.aspects.map((a, i) => {
               const m = ASPECT_META[a.type]

@@ -9,6 +9,7 @@ import { WesternChartView } from '@/components/chart/WesternChartView'
 import { signCuspFlag, nakshatraEdgeFlag } from '@/lib/boundaryFlags'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { InfoBubble } from '@/components/ui/InfoBubble'
+import { MarkdownText } from '@/components/ui/MarkdownText'
 import { detectYogas } from '@/lib/yogas'
 import { getChartSynthesis } from '@/lib/placementMeanings'
 import { getSadeSati, nextSolarReturn } from '@/lib/cycles'
@@ -377,12 +378,15 @@ export function ChartPage() {
               {expandedPlanet === p.planet && (
                 <div className="px-4 pb-3 print:hidden">
                   {readings[p.planet] ? (
-                    <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-wrap bg-cosmos-800/50 rounded-xl px-4 py-3">
-                      {readings[p.planet]}
-                      {readingFor === p.planet && (
-                        <span className="inline-block w-1.5 h-3 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
-                      )}
-                    </p>
+                    <div className="bg-cosmos-800/50 rounded-xl px-4 py-3">
+                      <MarkdownText
+                        text={readings[p.planet] ?? ''}
+                        className="text-slate-300 text-xs"
+                        trailing={readingFor === p.planet && (
+                          <span className="inline-block w-1.5 h-3 ml-0.5 bg-stardust-400 animate-pulse align-text-bottom rounded-sm" />
+                        )}
+                      />
+                    </div>
                   ) : (
                     <button
                       onClick={() => void askAboutPlacement(p.planet)}
