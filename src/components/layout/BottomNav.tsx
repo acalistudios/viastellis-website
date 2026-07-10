@@ -4,18 +4,18 @@ import { Home, Star, Calendar, MessageCircle, Menu, Users, HelpCircle, BookOpen,
 import { cn } from '@/lib/utils'
 
 const CORE_ITEMS = [
-  { to: '/home',     icon: Home,          label: 'Home' },
-  { to: '/chart',    icon: Star,          label: 'Chart' },
-  { to: '/calendar', icon: Calendar,      label: 'Calendar' },
-  { to: '/stella',   icon: MessageCircle, label: 'Stella' },
+  { to: '/home',          icon: Home,          label: 'Home' },
+  { to: '/chart',         icon: Star,          label: 'Chart' },
+  { to: '/compatibility', icon: Users,         label: 'Match' },
+  { to: '/stella',        icon: MessageCircle, label: 'Stella' },
 ]
 
 const MORE_ITEMS = [
-  { to: '/compatibility', icon: Users,      label: 'Vibe Match' },
-  { to: '/decision',      icon: HelpCircle, label: 'Dilemma Decider' },
-  { to: '/journal',       icon: BookOpen,   label: 'Cosmic Journal' },
-  { to: '/upgrade',       icon: Crown,      label: 'Go Premium' },
-  { to: '/settings',      icon: Settings,   label: 'Settings' },
+  { to: '/calendar', icon: Calendar,  label: 'Best Days' },
+  { to: '/decision', icon: HelpCircle, label: 'Decisions' },
+  { to: '/journal',  icon: BookOpen,   label: 'Journal' },
+  { to: '/upgrade',  icon: Crown,      label: 'Premium' },
+  { to: '/settings', icon: Settings,   label: 'Settings' },
 ]
 
 export function BottomNav() {

@@ -79,9 +79,12 @@ export function HomePage() {
             Welcome back, <span className="text-stardust-300">{chart.birth_data.name}</span>
           </p>
 
-          {/* Tonight's moon */}
-          <div className="flex flex-col items-center mb-6">
-            <MoonPhase illumination={moonPhase.illumination} name={moonPhase.name} size={64} />
+          {/* Daily horoscope — the hero: the first thing a returning user sees */}
+          <TodayCard chart={chart} />
+
+          {/* Tonight's moon — ambient, below the reading */}
+          <div className="flex flex-col items-center my-6">
+            <MoonPhase illumination={moonPhase.illumination} name={moonPhase.name} size={56} />
             <p className="text-slate-400 text-xs mt-1.5 inline-flex items-center gap-1.5">
               <span>{moonPhase.name} · <span className="text-slate-500">{moonPhase.illumination}% lit</span></span>
               <InfoBubble title="Tonight's Moon" align="center">
@@ -95,15 +98,12 @@ export function HomePage() {
             </p>
           </div>
 
+          {/* Daily tarot */}
+          <TarotSection chart={chart} />
+          <FullMoonCard chart={chart} />
+
           {/* Optional: invite the user to personalize (dismissible, hides once engaged) */}
           <TellStellaInvite />
-
-          {/* Daily horoscope */}
-          <TodayCard chart={chart} />
-
-          {/* Daily tarot */}
-          <FullMoonCard chart={chart} />
-          <TarotSection chart={chart} />
 
           {/* Combined blueprint — what your three pillars mean together */}
           {bpSun && bpMoon && (
