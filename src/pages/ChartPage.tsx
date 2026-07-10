@@ -142,10 +142,11 @@ export function ChartPage() {
     </div>
   )
 
-  // Western (tropical) chart is a fully separate view.
+  // Western (tropical) chart is a fully separate view. Wrap it in the same
+  // padded container the Vedic view uses so the toggle sits at the same height.
   if (viewSystem === 'western') {
     return (
-      <div>
+      <div className="px-5 py-8 max-w-lg mx-auto">
         {SystemToggle}
         <WesternChartView birthData={chart.birth_data} />
       </div>

@@ -97,7 +97,9 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
       : 'Whole Sign (no birth time)'
 
   return (
-    <div className="px-5 py-8 max-w-lg mx-auto">
+    // No outer padding here — ChartPage wraps this in the shared padded container
+    // (matching the Vedic view) so the system toggle lines up in both.
+    <div>
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="font-display text-3xl text-stardust-300">Your Western Chart</h1>
