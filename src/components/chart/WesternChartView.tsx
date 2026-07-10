@@ -6,7 +6,7 @@
  * cusps, and the aspect grid. No nakshatras/dashas (those are Vedic-only).
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { calculateWesternChart } from '@/lib/westernChart'
 import { signCuspFlag } from '@/lib/boundaryFlags'
@@ -19,6 +19,7 @@ import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MarkdownText } from '@/components/ui/MarkdownText'
 import { NumerologySection } from '@/components/chart/NumerologySection'
 import { WesternWheel } from '@/components/chart/WesternWheel'
+import { WesternShareCardButton } from '@/components/chart/WesternShareCardButton'
 import { getChartSynthesis } from '@/lib/placementMeanings'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType, WesternChart } from '@/types'
@@ -107,6 +108,8 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
       ? getChartSynthesis(sunSign, moonSign, timeUnknown ? undefined : chart.ascendant.sign)
       : null
 
+  const wheelRef = useRef<HTMLDivElement>(null)
+
   return (
     // No outer padding here — ChartPage wraps this in the shared padded container
     // (matching the Vedic view) so the system toggle lines up in both.
@@ -143,6 +146,7 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
 
       {/* Export / Print */}
       <div className="flex justify-end gap-2 mb-4 print:hidden">
+        {!timeUnknown && <WesternShareCardButton chart={chart} name={birthData.name} svgContainerRef={wheelRef} />}
         <button
           onClick={() => window.print()}
           className="text-xs text-slate-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-4 py-2 transition-colors inline-flex items-center gap-1.5"
@@ -215,7 +219,7 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
       {/* Chart wheel (needs a birth time for the Ascendant + houses) */}
       {!timeUnknown && (
         <div className="mb-6">
-          <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-3">
+          <div ref={wheelRef} className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-3">
             <WesternWheel chart={chart} className="w-full h-auto" />
           </div>
           <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-slate-500">
