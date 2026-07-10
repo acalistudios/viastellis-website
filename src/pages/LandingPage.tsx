@@ -2,7 +2,7 @@
  * Marketing landing page — public-facing introduction to ViaStellis.
  * Route: / (index)
  *
- * Showcases the four core offerings and the monetization model.
+ * Communicates the full breadth of the app in plain language, plus pricing.
  */
 
 import { Link } from 'react-router-dom'
@@ -10,39 +10,16 @@ import { Starfield } from '@/components/ui/Starfield'
 import { useUser } from '@/store/UserContext'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 
-const OFFERINGS = [
-  {
-    emoji: '🌙',
-    name: 'Transit Navigator',
-    tagline: 'Your daily cosmic weather',
-    description:
-      'Real-time transit analysis personalized to your birth chart. Stella gives tactical daily guidance in 3 sentences — perfect for a morning briefing.',
-    cta: 'Try Free',
-  },
-  {
-    emoji: '💫',
-    name: 'Stellar Synergy',
-    tagline: 'How you work together',
-    description:
-      'Understand communication styles, collaborative strengths, and natural friction points with anyone — romantic partner, boss, friend, or yourself.',
-    cta: 'Compare Charts',
-  },
-  {
-    emoji: '🎯',
-    name: 'Dilemma Decider',
-    tagline: 'Make decisions with confidence',
-    description:
-      'Stuck on a choice? Get a clear verdict (Green Light/Caution/Reflect) based on current transits and your chart, plus detailed reasoning from Stella.',
-    cta: 'Ask a Question',
-  },
-  {
-    emoji: '✨',
-    name: 'Personal Power Cycles',
-    tagline: 'Find your best days',
-    description:
-      'A 30-day calendar showing which days are high-energy (Action) and which are low-energy (Reflection). Sync your goals with the cosmic rhythm.',
-    cta: 'View Calendar',
-  },
+// The full breadth of the app, in plain language (matches the in-app nav).
+const FEATURES = [
+  { emoji: '🌅', name: 'Daily horoscope', desc: 'A reading tuned to your exact chart — every day.' },
+  { emoji: '✦', name: 'Full birth chart', desc: 'Vedic and Western — planets, houses, and aspects.' },
+  { emoji: '💬', name: 'Stella, your AI guide', desc: 'Ask her anything about your chart or a decision.' },
+  { emoji: '🃏', name: 'Tarot', desc: 'A daily card, plus Past · Present · Future spreads.' },
+  { emoji: '🔢', name: 'Numerology', desc: 'Your life-path and personal numbers, decoded.' },
+  { emoji: '💫', name: 'Compatibility', desc: 'See how you click with a partner, friend, or coworker.' },
+  { emoji: '🗓️', name: 'Best days', desc: 'A 30-day calendar of high- and low-energy days.' },
+  { emoji: '📓', name: 'Journal', desc: 'Track your moods and moments against the sky.' },
 ]
 
 const PRICING_TIERS = [
@@ -50,11 +27,11 @@ const PRICING_TIERS = [
     name: 'Free',
     price: 'Forever',
     features: [
-      'Your personal birth chart — Vedic & Western',
-      'Real-time transit data (panchanga, gochara, eclipses)',
-      'Yogas & classical astrological combinations',
-      'Deterministic vibe scores & verdicts',
-      'Daily transit briefing (no Stella AI)',
+      'Your birth chart — Vedic & Western',
+      'Daily horoscope tuned to your chart',
+      'A daily tarot card',
+      'Your numerology numbers',
+      'Live transits, moon phases & eclipses',
       '30-day best-days calendar',
     ],
     cta: 'Get Started',
@@ -67,12 +44,12 @@ const PRICING_TIERS = [
     features: [
       'Everything in Free, plus:',
       '30 monthly credits for Stella AI',
-      'Daily horoscope with Stella narrative',
-      'Ask Stella about any day or question',
-      'Placement deep-dive readings',
-      'Synergy profiles with detailed guidance',
-      'Journal pattern scanning',
-      'Weekly forecasts',
+      'Chat with Stella about any question',
+      "Daily horoscope with Stella's narrative",
+      '3-card tarot spreads with readings',
+      'In-depth numerology & placement readings',
+      'Compatibility deep-dives',
+      'Weekly forecasts & journal insights',
     ],
     cta: 'Start Free Trial',
     ctaLink: '/auth',
@@ -165,33 +142,36 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Offerings */}
+      {/* Everything included */}
       <section id="offerings" className="px-6 py-20 bg-gradient-to-b from-transparent via-[#1a1a3f]/30 to-transparent relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-display text-center text-stardust-300 mb-16">
-            Four Ways to Navigate Your Stars
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-4xl font-display text-center text-stardust-300 mb-3">
+            Everything you get
           </h2>
+          <p className="text-center text-slate-400 mb-14 max-w-xl mx-auto">
+            One app for your whole cosmos — free to start, no credit card.
+          </p>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {OFFERINGS.map(offering => (
-              <Link
-                key={offering.name}
-                to="/auth"
-                className="group bg-gradient-to-br from-[#1a1a3f]/60 to-[#0f0817]/60 backdrop-blur border border-stardust-400/20 hover:border-stardust-400/50 rounded-2xl p-8 transition-all hover:shadow-lg hover:shadow-stardust-400/20"
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {FEATURES.map(f => (
+              <div
+                key={f.name}
+                className="bg-gradient-to-br from-[#1a1a3f]/60 to-[#0f0817]/60 backdrop-blur border border-stardust-400/20 rounded-2xl p-5"
               >
-                <div className="text-5xl mb-4">{offering.emoji}</div>
-                <h3 className="text-xl font-medium text-stardust-300 mb-1 group-hover:text-stardust-200 transition-colors">
-                  {offering.name}
-                </h3>
-                <p className="text-sm text-slate-400 mb-4">{offering.tagline}</p>
-                <p className="text-slate-300 text-sm leading-relaxed mb-6">
-                  {offering.description}
-                </p>
-                <button className="text-xs text-stardust-400 group-hover:text-stardust-300 font-medium transition-colors">
-                  {offering.cta} →
-                </button>
-              </Link>
+                <div className="text-3xl mb-2">{f.emoji}</div>
+                <h3 className="text-base font-medium text-stardust-300 mb-1">{f.name}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </div>
             ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              to="/auth"
+              className="inline-block rounded-full px-8 py-4 bg-gradient-to-r from-stardust-400 to-stellar-300 text-[#0a0e27] font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/30"
+            >
+              Create your free chart →
+            </Link>
           </div>
         </div>
       </section>
