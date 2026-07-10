@@ -18,6 +18,7 @@ import { useUser } from '@/store/UserContext'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MarkdownText } from '@/components/ui/MarkdownText'
 import { NumerologySection } from '@/components/chart/NumerologySection'
+import { getChartSynthesis } from '@/lib/placementMeanings'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType, WesternChart } from '@/types'
 
@@ -96,6 +97,15 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
       : chart.house_system === 'equal' ? 'Equal (high latitude)'
       : 'Whole Sign (no birth time)'
 
+  // Blueprint — Sun/Moon/Rising personality synthesis (sign-based, works for the
+  // tropical zodiac too). Mirrors the Vedic view's Blueprint.
+  const sunSign = chart.planets.find((p) => p.body === 'Sun')?.sign
+  const moonSign = chart.planets.find((p) => p.body === 'Moon')?.sign
+  const synthesis =
+    sunSign && moonSign
+      ? getChartSynthesis(sunSign, moonSign, timeUnknown ? undefined : chart.ascendant.sign)
+      : null
+
   return (
     // No outer padding here — ChartPage wraps this in the shared padded container
     // (matching the Vedic view) so the system toggle lines up in both.
@@ -142,6 +152,32 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
           Export PDF
         </button>
       </div>
+
+      {/* Your Blueprint — Sun/Moon/Rising synthesis (mirrors the Vedic view) */}
+      {synthesis && (
+        <div className="print-block bg-gradient-to-br from-cosmos-800/80 to-cosmos-900/80 border border-stardust-400/30 rounded-2xl px-5 py-4 mb-6 text-left">
+          <p className="text-[11px] uppercase tracking-widest text-stardust-400 mb-1">Your Blueprint</p>
+          <p className="text-slate-100 font-display text-lg leading-snug mb-3">
+            {synthesis.headline}
+            {synthesis.isDouble && sunSign && (
+              <span className="ml-2 align-middle text-[10px] uppercase tracking-wider text-stellar-300 border border-stellar-300/40 rounded-full px-2 py-0.5">
+                double {sunSign}
+              </span>
+            )}
+          </p>
+
+          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Personality</p>
+          <p className="text-slate-300 text-sm leading-relaxed mb-3">{synthesis.personality}</p>
+
+          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Career & vocation</p>
+          <p className="text-slate-300 text-sm leading-relaxed">{synthesis.career}</p>
+
+          <p className="text-[10px] text-slate-600 mt-3 italic">
+            A blended reading of your rising, Sun, and Moon signs — inclinations, not rules. The houses
+            and aspects below refine all of this.
+          </p>
+        </div>
+      )}
 
       {/* Ascendant / Midheaven summary */}
       {!timeUnknown && (
