@@ -20,7 +20,8 @@ import type { BirthData } from '@/types'
 function decodeInvite(d: string | null): BirthData | null {
   if (!d) return null
   try {
-    const b64 = d.replace(/-/g, '+').replace(/_/g, '/')
+    const b64url = d.replace(/-/g, '+').replace(/_/g, '/')
+    const b64 = b64url + '='.repeat((4 - (b64url.length % 4)) % 4)
     // base64url → UTF-8 (mirrors the encoder, which byte-encodes before btoa).
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
     const raw = JSON.parse(new TextDecoder().decode(bytes))

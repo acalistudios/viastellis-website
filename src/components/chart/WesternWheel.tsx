@@ -64,9 +64,32 @@ export function WesternWheel({ chart, className }: Props) {
     .slice()
     .sort((a, b) => a.longitude - b.longitude)
   const MIN_SEP = 9
-  const display: number[] = bodies.map(b => b.longitude)
-  for (let i = 1; i < display.length; i++) {
-    if (display[i] - display[i - 1] < MIN_SEP) display[i] = display[i - 1] + MIN_SEP
+  const n = bodies.length
+  const display: number[] = new Array(n)
+  if (n > 0) {
+    // Start just after the largest empty arc so a cluster straddling 0° Aries
+    // spreads apart instead of colliding at the seam.
+    let startIdx = 0
+    let maxGap = -1
+    for (let i = 0; i < n; i++) {
+      const gap = (bodies[(i + 1) % n].longitude - bodies[i].longitude + 360) % 360
+      if (gap > maxGap) { maxGap = gap; startIdx = (i + 1) % n }
+    }
+    // Unwrap true longitudes into one monotonic sequence from the seam, then
+    // push each glyph out to MIN_SEP. (Unwrap tracks the true position; the
+    // push tracks the placed position — mixing them can add a whole extra turn.)
+    let trueBase = bodies[startIdx].longitude
+    let placed = bodies[startIdx].longitude
+    display[startIdx] = placed
+    for (let k = 1; k < n; k++) {
+      const i = (startIdx + k) % n
+      let lon = bodies[i].longitude
+      while (lon < trueBase) lon += 360
+      trueBase = lon
+      if (lon - placed < MIN_SEP) lon = placed + MIN_SEP
+      display[i] = lon
+      placed = lon
+    }
   }
   const posByBody = new Map<WesternBody, number>()
   bodies.forEach(b => posByBody.set(b.body, b.longitude))

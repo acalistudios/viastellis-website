@@ -210,8 +210,9 @@ export function cardMeaning(card: TarotCard, reversed: boolean): string {
 /** Today's shared card — same for every user on the same date. */
 export function getDailyCard(dateStr: string): TarotCard {
   const [y, m, d] = dateStr.split('-').map(Number)
+  // UTC arithmetic so the card never rolls early/late on DST-transition days.
   const dayOfYear = Math.floor(
-    (new Date(y, m - 1, d).getTime() - new Date(y, 0, 0).getTime()) / 86400000
+    (Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 86400000
   )
   return TAROT_CARDS[(dayOfYear + 13) % 78]
 }
