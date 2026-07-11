@@ -14,3 +14,9 @@ dist-ssr
 *.tmp.*
 .DS_Store
 .vscode
+
+# Internal handoff doc — never publish
+ANDROID_HANDOFF.md
+
+# Local dev config (launch.json etc.)
+.claude/
