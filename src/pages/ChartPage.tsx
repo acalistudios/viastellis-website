@@ -6,6 +6,7 @@ import { DashaTimeline } from '@/components/chart/DashaTimeline'
 import { ReportCard } from '@/components/chart/ReportCard'
 import { NumerologySection } from '@/components/chart/NumerologySection'
 import { WesternChartView } from '@/components/chart/WesternChartView'
+import { TarotSection } from '@/components/home/TarotSection'
 import { signCuspFlag, nakshatraEdgeFlag } from '@/lib/boundaryFlags'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { InfoBubble } from '@/components/ui/InfoBubble'
@@ -49,9 +50,17 @@ function formatDegree(deg: number): string {
   return `${d}°${String(m).padStart(2, '0')}′`
 }
 
+const HUB_TABS = [
+  { key: 'chart', label: '✦ Chart' },
+  { key: 'numerology', label: '🔢 Numerology' },
+  { key: 'tarot', label: '🃏 Tarot' },
+] as const
+type HubTab = (typeof HUB_TABS)[number]['key']
+
 export function ChartPage() {
   const { session, profile } = useUser()
   const { chart, loading, error } = useNatalChart()
+  const [tab, setTab] = useState<HubTab>('chart')
   const [variant, setVariant] = useState<'D1' | 'D9'>('D1')
   // Local system view — defaults to the user's preference but can be toggled
   const [viewSystem, setViewSystem] = useState<'vedic' | 'western'>(
@@ -120,6 +129,46 @@ export function ChartPage() {
     )
   }
 
+  // Hub tab bar — Chart / Numerology / Tarot, shown above everything else on this page
+  const HubTabBar = (
+    <div className="flex justify-center gap-1 mb-6 border-b border-cosmos-800 pb-px">
+      {HUB_TABS.map(({ key, label }) => (
+        <button
+          key={key}
+          onClick={() => setTab(key)}
+          className={[
+            'px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors',
+            tab === key
+              ? 'border-stardust-400 text-stardust-300'
+              : 'border-transparent text-slate-500 hover:text-slate-300',
+          ].join(' ')}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+
+  if (tab === 'numerology') {
+    return (
+      <div className="px-5 py-8 max-w-lg mx-auto">
+        {HubTabBar}
+        <NumerologySection birthData={chart.birth_data} />
+        <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
+      </div>
+    )
+  }
+
+  if (tab === 'tarot') {
+    return (
+      <div className="px-5 py-8 max-w-lg mx-auto">
+        {HubTabBar}
+        <TarotSection chart={chart} />
+        <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
+      </div>
+    )
+  }
+
   // System toggle pill — shown on both chart views
   const SystemToggle = (
     <div className="flex justify-center mb-2">
@@ -147,6 +196,7 @@ export function ChartPage() {
   if (viewSystem === 'western') {
     return (
       <div className="px-5 py-8 max-w-lg mx-auto">
+        {HubTabBar}
         {SystemToggle}
         <WesternChartView birthData={chart.birth_data} />
       </div>
@@ -167,6 +217,7 @@ export function ChartPage() {
 
   return (
     <div className="px-5 py-8 max-w-lg mx-auto">
+      {HubTabBar}
       {SystemToggle}
       {/* Header */}
       <div className="text-center mb-6">
@@ -599,9 +650,6 @@ export function ChartPage() {
           cost={CREDIT_COSTS.report_birth_chart}
         />
       </div>
-
-      {/* Numerology */}
-      <NumerologySection birthData={chart.birth_data} />
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>
