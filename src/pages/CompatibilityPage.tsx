@@ -349,7 +349,7 @@ export function CompatibilityPage() {
         <div className="mb-8 text-center">
           <button
             onClick={() => {
-              const payload = btoa(JSON.stringify({
+              const json = JSON.stringify({
                 n: myChart.birth_data.name,
                 d: myChart.birth_data.date,
                 t: myChart.birth_data.time_unknown ? null : myChart.birth_data.time,
@@ -358,7 +358,13 @@ export function CompatibilityPage() {
                 la: myChart.birth_data.latitude,
                 lo: myChart.birth_data.longitude,
                 tz: myChart.birth_data.timezone,
-              })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+              })
+              // UTF-8 → base64url. Plain btoa() throws on non-Latin1 names/cities
+              // (e.g. "Łódź"), so encode to bytes first.
+              const bytes = new TextEncoder().encode(json)
+              let binary = ''
+              bytes.forEach(b => { binary += String.fromCharCode(b) })
+              const payload = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
               const link = `${window.location.origin}/match?d=${payload}`
               void navigator.clipboard.writeText(link)
               setError('')

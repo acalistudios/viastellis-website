@@ -21,7 +21,9 @@ function decodeInvite(d: string | null): BirthData | null {
   if (!d) return null
   try {
     const b64 = d.replace(/-/g, '+').replace(/_/g, '/')
-    const raw = JSON.parse(atob(b64))
+    // base64url → UTF-8 (mirrors the encoder, which byte-encodes before btoa).
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+    const raw = JSON.parse(new TextDecoder().decode(bytes))
     if (!raw.n || !raw.d || typeof raw.la !== 'number') return null
     return {
       name: String(raw.n),
