@@ -204,17 +204,27 @@ export function getChartSynthesis(
   ].filter(Boolean)
 
   // Personality: how the outer self, the ego, and the emotions combine.
+  const isTriple = isDouble && moon === sun
+  const moonLead = moon === 'Pisces' ? 'sensitive and dreamy' : moonTraits.keyword.split(',')[0]
   let personality: string
-  if (isDouble) {
+  if (isTriple) {
+    // Rising, Sun and Moon all in one sign — no inner/outer contrast to draw.
+    personality =
+      `With your rising sign, your Sun, and your Moon all in ${sun}, you are ${sun} through and ` +
+      `through — a rare, undiluted concentration of one energy. The way you come across, your sense ` +
+      `of purpose, and your emotional core all point the same direction: ${sunTraits.keyword}. There ` +
+      `is remarkably little gap between the mask, the intention, and the feeling underneath — what ` +
+      `people see is genuinely what you are. The gift is coherence and force; the growth edge is ` +
+      `balance, since there's little of the opposite temperament inside you to soften the ${outerTraits.element} drive.`
+  } else if (isDouble) {
     personality =
       `With both your rising sign and your Sun in ${sun}, you are a "double ${sun}" — the way you ` +
       `come across and your inner sense of purpose point the same direction, so the world tends to ` +
       `meet you exactly as you are: ${sunTraits.keyword}. There is little gap between the mask and the ` +
       `person behind it, which makes you refreshingly direct and consistent. ` +
-      `Your ${moon} Moon, however, runs a quieter undercurrent: emotionally you are ${moonTraits.keyword}. ` +
-      `So a confident, ${outerTraits.element}-driven exterior carries a ${moonTraits.element.toLowerCase()}, ` +
-      `more ${moon === 'Pisces' ? 'sensitive and dreamy' : moonTraits.keyword.split(',')[0]} interior — ` +
-      `the part of you that close people get to know.`
+      `Your ${moon} Moon, though, adds a different inner note: emotionally you are ${moonTraits.keyword}. ` +
+      `So a confident, ${outerTraits.element}-driven exterior carries a more ${moonLead}, ` +
+      `${moonTraits.element.toLowerCase()}-toned interior — the part of you that close people get to know.`
   } else {
     personality =
       `Your ${outer}${lagna ? ' rising' : ' Sun'} shapes how you meet the world — ${outerTraits.keyword}. ` +

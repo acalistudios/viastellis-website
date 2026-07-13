@@ -44,7 +44,12 @@ export function HomePage() {
   const bpRising = !timeKnown ? undefined : (isWestern ? westernChart?.ascendant.sign : chart?.ascendant.sign)
 
   // Tonight's moon phase (global — same everywhere on Earth).
-  const moonPhase = useMemo(() => getPanchanga(new Date()).moonPhase, [])
+  // Anchor to local noon of the civil day — the same reference the Calendar uses
+  // — so "today's" moon illumination matches across the app (not a live instant).
+  const moonPhase = useMemo(() => {
+    const n = new Date()
+    return getPanchanga(new Date(n.getFullYear(), n.getMonth(), n.getDate(), 12)).moonPhase
+  }, [])
 
   return (
     <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg lg:max-w-3xl mx-auto">

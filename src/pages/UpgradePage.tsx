@@ -20,6 +20,14 @@ export function UpgradePage() {
 
   const cancelled = params.get('checkout') === 'cancelled'
   const isPremium = profile?.subscription_tier === 'premium'
+  // Only trust the stored price if it matches a plan we actually display; a
+  // stale/unknown price falls back to null so we don't leave a premium user
+  // with no "Active Plan" shown.
+  const activePriceId =
+    profile?.subscription_price_id &&
+    SUBSCRIPTIONS.some(p => p.priceId && p.priceId === profile.subscription_price_id)
+      ? profile.subscription_price_id
+      : null
 
   async function choose(plan: PlanOption) {
     setError('')
@@ -84,7 +92,14 @@ export function UpgradePage() {
         <h2 className="text-slate-300 text-sm uppercase tracking-widest mt-4 mb-3">Subscribe & save</h2>
         <div className="grid sm:grid-cols-2 gap-3 mb-8">
           {SUBSCRIPTIONS.map(plan => (
-            <PlanCard key={plan.id} plan={plan} busy={busyId === plan.id} onChoose={choose} isPremium={isPremium} />
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              busy={busyId === plan.id}
+              onChoose={choose}
+              isPremium={isPremium}
+              currentPriceId={activePriceId}
+            />
           ))}
         </div>
 
@@ -148,14 +163,35 @@ function PlanCard({
   onChoose,
   compact,
   isPremium = false,
+  currentPriceId = null,
 }: {
   plan: PlanOption
   busy: boolean
   onChoose: (p: PlanOption) => void
   compact?: boolean
   isPremium?: boolean
+  currentPriceId?: string | null
 }) {
-  const isCurrent = isPremium && plan.mode === 'subscription'
+  // Only the plan the user is actually subscribed to is "current". If we can't
+  // identify their price (env mismatch), treat every subscription as current so
+  // we never offer a second subscription that would double-bill.
+  const isCurrent =
+    isPremium && plan.mode === 'subscription' &&
+    (currentPriceId ? plan.priceId === currentPriceId : true)
+  // A premium user viewing the *other* subscription tier: don't offer a direct
+  // purchase (it would create a parallel subscription) — they cancel first.
+  const otherPlanWhilePremium =
+    isPremium && plan.mode === 'subscription' && !isCurrent
+  const disabled = busy || isCurrent || otherPlanWhilePremium
+  const label = busy
+    ? 'Starting…'
+    : isCurrent
+    ? 'Active Plan'
+    : otherPlanWhilePremium
+    ? 'Cancel to switch'
+    : plan.mode === 'subscription'
+    ? 'Subscribe'
+    : 'Buy'
   return (
     <div
       className={[
@@ -174,11 +210,11 @@ function PlanCard({
       <p className="text-stardust-300 text-sm">{plan.priceLabel}</p>
       <p className={`text-slate-500 ${compact ? 'text-[11px]' : 'text-xs'} mt-1 mb-3 flex-1`}>{plan.detail}</p>
       <button
-        onClick={() => !isCurrent && onChoose(plan)}
-        disabled={busy || isCurrent}
+        onClick={() => !disabled && onChoose(plan)}
+        disabled={disabled}
         className="w-full rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-medium py-2 disabled:opacity-60 transition-opacity"
       >
-        {busy ? 'Starting…' : isCurrent ? 'Active Plan' : plan.mode === 'subscription' ? 'Subscribe' : 'Buy'}
+        {label}
       </button>
     </div>
   )

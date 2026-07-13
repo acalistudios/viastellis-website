@@ -102,7 +102,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setHasPrimaryChart(false)
       setPersonalization(DEFAULT_PERSONALIZATION)
       setMemories([])
-      setLoading(false)
+      // NOTE: do NOT setLoading(false) here. On the very first mount `session`
+      // is null before getSession() resolves; clearing loading now makes guards
+      // briefly treat a logged-in user as signed-out (flash /auth → /home on a
+      // hard load of a deep route). The getSession()/onAuthStateChange handlers
+      // above own the loading=false transition for the genuine no-session case.
       return
     }
 
