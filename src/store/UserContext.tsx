@@ -98,15 +98,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // ── Hydrate profile + chart status when the session resolves ──────────────
   useEffect(() => {
     if (!session?.user) {
-      setProfile(null)
-      setHasPrimaryChart(false)
-      setPersonalization(DEFAULT_PERSONALIZATION)
-      setMemories([])
-      // NOTE: do NOT setLoading(false) here. On the very first mount `session`
-      // is null before getSession() resolves; clearing loading now makes guards
-      // briefly treat a logged-in user as signed-out (flash /auth → /home on a
-      // hard load of a deep route). The getSession()/onAuthStateChange handlers
-      // above own the loading=false transition for the genuine no-session case.
+      // No session on THIS render. Do nothing — and in particular don't wipe the
+      // cache-hydrated profile/hasPrimaryChart/loading. On the very first mount
+      // `session` is null before getSession() resolves; clearing state here made
+      // a hard-loaded deep route (e.g. /chart) briefly see loading=false +
+      // hasPrimaryChart=false and bounce through /onboarding → /home. Genuine
+      // sign-out is handled by the onAuthStateChange listener above, which clears
+      // state and the cache. getSession()/onAuthStateChange own the loading flag.
       return
     }
 
