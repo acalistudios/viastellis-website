@@ -172,24 +172,25 @@ function PlanCard({
   isPremium?: boolean
   currentPriceId?: string | null
 }) {
-  // Only the plan the user is actually subscribed to is "current". If we can't
-  // identify their price (env mismatch), treat every subscription as current so
-  // we never offer a second subscription that would double-bill.
-  const isCurrent =
-    isPremium && plan.mode === 'subscription' &&
-    (currentPriceId ? plan.priceId === currentPriceId : true)
-  // A premium user viewing the *other* subscription tier: don't offer a direct
-  // purchase (it would create a parallel subscription) — they cancel first.
-  const otherPlanWhilePremium =
-    isPremium && plan.mode === 'subscription' && !isCurrent
-  const disabled = busy || isCurrent || otherPlanWhilePremium
+  const isSub = plan.mode === 'subscription'
+  // The exact plan the user is subscribed to (only when we can identify the price).
+  const isCurrent = isPremium && isSub && !!currentPriceId && plan.priceId === currentPriceId
+  // Premium, but we couldn't identify which tier (no/unknown price_id on the
+  // profile). Show a neutral status rather than falsely marking a specific plan.
+  const premiumUnknownPlan = isPremium && isSub && !currentPriceId
+  // The *other* tier while on a known plan: block direct purchase (it would
+  // create a parallel subscription) — they cancel first.
+  const otherPlanWhilePremium = isPremium && isSub && !!currentPriceId && !isCurrent
+  const disabled = busy || isCurrent || premiumUnknownPlan || otherPlanWhilePremium
   const label = busy
     ? 'Starting…'
     : isCurrent
     ? 'Active Plan'
+    : premiumUnknownPlan
+    ? 'Premium active'
     : otherPlanWhilePremium
     ? 'Cancel to switch'
-    : plan.mode === 'subscription'
+    : isSub
     ? 'Subscribe'
     : 'Buy'
   return (
