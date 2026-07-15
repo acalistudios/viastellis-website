@@ -17,6 +17,7 @@ export function UpgradePage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [cancelledAt, setCancelledAt] = useState<string | null>(null)
+  const [cancelError, setCancelError] = useState('')
 
   const cancelled = params.get('checkout') === 'cancelled'
   const isPremium = profile?.subscription_tier === 'premium'
@@ -42,13 +43,15 @@ export function UpgradePage() {
 
   async function handleCancel() {
     setCancelling(true)
-    setError('')
+    setCancelError('')
     try {
       const result = await cancelSubscription()
       setCancelledAt(result.cancel_at)
       setShowCancelConfirm(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not cancel. Please try again.')
+      // Show the error INLINE in the cancel box (not the top-of-page banner the
+      // user can't see from down here).
+      setCancelError(err instanceof Error ? err.message : 'Could not cancel. Please try again.')
     } finally {
       setCancelling(false)
     }
@@ -127,6 +130,11 @@ export function UpgradePage() {
                 <p className="text-slate-400 text-xs mb-4">
                   You'll keep Premium access until the end of your current billing period. You won't be charged again unless you resubscribe.
                 </p>
+                {cancelError && (
+                  <p className="text-rose-300 bg-rose-400/10 border border-rose-400/20 rounded-lg px-3 py-2 text-xs mb-4">
+                    {cancelError}
+                  </p>
+                )}
                 <div className="flex gap-3">
                   <button
                     onClick={handleCancel}
