@@ -20,3 +20,11 @@ ANDROID_HANDOFF.md
 
 # Local dev config (launch.json etc.)
 .claude/
+
+# Android Studio & Gradle
+android/.idea/
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/

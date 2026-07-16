@@ -1,4 +1,9 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { App as CapApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
+import { Capacitor } from '@capacitor/core'
+import { supabase } from '@/lib/supabase'
 import { AppShell } from '@/components/layout/AppShell'
 import { ScrollToTop } from '@/components/ScrollToTop'
 
@@ -27,6 +32,55 @@ import { BirthDataForm } from '@/features/onboarding/BirthDataForm'
 import { AuthGuard } from '@/components/layout/AuthGuard'
 
 function App() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+
+    const setupDeepLinks = async () => {
+      await CapApp.addListener('appUrlOpen', async (data) => {
+        const urlStr = data.url
+        const url = new URL(urlStr)
+        
+        await Browser.close()
+
+        const isCallback = 
+          urlStr.includes('auth-callback') || 
+          url.pathname.endsWith('/auth/callback') ||
+          url.pathname.includes('auth-callback')
+
+        if (isCallback) {
+          const code = url.searchParams.get('code')
+          if (code) {
+            const { error } = await supabase.auth.exchangeCodeForSession(code)
+            if (error) {
+              console.error('Error exchanging code for session:', error)
+            } else {
+              navigate('/home', { replace: true })
+            }
+          }
+        }
+      })
+    }
+
+    const setupBackButton = async () => {
+      await CapApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          window.history.back()
+        } else {
+          CapApp.exitApp()
+        }
+      })
+    }
+
+    setupDeepLinks()
+    setupBackButton()
+
+    return () => {
+      CapApp.removeAllListeners()
+    }
+  }, [navigate])
+
   return (
     <>
     <ScrollToTop />

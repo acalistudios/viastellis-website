@@ -5,6 +5,8 @@ import { useUser } from '@/store/UserContext'
 import { Starfield } from '@/components/ui/Starfield'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Capacitor } from '@capacitor/core'
+import { Browser } from '@capacitor/browser'
 
 type Mode = 'signin' | 'signup' | 'forgot'
 
@@ -67,6 +69,32 @@ export function AuthPage() {
     setRememberedEmails(emails)
   }
 
+  async function handleOAuth(provider: 'google' | 'facebook') {
+    setError('')
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: 'com.acalistudios.viastellis://auth-callback',
+            skipBrowserRedirect: true,
+          },
+        })
+        if (error) throw error
+        if (data?.url) {
+          await Browser.open({ url: data.url, windowName: '_self' })
+        }
+      } else {
+        await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo: `${window.location.origin}/home` },
+        })
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during authentication')
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
@@ -75,8 +103,11 @@ export function AuthPage() {
 
     try {
       if (mode === 'forgot') {
+        const redirectTo = Capacitor.isNativePlatform()
+          ? 'com.acalistudios.viastellis://auth-callback'
+          : `${window.location.origin}/reset-password`
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo,
         })
         if (error) throw error
         setMessage('Check your email for a password reset link.')
@@ -161,13 +192,7 @@ export function AuthPage() {
             <>
               <button
                 type="button"
-                onClick={async () => {
-                  setError('')
-                  await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: `${window.location.origin}/home` },
-                  })
-                }}
+                onClick={() => handleOAuth('google')}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stardust-400/20 bg-white/5 hover:bg-white/10 transition-all text-sm font-medium text-slate-200 hover:text-white"
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -180,13 +205,7 @@ export function AuthPage() {
               </button>
               <button
                 type="button"
-                onClick={async () => {
-                  setError('')
-                  await supabase.auth.signInWithOAuth({
-                    provider: 'facebook',
-                    options: { redirectTo: `${window.location.origin}/home` },
-                  })
-                }}
+                onClick={() => handleOAuth('facebook')}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stardust-400/20 bg-white/5 hover:bg-white/10 transition-all text-sm font-medium text-slate-200 hover:text-white"
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
