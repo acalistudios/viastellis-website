@@ -19,6 +19,7 @@ import { SettingsPage } from '@/pages/SettingsPage'
 import { JournalPage } from '@/pages/JournalPage'
 import { TermsPage, PrivacyPage, RefundPage, ContactPage } from '@/pages/LegalPages'
 import { ZodiacSystemsPage } from '@/pages/ZodiacSystemsPage'
+import { UnsubscribePage } from '@/pages/UnsubscribePage'
 import { PublicHoroscopesPage } from '@/pages/PublicHoroscopesPage'
 import { UpgradePage } from '@/pages/UpgradePage'
 
@@ -102,6 +103,9 @@ function App() {
       <Route path="/zodiac-systems" element={<ZodiacSystemsPage />} />
       {/* Public "Today's Horoscopes" demo — all 12 signs, no signup */}
       <Route path="/horoscopes" element={<PublicHoroscopesPage />} />
+      {/* Public: unsubscribe from the daily email. MUST work logged-out —
+          the token is the credential (see UnsubscribePage). */}
+      <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
       {/* ── Auth-gated: birth data entry (needs account, no chart yet) ── */}
       <Route

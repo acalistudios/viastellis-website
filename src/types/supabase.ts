@@ -40,6 +40,11 @@ export type Database = {
             | null
           subscription_price_id: string | null
           subscription_period_end: string | null
+          daily_email_enabled: boolean
+          daily_email_hour: number
+          timezone: string | null
+          horoscope_signs: Json
+          unsubscribe_token: string
           created_at: string
           updated_at: string
         }
@@ -181,6 +186,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      unsubscribe_daily_email: {
+        Args: { p_token: string }
+        Returns: boolean
+      }
       debit_credit: {
         Args: { p_user_id: string; p_action: string }
         Returns: boolean

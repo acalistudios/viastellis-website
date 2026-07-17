@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useUser } from '@/store/UserContext'
+import { supabase } from '@/lib/supabase'
 import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { westernSunSign } from '@/lib/westernSign'
 import { getHoroscope, type HoroscopeLens } from '@/lib/horoscope'
@@ -51,6 +52,29 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
       ? western
       : lens === 'vedic_moon' ? moonSign
       : undefined
+
+  // Charts are computed here on the client, so the server has no idea which
+  // daily_horoscopes row belongs to this user. Persist the signs (and the
+  // browser timezone) so the daily email can find the right reading and send at
+  // the user's local hour. Fire-and-forget; only writes when something changed.
+  useEffect(() => {
+    if (!profile || !western) return
+    const have = (profile.horoscope_signs ?? {}) as Record<string, string>
+    const want: Record<string, string> = { western_sun: western }
+    if (moonSign) want.vedic_moon = moonSign
+
+    let tz: string | null = null
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null } catch { /* ignore */ }
+
+    const signsChanged = Object.entries(want).some(([k, v]) => have[k] !== v)
+    const tzChanged = !!tz && profile.timezone !== tz
+    if (!signsChanged && !tzChanged) return
+
+    const patch: { horoscope_signs?: Record<string, string>; timezone?: string } = {}
+    if (signsChanged) patch.horoscope_signs = { ...have, ...want }
+    if (tzChanged && tz) patch.timezone = tz
+    void supabase.from('profiles').update(patch).eq('id', profile.id)
+  }, [profile, western, moonSign])
 
   const costFor = (lens: HoroscopeLens) =>
     lens === 'personalized' ? 2 : lens === defaultLens ? 0 : 1

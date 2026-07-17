@@ -12,6 +12,20 @@ export interface UserProfile {
   default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
   chart_system: 'vedic' | 'western'
   stella_persona: 'stoic' | 'sassy' | 'warm'
+  /** Daily horoscope email — opt-in, OFF until the user explicitly enables it. */
+  daily_email_enabled: boolean
+  /** Local hour (0–23) to send the daily email. */
+  daily_email_hour: number
+  /** IANA timezone (e.g. 'America/Denver'); null until the browser reports it. */
+  timezone: string | null
+  /**
+   * The user's sign per lens, e.g. {"western_sun":"Aries","vedic_moon":"Pisces"}.
+   * Charts are computed client-side, so this is the only way the server can pick
+   * the right daily_horoscopes row when sending the email.
+   */
+  horoscope_signs: Partial<Record<'western_sun' | 'vedic_moon' | 'vedic_sun', string>>
+  /** Per-user token powering the login-free unsubscribe link. */
+  unsubscribe_token: string
   created_at: string
 }
 

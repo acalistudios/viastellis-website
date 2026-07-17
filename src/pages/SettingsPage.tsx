@@ -24,6 +24,35 @@ export function SettingsPage() {
   const [chartSaved, setChartSaved] = useState(false)
   const [persona, setPersona] = useState<'warm' | 'stoic' | 'sassy'>(profile?.stella_persona ?? 'warm')
   const [personaSaved, setPersonaSaved] = useState(false)
+  // Daily email — opt-in, so default to false when the profile hasn't loaded.
+  const [dailyEmail, setDailyEmail] = useState<boolean>(profile?.daily_email_enabled ?? false)
+  const [dailyHour, setDailyHour] = useState<number>(profile?.daily_email_hour ?? 8)
+  const [dailyEmailSaved, setDailyEmailSaved] = useState(false)
+
+  async function handleDailyEmailChange(enabled: boolean) {
+    setDailyEmail(enabled)
+    setDailyEmailSaved(false)
+    if (!user) return
+    // Capture the browser timezone on opt-in so we can send at their local hour
+    // (without it the server can't schedule and simply won't send).
+    let tz: string | null = null
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null } catch { /* ignore */ }
+    const patch: { daily_email_enabled: boolean; timezone?: string } = { daily_email_enabled: enabled }
+    if (enabled && tz) patch.timezone = tz
+    const { error } = await supabase.from('profiles').update(patch).eq('id', user.id)
+    if (!error) setDailyEmailSaved(true)
+  }
+
+  async function handleDailyHourChange(hour: number) {
+    setDailyHour(hour)
+    setDailyEmailSaved(false)
+    if (!user) return
+    const { error } = await supabase
+      .from('profiles')
+      .update({ daily_email_hour: hour })
+      .eq('id', user.id)
+    if (!error) setDailyEmailSaved(true)
+  }
 
   async function handlePersonaChange(value: 'warm' | 'stoic' | 'sassy') {
     setPersona(value)
@@ -138,6 +167,57 @@ export function SettingsPage() {
           ))}
         </div>
         {personaSaved && <p className="text-emerald-400 text-xs mt-2">Saved ✓</p>}
+      </div>
+
+      {/* Daily horoscope email — opt-in, off unless the user asks for it */}
+      <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-6">
+        <p className="text-slate-300 text-sm font-medium mb-1">Daily horoscope email</p>
+        <p className="text-slate-500 text-xs mb-3">
+          One email each morning with your horoscope and a nudge to flip your free tarot card.
+          Nothing else — no marketing, no sharing your address. Turn it off any time, here or
+          from a link in any email.
+        </p>
+
+        <label className={[
+          'flex items-start gap-3 rounded-xl border px-4 py-2.5 cursor-pointer transition-colors text-sm',
+          dailyEmail
+            ? 'border-stardust-400/50 bg-stardust-400/10 text-stardust-200'
+            : 'border-cosmos-700 text-slate-300 hover:border-cosmos-600',
+        ].join(' ')}>
+          <input
+            type="checkbox"
+            checked={dailyEmail}
+            onChange={(e) => void handleDailyEmailChange(e.target.checked)}
+            className="accent-stardust-400 mt-0.5"
+          />
+          <span>
+            <span className="block">Email me my daily horoscope</span>
+            <span className="block text-slate-500 text-xs mt-0.5">
+              Sent to {profile?.email ?? 'your account email'}
+            </span>
+          </span>
+        </label>
+
+        {dailyEmail && (
+          <div className="mt-3 flex items-center gap-2">
+            <label htmlFor="daily-email-hour" className="text-slate-400 text-xs">Send around</label>
+            <select
+              id="daily-email-hour"
+              value={dailyHour}
+              onChange={(e) => void handleDailyHourChange(Number(e.target.value))}
+              className="bg-cosmos-800 border border-cosmos-700 rounded-lg text-slate-200 text-xs px-2 py-1.5"
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <option key={h} value={h}>
+                  {h === 0 ? '12 AM' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h - 12} PM`}
+                </option>
+              ))}
+            </select>
+            <span className="text-slate-500 text-xs">your local time</span>
+          </div>
+        )}
+
+        {dailyEmailSaved && <p className="text-emerald-400 text-xs mt-2">Saved ✓</p>}
       </div>
 
       {/* Personalization — mode, pronouns, focus, memories, and the intake flow */}
