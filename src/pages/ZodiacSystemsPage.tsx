@@ -5,10 +5,17 @@
  */
 
 import { Link } from 'react-router-dom'
+import { Seo } from '@/components/Seo'
 
 export function ZodiacSystemsPage() {
   return (
     <div className="min-h-screen bg-cosmos-950 text-slate-300">
+      <Seo
+        title="Vedic vs Western Astrology: What's the Difference?"
+        description="Sidereal vs tropical zodiac, why your Vedic and Western signs differ, nakshatras, houses, and which system to read. A clear, side-by-side explainer."
+        path="/zodiac-systems"
+        type="article"
+      />
       <div className="max-w-3xl mx-auto px-6 py-12">
         <Link to="/chart" className="text-stardust-400 hover:text-stardust-300 text-sm">
           ← Back

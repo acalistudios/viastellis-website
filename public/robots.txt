@@ -1,0 +1,30 @@
+# ViaStellis — https://viastellis.com
+# Public marketing/content pages are crawlable. Auth-gated app screens and
+# utility routes are not (they render nothing useful to a crawler).
+
+User-agent: *
+Allow: /$
+Allow: /horoscopes
+Allow: /zodiac-systems
+Allow: /terms
+Allow: /privacy
+Allow: /refund
+Allow: /contact
+
+# Auth-gated app + utility routes — no value to index
+Disallow: /home
+Disallow: /chart
+Disallow: /calendar
+Disallow: /compatibility
+Disallow: /decision
+Disallow: /stella
+Disallow: /settings
+Disallow: /journal
+Disallow: /upgrade
+Disallow: /onboarding
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /unsubscribe
+Disallow: /match
+
+Sitemap: https://viastellis.com/sitemap.xml

@@ -1,0 +1,64 @@
+/**
+ * Seo — per-route <title>, meta description, canonical, and Open Graph tags.
+ *
+ * Dependency-free (no react-helmet): a small effect that updates the document
+ * head on mount. Googlebot renders JS and picks these up, so each public route
+ * can present its own title/description/social card instead of the single
+ * static one in index.html.
+ *
+ * Use on PUBLIC / indexable routes (landing, horoscopes, explainer, legal,
+ * future concept & tool pages). Auth-gated app screens don't need it.
+ */
+
+import { useEffect } from 'react'
+
+const SITE = 'https://viastellis.com'
+const DEFAULT_OG_IMAGE = `${SITE}/stella-hero.png`
+
+interface SeoProps {
+  title: string
+  description: string
+  /** Path only, e.g. "/zodiac-systems". Used for canonical + og:url. */
+  path: string
+  image?: string
+  /** Defaults to 'website'; use 'article' for concept/blog pages. */
+  type?: 'website' | 'article'
+  /** Set true for thin/duplicate/utility pages you don't want indexed. */
+  noindex?: boolean
+}
+
+/** Create or update a <meta>/<link> in <head>, keyed by an attribute. */
+function upsert(selector: string, attrs: Record<string, string>) {
+  let el = document.head.querySelector<HTMLElement>(selector)
+  if (!el) {
+    el = document.createElement(selector.startsWith('link') ? 'link' : 'meta')
+    document.head.appendChild(el)
+  }
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
+}
+
+export function Seo({ title, description, path, image = DEFAULT_OG_IMAGE, type = 'website', noindex = false }: SeoProps) {
+  useEffect(() => {
+    const url = `${SITE}${path}`
+    const fullTitle = title.includes('ViaStellis') ? title : `${title} · ViaStellis`
+
+    document.title = fullTitle
+    upsert('meta[name="description"]', { name: 'description', content: description })
+    upsert('link[rel="canonical"]', { rel: 'canonical', href: url })
+    upsert('meta[name="robots"]', { name: 'robots', content: noindex ? 'noindex,follow' : 'index,follow' })
+
+    // Open Graph
+    upsert('meta[property="og:title"]', { property: 'og:title', content: fullTitle })
+    upsert('meta[property="og:description"]', { property: 'og:description', content: description })
+    upsert('meta[property="og:url"]', { property: 'og:url', content: url })
+    upsert('meta[property="og:type"]', { property: 'og:type', content: type })
+    upsert('meta[property="og:image"]', { property: 'og:image', content: image })
+
+    // Twitter
+    upsert('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle })
+    upsert('meta[name="twitter:description"]', { name: 'twitter:description', content: description })
+    upsert('meta[name="twitter:image"]', { name: 'twitter:image', content: image })
+  }, [title, description, path, image, type, noindex])
+
+  return null
+}

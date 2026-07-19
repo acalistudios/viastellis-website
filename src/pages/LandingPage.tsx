@@ -6,6 +6,7 @@
  */
 
 import { Link } from 'react-router-dom'
+import { Seo } from '@/components/Seo'
 import { Starfield } from '@/components/ui/Starfield'
 import { useUser } from '@/store/UserContext'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
@@ -62,6 +63,11 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-100 relative overflow-hidden">
+      <Seo
+        title="ViaStellis — Vedic & Western Astrology, Guided by AI"
+        description="Your birth chart in both Vedic and Western astrology, with daily horoscopes, tarot, compatibility, and Stella — your AI astrologer. Free to start, no credit card."
+        path="/"
+      />
       <Starfield count={150} />
 
       {/* Header */}

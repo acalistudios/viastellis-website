@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Starfield } from '@/components/ui/Starfield'
+import { Seo } from '@/components/Seo'
 import { useUser } from '@/store/UserContext'
 import { getPublicHoroscopes, type HoroscopeSystem, type PublicHoroscope } from '@/lib/publicHoroscopes'
 
@@ -67,6 +68,11 @@ export function PublicHoroscopesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-200 relative overflow-hidden">
+      <Seo
+        title="Today's Horoscopes — All 12 Signs (Vedic & Western)"
+        description="Free daily horoscopes for every zodiac sign, in both Vedic (Moon-sign) and Western (Sun-sign) astrology. No sign-up required — read today's reading for your sign."
+        path="/horoscopes"
+      />
       <Starfield count={90} />
 
       {/* Nav bar */}
