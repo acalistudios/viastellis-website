@@ -22,6 +22,7 @@ import { ZodiacSystemsPage } from '@/pages/ZodiacSystemsPage'
 import { UnsubscribePage } from '@/pages/UnsubscribePage'
 import { PublicHoroscopesPage } from '@/pages/PublicHoroscopesPage'
 import { FreeBirthChartPage } from '@/pages/FreeBirthChartPage'
+import { CompatibilityCalculatorPage } from '@/pages/CompatibilityCalculatorPage'
 import { LearnPage } from '@/pages/LearnPage'
 import { ConceptPage } from '@/pages/ConceptPage'
 import { UpgradePage } from '@/pages/UpgradePage'
@@ -108,6 +109,7 @@ function App() {
       <Route path="/horoscopes" element={<PublicHoroscopesPage />} />
       {/* Public SEO/top-of-funnel: free chart tool + concept hub */}
       <Route path="/free-birth-chart" element={<FreeBirthChartPage />} />
+      <Route path="/compatibility-calculator" element={<CompatibilityCalculatorPage />} />
       <Route path="/learn" element={<LearnPage />} />
       <Route path="/learn/:slug" element={<ConceptPage />} />
       {/* Public: unsubscribe from the daily email. MUST work logged-out —

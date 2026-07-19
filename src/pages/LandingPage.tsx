@@ -288,6 +288,8 @@ export function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs mb-5 text-slate-400">
             <Link to="/free-birth-chart" className="hover:text-stardust-300 transition-colors">Free birth chart</Link>
             <span className="text-cosmos-700">·</span>
+            <Link to="/compatibility-calculator" className="hover:text-stardust-300 transition-colors">Compatibility</Link>
+            <span className="text-cosmos-700">·</span>
             <Link to="/horoscopes" className="hover:text-stardust-300 transition-colors">Today's horoscopes</Link>
             <span className="text-cosmos-700">·</span>
             <Link to="/learn" className="hover:text-stardust-300 transition-colors">Learn astrology</Link>

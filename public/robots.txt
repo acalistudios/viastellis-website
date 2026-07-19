@@ -6,6 +6,7 @@ User-agent: *
 Allow: /$
 Allow: /horoscopes
 Allow: /free-birth-chart
+Allow: /compatibility-calculator
 Allow: /learn
 Allow: /zodiac-systems
 Allow: /terms

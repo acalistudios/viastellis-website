@@ -18,6 +18,29 @@
     <meta name="twitter:title" content="ViaStellis — Vedic &amp; Western Astrology, Guided by AI" />
     <meta name="twitter:description" content="Your birth chart in Vedic and Western astrology, plus daily horoscopes, tarot, and an AI astrologer. Free to start." />
     <meta name="twitter:image" content="https://viastellis.com/stella-hero.png" />
+    <!-- Structured data: brand + site search (static so non-JS crawlers see it) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://viastellis.com/#org",
+          "name": "ViaStellis",
+          "url": "https://viastellis.com/",
+          "logo": "https://viastellis.com/logo.svg",
+          "description": "Vedic and Western astrology with daily horoscopes, tarot, compatibility, and Stella, an AI astrologer."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://viastellis.com/#website",
+          "url": "https://viastellis.com/",
+          "name": "ViaStellis",
+          "publisher": { "@id": "https://viastellis.com/#org" }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
