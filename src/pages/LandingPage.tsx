@@ -284,6 +284,16 @@ export function LandingPage() {
       {/* Footer */}
       <footer className="px-6 py-12 border-t border-stardust-400/20 relative z-10 bg-gradient-to-t from-[#0a0e27]/40 to-transparent">
         <div className="max-w-6xl mx-auto text-center text-sm text-slate-500">
+          {/* Free tools & guides — public, indexable entry points */}
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs mb-5 text-slate-400">
+            <Link to="/free-birth-chart" className="hover:text-stardust-300 transition-colors">Free birth chart</Link>
+            <span className="text-cosmos-700">·</span>
+            <Link to="/horoscopes" className="hover:text-stardust-300 transition-colors">Today's horoscopes</Link>
+            <span className="text-cosmos-700">·</span>
+            <Link to="/learn" className="hover:text-stardust-300 transition-colors">Learn astrology</Link>
+            <span className="text-cosmos-700">·</span>
+            <Link to="/zodiac-systems" className="hover:text-stardust-300 transition-colors">Vedic vs Western</Link>
+          </div>
           <p className="mb-4">{ENTERTAINMENT_DISCLAIMER}</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
             <Link to="/auth" className="hover:text-stardust-400 transition-colors">

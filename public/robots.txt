@@ -5,6 +5,8 @@
 User-agent: *
 Allow: /$
 Allow: /horoscopes
+Allow: /free-birth-chart
+Allow: /learn
 Allow: /zodiac-systems
 Allow: /terms
 Allow: /privacy
