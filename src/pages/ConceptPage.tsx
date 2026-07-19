@@ -14,6 +14,29 @@ export function ConceptPage() {
   // Unknown slug → send to the hub (keeps crawlers off dead URLs).
   if (!concept) return <Navigate to="/learn" replace />
 
+  const url = `https://viastellis.com/learn/${concept.slug}`
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Article',
+        headline: concept.seoTitle,
+        description: concept.seoDescription,
+        about: `${concept.tradition} astrology`,
+        mainEntityOfPage: url,
+        author: { '@type': 'Organization', name: 'ViaStellis', url: 'https://viastellis.com/' },
+        publisher: { '@id': 'https://viastellis.com/#org' },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Learn', item: 'https://viastellis.com/learn' },
+          { '@type': 'ListItem', position: 2, name: concept.title, item: url },
+        ],
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-cosmos-950 text-slate-300">
       <Seo
@@ -21,6 +44,7 @@ export function ConceptPage() {
         description={concept.seoDescription}
         path={`/learn/${concept.slug}`}
         type="article"
+        jsonLd={jsonLd}
       />
       <article className="max-w-2xl mx-auto px-6 py-12">
         <nav className="text-sm text-slate-500 mb-6">

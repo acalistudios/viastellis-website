@@ -104,6 +104,16 @@ export function FreeBirthChartPage() {
         title="Free Birth Chart — Vedic & Western (No Sign-Up)"
         description="Get your free birth chart instantly in both Vedic and Western astrology. See your Sun, Moon and Rising signs, plus your Vedic Moon nakshatra — no account needed."
         path="/free-birth-chart"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'Free Birth Chart Calculator',
+          applicationCategory: 'LifestyleApplication',
+          operatingSystem: 'Web',
+          url: 'https://viastellis.com/free-birth-chart',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          publisher: { '@id': 'https://viastellis.com/#org' },
+        }}
       />
       <Starfield count={90} />
 

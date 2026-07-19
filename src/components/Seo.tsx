@@ -25,6 +25,8 @@ interface SeoProps {
   type?: 'website' | 'article'
   /** Set true for thin/duplicate/utility pages you don't want indexed. */
   noindex?: boolean
+  /** Optional JSON-LD structured data for this route (schema.org object/array). */
+  jsonLd?: object
 }
 
 /** Create or update a <meta>/<link> in <head>, keyed by an attribute. */
@@ -37,7 +39,7 @@ function upsert(selector: string, attrs: Record<string, string>) {
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
 }
 
-export function Seo({ title, description, path, image = DEFAULT_OG_IMAGE, type = 'website', noindex = false }: SeoProps) {
+export function Seo({ title, description, path, image = DEFAULT_OG_IMAGE, type = 'website', noindex = false, jsonLd }: SeoProps) {
   useEffect(() => {
     const url = `${SITE}${path}`
     const fullTitle = title.includes('ViaStellis') ? title : `${title} · ViaStellis`
@@ -58,7 +60,20 @@ export function Seo({ title, description, path, image = DEFAULT_OG_IMAGE, type =
     upsert('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle })
     upsert('meta[name="twitter:description"]', { name: 'twitter:description', content: description })
     upsert('meta[name="twitter:image"]', { name: 'twitter:image', content: image })
-  }, [title, description, path, image, type, noindex])
+
+    // Per-route JSON-LD (a single <script> we manage; removed on unmount so
+    // one route's schema never leaks onto the next).
+    const SCRIPT_ID = 'route-jsonld'
+    document.getElementById(SCRIPT_ID)?.remove()
+    if (jsonLd) {
+      const s = document.createElement('script')
+      s.type = 'application/ld+json'
+      s.id = SCRIPT_ID
+      s.textContent = JSON.stringify(jsonLd)
+      document.head.appendChild(s)
+    }
+    return () => { document.getElementById(SCRIPT_ID)?.remove() }
+  }, [title, description, path, image, type, noindex, jsonLd])
 
   return null
 }

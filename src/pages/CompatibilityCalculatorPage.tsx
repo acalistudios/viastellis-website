@@ -82,6 +82,16 @@ export function CompatibilityCalculatorPage() {
         title="Free Astrology Compatibility Calculator (Vedic Moon-Sign Match)"
         description="Check your compatibility with anyone by birth date — a Vedic Moon-sign and nakshatra based love match with a score and breakdown. Free, instant, no sign-up."
         path="/compatibility-calculator"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'Astrology Compatibility Calculator',
+          applicationCategory: 'LifestyleApplication',
+          operatingSystem: 'Web',
+          url: 'https://viastellis.com/compatibility-calculator',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          publisher: { '@id': 'https://viastellis.com/#org' },
+        }}
       />
       <Starfield count={90} />
 
