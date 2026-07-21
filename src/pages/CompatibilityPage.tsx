@@ -6,7 +6,7 @@
  * Edge Function — degrades gracefully if not deployed).
  */
 
-import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { useNatalChart } from '@/hooks/useNatalChart'
@@ -30,6 +30,42 @@ interface HistoryItem {
   summary: string | null
   created_at: string
   partnerName: string
+}
+
+interface CelebrityMatch {
+  celebrity: (typeof CELEBRITIES)[number]
+  chart: NatalChart
+  vibe: VibeResult
+  sunSign: string
+  moonSign: string
+  bestSignal: string
+  tier: string
+}
+
+function formatBirthday(date: string): string {
+  return new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function matchTier(score: number): string {
+  if (score >= 85) return 'Excellent'
+  if (score >= 75) return 'Strong'
+  if (score >= 65) return 'Easy'
+  if (score >= 50) return 'Interesting'
+  return 'Growth edge'
+}
+
+function bestSignal(vibe: VibeResult): string {
+  const firstHighlight = vibe.highlights[0] ?? ''
+  if (firstHighlight.startsWith('Moons')) return 'Emotional rhythm'
+  if (firstHighlight.startsWith('Sun')) return 'Shared temperament'
+  if (firstHighlight.startsWith('Venus')) return 'Creative spark'
+  if (vibe.tensions.some(t => t.startsWith('Moons'))) return 'Emotional growth'
+  if (vibe.tensions.some(t => t.startsWith('Venus'))) return 'Chemistry lesson'
+  return 'Balanced mix'
 }
 
 export function CompatibilityPage() {
@@ -74,6 +110,25 @@ export function CompatibilityPage() {
   }, [user])
 
   useEffect(() => { void loadHistory() }, [loadHistory])
+
+  const celebrityMatches = useMemo<CelebrityMatch[]>(() => {
+    if (!myChart) return []
+    return CELEBRITIES
+      .map((celebrity) => {
+        const chart = calculateNatalChart(celebrity)
+        const vibe = computeVibeScore(myChart, chart)
+        return {
+          celebrity,
+          chart,
+          vibe,
+          sunSign: chart.planets.find(p => p.planet === 'Sun')?.sign ?? 'Unknown',
+          moonSign: chart.planets.find(p => p.planet === 'Moon')?.sign ?? 'Unknown',
+          bestSignal: bestSignal(vibe),
+          tier: matchTier(vibe.score),
+        }
+      })
+      .sort((a, b) => b.vibe.score - a.vibe.score || a.celebrity.name.localeCompare(b.celebrity.name))
+  }, [myChart])
 
   /** Persist person B as a saved (non-primary) chart + the report row. */
   async function saveReport(birthDataB: BirthData, vibe: VibeResult, summary: string) {
@@ -148,6 +203,22 @@ export function CompatibilityPage() {
       longitude: city.longitude,
       timezone,
     })
+  }
+
+  function compareCelebrity(celebrity: (typeof CELEBRITIES)[number]) {
+    setName(celebrity.name)
+    setDate(celebrity.date)
+    setTime('')
+    setCityQuery(`${celebrity.city}, ${celebrity.country}`)
+    setCity({
+      city: celebrity.city,
+      country: celebrity.country,
+      display_name: `${celebrity.city}, ${celebrity.country}`,
+      latitude: celebrity.latitude,
+      longitude: celebrity.longitude,
+    })
+    setCityResults([])
+    void runMatch(celebrity)
   }
 
   async function runMatch(birthDataB: BirthData) {
@@ -317,32 +388,76 @@ export function CompatibilityPage() {
         </Button>
       </form>
 
-      {/* Celebrity picker */}
-      <div className="mb-6">
-        <p className="text-[11px] uppercase tracking-widest text-slate-600 text-center mb-3">
-          — or vibe with a star —
-        </p>
-        <select
-          defaultValue=""
-          onChange={e => {
-            const celeb = CELEBRITIES.find(c => c.name === e.target.value)
-            if (celeb) {
-              setName(celeb.name)
-              void runMatch(celeb)
-            }
-            e.target.value = ''
-          }}
-          className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:border-stardust-400"
-        >
-          <option value="" disabled>Pick a celebrity…</option>
-          {CELEBRITIES.map(c => (
-            <option key={c.name} value={c.name}>{c.emoji} {c.name}</option>
-          ))}
-        </select>
-        <p className="text-[10px] text-slate-600 mt-1.5 text-center">
-          Celebrity charts use public birth dates without birth times (Moon-based reading).
-        </p>
-      </div>
+      {/* Celebrity matches */}
+      {celebrityMatches.length > 0 && (
+        <section className="mb-8 bg-cosmos-900 border border-cosmos-700 rounded-2xl overflow-hidden">
+          <div className="px-4 py-4 border-b border-cosmos-800">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl text-stardust-300">Celebrity Matches</h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Ranked against your chart using the same Vibe Match scoring.
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-stardust-400/30 px-3 py-1 text-[10px] uppercase tracking-wider text-stardust-300">
+                Top {Math.min(celebrityMatches.length, 10)}
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-[620px] w-full text-left text-xs">
+              <thead className="text-slate-500 uppercase tracking-wider bg-cosmos-950/40">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Celebrity</th>
+                  <th className="px-3 py-3 font-medium">Birthday</th>
+                  <th className="px-3 py-3 font-medium">Sun</th>
+                  <th className="px-3 py-3 font-medium">Moon</th>
+                  <th className="px-3 py-3 font-medium">Score</th>
+                  <th className="px-3 py-3 font-medium">Best signal</th>
+                  <th className="px-4 py-3 font-medium text-right">Compare</th>
+                </tr>
+              </thead>
+              <tbody>
+                {celebrityMatches.slice(0, 10).map(match => (
+                  <tr key={match.celebrity.name} className="border-t border-cosmos-800/80">
+                    <td className="px-4 py-3">
+                      <p className="text-slate-200 text-sm whitespace-nowrap">
+                        <span aria-hidden="true">{match.celebrity.emoji}</span> {match.celebrity.name}
+                      </p>
+                      <p className="text-[10px] text-slate-600 whitespace-nowrap">
+                        {match.tier} match
+                      </p>
+                    </td>
+                    <td className="px-3 py-3 text-slate-400 whitespace-nowrap">
+                      {formatBirthday(match.celebrity.date)}
+                    </td>
+                    <td className="px-3 py-3 text-slate-300">{match.sunSign}</td>
+                    <td className="px-3 py-3 text-slate-300">{match.moonSign}</td>
+                    <td className="px-3 py-3">
+                      <span className="font-display text-xl text-stardust-300">{match.vibe.score}</span>
+                    </td>
+                    <td className="px-3 py-3 text-slate-400 whitespace-nowrap">{match.bestSignal}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => compareCelebrity(match.celebrity)}
+                        className="rounded-full border border-stardust-400/30 px-3 py-1.5 text-[11px] font-medium text-stardust-300 hover:border-stardust-400/70 hover:text-stardust-200 transition-colors"
+                      >
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="px-4 py-3 border-t border-cosmos-800 text-[10px] text-slate-600">
+            Celebrity charts use public birthdays and city-level birthplaces. Birth times are marked unknown, so Rising signs and house-based precision are intentionally excluded.
+          </p>
+        </section>
+      )}
 
       {/* Partner invite link */}
       {myChart && (
