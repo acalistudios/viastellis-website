@@ -15,6 +15,7 @@ import { Starfield } from '@/components/ui/Starfield'
 import { calculateNatalChart } from '@/lib/ephemeris'
 import { calculateWesternChart } from '@/lib/westernChart'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
+import { trackEvent } from '@/lib/analytics'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData } from '@/types'
 
@@ -76,6 +77,10 @@ export function FreeBirthChartPage() {
       const unknown = birthData.time_unknown
 
       const vMoon = vedic.planets.find(p => p.planet === 'Moon')
+      trackEvent('free_chart_complete', {
+        source_page: 'free_birth_chart',
+        time_unknown: unknown,
+      })
       setResult({
         name: birthData.name,
         timeUnknown: unknown,
@@ -217,6 +222,7 @@ export function FreeBirthChartPage() {
                 plus a daily horoscope tuned to you, tarot, compatibility, and Stella, your AI astrologer.
               </p>
               <Link to="/auth"
+                onClick={() => trackEvent('signup_cta_click', { source_page: 'free_birth_chart_result' })}
                 className="inline-block rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold px-6 py-2.5">
                 Create my free account →
               </Link>

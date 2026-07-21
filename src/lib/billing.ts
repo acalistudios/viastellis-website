@@ -4,6 +4,7 @@
  */
 
 import { supabase } from './supabase'
+import { trackEvent } from './analytics'
 
 const PROXY_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
@@ -40,6 +41,7 @@ export async function startCheckout(priceId: string, mode: 'subscription' | 'pay
   const { url } = (await res.json()) as { url?: string }
   if (!url) throw new Error('Could not start checkout. Please try again.')
 
+  trackEvent('checkout_start', { mode })
   window.location.href = url
 }
 

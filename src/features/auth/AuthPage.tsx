@@ -5,6 +5,7 @@ import { useUser } from '@/store/UserContext'
 import { Starfield } from '@/components/ui/Starfield'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { trackEvent } from '@/lib/analytics'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
 
@@ -71,6 +72,7 @@ export function AuthPage() {
 
   async function handleOAuth(provider: 'google' | 'facebook') {
     setError('')
+    trackEvent('auth_oauth_start', { provider })
     try {
       if (Capacitor.isNativePlatform()) {
         const { data, error } = await supabase.auth.signInWithOAuth({
@@ -114,6 +116,7 @@ export function AuthPage() {
       } else if (mode === 'signup') {
         const { error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
+        trackEvent('signup_submit', { method: 'email' })
         if (rememberEmail) saveEmail(email)
         setMessage('Check your email to confirm your account, then sign in.')
         setMode('signin')

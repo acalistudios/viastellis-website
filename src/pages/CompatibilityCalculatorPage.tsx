@@ -16,6 +16,7 @@ import { Starfield } from '@/components/ui/Starfield'
 import { calculateNatalChart } from '@/lib/ephemeris'
 import { computeVibeScore, type VibeResult } from '@/lib/vibe'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
+import { trackEvent } from '@/lib/analytics'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData } from '@/types'
 
@@ -65,6 +66,9 @@ export function CompatibilityCalculatorPage() {
         calculateNatalChart(toBirthData(a, 'Person A')),
         calculateNatalChart(toBirthData(b, 'Person B')),
       )
+      trackEvent('compatibility_check_complete', {
+        score_band: vibe.score >= 70 ? 'high' : vibe.score >= 45 ? 'medium' : 'low',
+      })
       setResult(vibe)
     } catch {
       setError('Something went wrong. Double-check both dates and cities.')
@@ -155,7 +159,11 @@ export function CompatibilityCalculatorPage() {
                 Create a free account for Stella's in-depth narrative reading of your connection —
                 communication, values, friction and flow — plus your own full chart.
               </p>
-              <Link to="/auth" className="inline-block rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold px-6 py-2.5">
+              <Link
+                to="/auth"
+                onClick={() => trackEvent('signup_cta_click', { source_page: 'compatibility_result' })}
+                className="inline-block rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold px-6 py-2.5"
+              >
                 Get the full reading →
               </Link>
               <button onClick={() => setResult(null)} className="block mx-auto mt-3 text-slate-500 hover:text-slate-300 text-xs underline">
