@@ -114,8 +114,20 @@ export function AuthPage() {
         if (error) throw error
         setMessage('Check your email for a password reset link.')
       } else if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email, password })
+        const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) throw error
+
+        // Supabase avoids account enumeration by returning a successful-looking
+        // response for already-registered emails when email confirmation is on.
+        // In that case the returned user has no identities, so show the user the
+        // useful next step instead of promising a confirmation email that will not arrive.
+        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          setMode('signin')
+          setPassword('')
+          setError('An account already exists for this email. Please sign in instead.')
+          return
+        }
+
         trackEvent('signup_submit', { method: 'email' })
         if (rememberEmail) saveEmail(email)
         setMessage('Check your email to confirm your account, then sign in.')
