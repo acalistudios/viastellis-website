@@ -7,6 +7,7 @@ Start with high-intent Google Search traffic and send visitors to public content
 Primary landing pages:
 
 - `https://viastellis.com/horoscopes`
+- `https://viastellis.com/match`
 
 Initial budget:
 
@@ -88,42 +89,43 @@ Read today's free horoscopes for all 12 signs in both Vedic and Western astrolog
 Start with a free daily reading, then create an account for your full birth chart.
 ```
 
-## Campaign 2: Full Chart Signup
+## Campaign 2: Free Compatibility Match
 
 Landing page:
 
 ```text
-https://viastellis.com/auth?utm_source=google&utm_medium=cpc&utm_campaign=full_chart_search
+https://viastellis.com/match?utm_source=google&utm_medium=cpc&utm_campaign=free_match_search
 ```
 
-Ad group: Free Birth Chart Signup
+Ad group: Astrology Compatibility
 
 Keywords:
 
 ```text
-"free birth chart"
-"vedic birth chart"
-"western birth chart"
-"birth chart calculator"
-"astrology birth chart"
-"natal chart"
+"astrology compatibility"
+"zodiac compatibility"
+"birth chart compatibility"
+"love compatibility astrology"
+"free compatibility test"
+"celebrity compatibility"
+"zodiac compatibility test"
 ```
 
 Headlines:
 
 ```text
-Free Astrology Birth Chart
-Vedic + Western Chart
-Create Your Birth Chart
-Personal Astrology App
-Start Free Today
+Free Compatibility Match
+Astrology Compatibility
+Compare Two Birth Charts
+Try Celebrity Matches
+No Sign Up Required
 ```
 
 Descriptions:
 
 ```text
-Create a free account for your full Vedic and Western birth chart, daily readings, tarot, and compatibility.
-Start with your chart and explore personalized astrology in ViaStellis.
+Enter two birth profiles and get a free Vibe Score with astrology-based compatibility signals.
+Compare yourself with a partner, friend, or celebrity. Create a free account for your full chart.
 ```
 
 ## Negative Keywords

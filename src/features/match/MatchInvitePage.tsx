@@ -194,8 +194,8 @@ export function MatchInvitePage() {
           <div className="text-center mb-8">
             <h1 className="font-display text-4xl text-stardust-300 mb-3">Free Compatibility Match</h1>
             <p className="text-slate-400 text-sm max-w-lg mx-auto">
-              Enter two birth profiles to see a no-login Vibe Score. Create an account when you want
-              the full chart, saved matches, Stella's deeper reading, and celebrity comparisons.
+              Enter two birth profiles to see a no-login Vibe Score. Create a free account when
+              you want your full birth chart, saved matches, Stella's deeper reading, and celebrity comparisons.
             </p>
           </div>
 
@@ -241,10 +241,10 @@ export function MatchInvitePage() {
                 <p className="text-slate-300"><span className="text-stardust-400">♀♂ Spark:</span> {publicVibe.venusMars.label}</p>
               </div>
               <Link to="/auth">
-                <Button size="lg">Unlock the full reading</Button>
+                <Button size="lg">Get my full chart free</Button>
               </Link>
               <p className="text-slate-600 text-[11px] mt-3">
-                Free account includes your full chart, saved compatibility, celebrity matches, and Stella.
+                Your free account includes the full chart that makes compatibility personal.
               </p>
             </div>
           )}
@@ -316,10 +316,10 @@ export function MatchInvitePage() {
               <p className="text-slate-300"><span className="text-stardust-400">♀♂ Spark:</span> {vibe.venusMars.label}</p>
             </div>
             <Link to="/auth">
-              <Button size="lg">Get your full chart — free</Button>
+              <Button size="lg">Get my full chart free</Button>
             </Link>
             <p className="text-slate-600 text-[11px] mt-3">
-              Create an account for Stella's full AI reading of this match.
+              Create an account for the full chart and Stella's deeper reading of this match.
             </p>
           </div>
         )}

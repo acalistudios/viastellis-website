@@ -159,18 +159,18 @@ export function PublicHoroscopesPage() {
 
         {/* CTA */}
         <div className="text-center mt-12 bg-[#1a1a3f]/40 border border-stardust-400/15 rounded-2xl px-6 py-8">
-          <h2 className="font-display text-2xl text-stardust-300">Want it personal?</h2>
+          <h2 className="font-display text-2xl text-stardust-300">Want your full chart?</h2>
           <p className="text-slate-400 text-sm mt-2 max-w-lg mx-auto">
-            These are general sign readings. Create your free chart for a reading built from your
-            exact birth date, time, and place — plus your full Vedic or Western birth chart, daily
-            transits, compatibility, and Stella, your AI astrology guide.
+            These are general sign readings. Create a free account to generate your full Vedic
+            and Western birth chart from your exact birth date, time, and place, then get daily
+            readings, transits, compatibility, and Stella.
           </p>
           <Link
             to="/auth"
             onClick={() => trackEvent('signup_cta_click', { source_page: 'public_horoscopes' })}
             className="inline-block mt-5 rounded-full px-6 py-3 bg-gradient-to-r from-stardust-400 to-stellar-300 text-[#0a0e27] text-sm font-semibold"
           >
-            Create your free chart →
+            Get my full chart free →
           </Link>
         </div>
 
