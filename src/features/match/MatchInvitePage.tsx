@@ -12,6 +12,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { calculateNatalChart } from '@/lib/ephemeris'
 import { computeVibeScore, type VibeResult } from '@/lib/vibe'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
+import { CELEBRITIES, type Celebrity } from '@/data/celebrities'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
@@ -34,6 +35,16 @@ function emptyPersonDraft(): MatchPersonDraft {
     cityQuery: '',
     cityResults: [],
     city: null,
+  }
+}
+
+function cityFromCelebrity(celebrity: Celebrity): CityResult {
+  return {
+    display_name: `${celebrity.city}, ${celebrity.country}`,
+    city: celebrity.city,
+    country: celebrity.country,
+    latitude: celebrity.latitude,
+    longitude: celebrity.longitude,
   }
 }
 
@@ -193,6 +204,7 @@ export function MatchInvitePage() {
               label="Person A"
               draft={personA}
               today={today}
+              celebrities={CELEBRITIES}
               onChange={(patch) => updatePublicPerson('a', patch)}
               onCityChange={(value) => handlePublicCityChange('a', value)}
               onChooseCity={(city) => updatePublicPerson('a', { city, cityQuery: city.display_name, cityResults: [] })}
@@ -201,6 +213,7 @@ export function MatchInvitePage() {
               label="Person B"
               draft={personB}
               today={today}
+              celebrities={CELEBRITIES}
               onChange={(patch) => updatePublicPerson('b', patch)}
               onCityChange={(value) => handlePublicCityChange('b', value)}
               onChooseCity={(city) => updatePublicPerson('b', { city, cityQuery: city.display_name, cityResults: [] })}
@@ -321,16 +334,50 @@ interface PublicPersonFieldsProps {
   label: string
   draft: MatchPersonDraft
   today: string
+  celebrities: Celebrity[]
   onChange: (patch: Partial<MatchPersonDraft>) => void
   onCityChange: (value: string) => void
   onChooseCity: (city: CityResult) => void
 }
 
-function PublicPersonFields({ label, draft, today, onChange, onCityChange, onChooseCity }: PublicPersonFieldsProps) {
+function PublicPersonFields({ label, draft, today, celebrities, onChange, onCityChange, onChooseCity }: PublicPersonFieldsProps) {
+  function fillCelebrity(value: string) {
+    const celebrity = celebrities.find(c => c.name === value)
+    if (!celebrity) return
+    const city = cityFromCelebrity(celebrity)
+    onChange({
+      name: celebrity.name,
+      date: celebrity.date,
+      time: '',
+      city,
+      cityQuery: city.display_name,
+      cityResults: [],
+    })
+  }
+
   return (
     <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-4">
       <h2 className="font-display text-xl text-stardust-300 mb-4">{label}</h2>
       <div className="flex flex-col gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">
+            Use celebrity
+          </label>
+          <select
+            value=""
+            onChange={e => fillCelebrity(e.target.value)}
+            className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:border-stardust-400"
+          >
+            <option value="">Choose a celebrity...</option>
+            {celebrities.map(c => (
+              <option key={c.name} value={c.name}>{c.emoji} {c.name}</option>
+            ))}
+          </select>
+          <p className="text-[10px] text-slate-600 mt-1.5">
+            Fills birthday and birthplace only; birth time stays blank.
+          </p>
+        </div>
+
         <Input label="Name" value={draft.name} onChange={e => onChange({ name: e.target.value })} required />
         <div className="grid grid-cols-2 gap-3">
           <Input label="Birth date" type="date" value={draft.date} max={today}
