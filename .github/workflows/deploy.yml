@@ -33,7 +33,7 @@ jobs:
       # project has pre-existing type errors unrelated to the bundle; Vite/esbuild
       # produces the same static output. Type-checking is handled separately.
       - name: Build
-        run: npx vite build
+        run: npx vite build && node scripts/create-static-route-copies.mjs
         env:
           # These are PUBLIC client keys (anon key is safe to expose), supplied
           # as repo secrets so they're not committed. Add them in:
@@ -51,12 +51,6 @@ jobs:
           VITE_STRIPE_PRICE_PACK_STANDARD: ${{ secrets.VITE_STRIPE_PRICE_PACK_STANDARD }}
           VITE_STRIPE_PRICE_PACK_VALUE: ${{ secrets.VITE_STRIPE_PRICE_PACK_VALUE }}
           VITE_STRIPE_PRICE_PACK_BULK: ${{ secrets.VITE_STRIPE_PRICE_PACK_BULK }}
-
-      # SPA fallback: GitHub Pages has no redirect rules, so serve the app's
-      # index.html for unknown paths. Copying it to 404.html means a refresh on
-      # /auth, /chart, etc. loads the app and lets React Router handle the route.
-      - name: Add SPA 404 fallback
-        run: cp dist/index.html dist/404.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
