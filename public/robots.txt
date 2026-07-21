@@ -5,6 +5,7 @@
 User-agent: *
 Allow: /$
 Allow: /horoscopes
+Allow: /match
 Allow: /learn
 Allow: /zodiac-systems
 Allow: /terms
@@ -26,6 +27,5 @@ Disallow: /onboarding
 Disallow: /auth
 Disallow: /reset-password
 Disallow: /unsubscribe
-Disallow: /match
 
 Sitemap: https://viastellis.com/sitemap.xml

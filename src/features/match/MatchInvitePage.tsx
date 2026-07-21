@@ -17,6 +17,26 @@ import { Input } from '@/components/ui/Input'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData } from '@/types'
 
+interface MatchPersonDraft {
+  name: string
+  date: string
+  time: string
+  cityQuery: string
+  cityResults: CityResult[]
+  city: CityResult | null
+}
+
+function emptyPersonDraft(): MatchPersonDraft {
+  return {
+    name: '',
+    date: '',
+    time: '',
+    cityQuery: '',
+    cityResults: [],
+    city: null,
+  }
+}
+
 function decodeInvite(d: string | null): BirthData | null {
   if (!d) return null
   try {
@@ -46,6 +66,14 @@ export function MatchInvitePage() {
   const [params] = useSearchParams()
   const inviter = useMemo(() => decodeInvite(params.get('d')), [params])
 
+  const [personA, setPersonA] = useState<MatchPersonDraft>(() => emptyPersonDraft())
+  const [personB, setPersonB] = useState<MatchPersonDraft>(() => emptyPersonDraft())
+  const [publicVibe, setPublicVibe] = useState<VibeResult | null>(null)
+  const [publicNames, setPublicNames] = useState<{ a: string; b: string } | null>(null)
+  const [publicWorking, setPublicWorking] = useState(false)
+  const publicDebounceARef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const publicDebounceBRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [name, setName] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -55,6 +83,57 @@ export function MatchInvitePage() {
   const [vibe, setVibe] = useState<VibeResult | null>(null)
   const [working, setWorking] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function updatePublicPerson(which: 'a' | 'b', patch: Partial<MatchPersonDraft>) {
+    if (which === 'a') setPersonA(prev => ({ ...prev, ...patch }))
+    else setPersonB(prev => ({ ...prev, ...patch }))
+    setPublicVibe(null)
+  }
+
+  function handlePublicCityChange(which: 'a' | 'b', value: string) {
+    updatePublicPerson(which, { cityQuery: value, city: null })
+    const ref = which === 'a' ? publicDebounceARef : publicDebounceBRef
+    if (ref.current) clearTimeout(ref.current)
+    ref.current = setTimeout(async () => {
+      if (value.trim().length < 2) {
+        updatePublicPerson(which, { cityResults: [] })
+        return
+      }
+      try {
+        updatePublicPerson(which, { cityResults: await searchCities(value) })
+      } catch { /* non-fatal */ }
+    }, 400)
+  }
+
+  function birthDataFromDraft(draft: MatchPersonDraft): BirthData | null {
+    if (!draft.name.trim() || !draft.date || !draft.city) return null
+    return {
+      name: draft.name.trim(),
+      date: draft.date,
+      time: draft.time || '12:00',
+      time_unknown: !draft.time,
+      city: draft.city.city,
+      country: draft.city.country,
+      latitude: draft.city.latitude,
+      longitude: draft.city.longitude,
+      timezone: getTimezone(draft.city.latitude, draft.city.longitude),
+    }
+  }
+
+  async function handlePublicSubmit(e: FormEvent) {
+    e.preventDefault()
+    const a = birthDataFromDraft(personA)
+    const b = birthDataFromDraft(personB)
+    if (!a || !b) return
+
+    setPublicWorking(true)
+    try {
+      setPublicVibe(computeVibeScore(calculateNatalChart(a), calculateNatalChart(b)))
+      setPublicNames({ a: a.name, b: b.name })
+    } finally {
+      setPublicWorking(false)
+    }
+  }
 
   function handleCityChange(value: string) {
     setCityQuery(value)
@@ -90,26 +169,75 @@ export function MatchInvitePage() {
   }
 
   if (!inviter) {
+    const today = new Date().toISOString().split('T')[0]
+    const publicReady = Boolean(personA.name.trim() && personA.date && personA.city && personB.name.trim() && personB.date && personB.city)
+
     return (
-      <div className="min-h-screen bg-cosmos-950 flex flex-col items-center justify-center px-6 text-center">
-        <Link to="/" aria-label="ViaStellis home">
-          <img src="/logo.svg" alt="ViaStellis" className="w-16 h-16 mb-4 hover:scale-105 transition-transform" />
-        </Link>
-        <h1 className="font-display text-3xl text-stardust-300 mb-3">Compatibility invite</h1>
-        <p className="text-slate-400 text-sm mb-2 max-w-sm">
-          This page opens a personalized compatibility match when you follow an invite link a friend
-          shares with you.
-        </p>
-        <p className="text-slate-500 text-xs mb-6 max-w-sm">
-          It looks like this link is missing its invite details. Want to create your own chart and
-          share a match instead?
-        </p>
-        <Link
-          to="/"
-          className="px-6 py-2.5 rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold hover:shadow-lg hover:shadow-stardust-400/20 transition-all"
-        >
-          Explore ViaStellis
-        </Link>
+      <div className="min-h-screen bg-cosmos-950 px-6 py-10 flex flex-col items-center">
+        <div className="w-full max-w-2xl">
+          <Link to="/" aria-label="ViaStellis home" className="inline-flex items-center gap-2 text-stardust-300 font-display text-lg mb-8">
+            <img src="/logo.svg" alt="" className="w-7 h-7" />
+            ViaStellis
+          </Link>
+
+          <div className="text-center mb-8">
+            <h1 className="font-display text-4xl text-stardust-300 mb-3">Free Compatibility Match</h1>
+            <p className="text-slate-400 text-sm max-w-lg mx-auto">
+              Enter two birth profiles to see a no-login Vibe Score. Create an account when you want
+              the full chart, saved matches, Stella's deeper reading, and celebrity comparisons.
+            </p>
+          </div>
+
+          <form onSubmit={handlePublicSubmit} className="grid md:grid-cols-2 gap-4 mb-6">
+            <PublicPersonFields
+              label="Person A"
+              draft={personA}
+              today={today}
+              onChange={(patch) => updatePublicPerson('a', patch)}
+              onCityChange={(value) => handlePublicCityChange('a', value)}
+              onChooseCity={(city) => updatePublicPerson('a', { city, cityQuery: city.display_name, cityResults: [] })}
+            />
+            <PublicPersonFields
+              label="Person B"
+              draft={personB}
+              today={today}
+              onChange={(patch) => updatePublicPerson('b', patch)}
+              onCityChange={(value) => handlePublicCityChange('b', value)}
+              onChooseCity={(city) => updatePublicPerson('b', { city, cityQuery: city.display_name, cityResults: [] })}
+            />
+
+            <div className="md:col-span-2">
+              <Button type="submit" size="lg" isLoading={publicWorking} disabled={!publicReady} className="w-full">
+                ✨ Reveal Our Vibe
+              </Button>
+            </div>
+          </form>
+
+          {publicVibe && publicNames && (
+            <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-6 text-center mb-6">
+              <p className="text-slate-400 text-sm mb-3">{publicNames.a} + {publicNames.b}</p>
+              <p className="text-6xl font-display text-stardust-300">{publicVibe.score}</p>
+              <p className="text-[11px] uppercase tracking-widest text-slate-500 mt-1 mb-4">Vibe Score / 100</p>
+              <div className="h-2 bg-cosmos-800 rounded-full mb-5 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-stardust-400 to-stellar-300 rounded-full"
+                  style={{ width: `${publicVibe.score}%` }} />
+              </div>
+              <div className="flex flex-col gap-1.5 text-left text-sm mb-6 max-w-sm mx-auto">
+                <p className="text-slate-300"><span className="text-stardust-400">☽ Moons:</span> {publicVibe.moon.label}</p>
+                <p className="text-slate-300"><span className="text-stardust-400">☉ Suns:</span> {publicVibe.sun.label}</p>
+                <p className="text-slate-300"><span className="text-stardust-400">♀♂ Spark:</span> {publicVibe.venusMars.label}</p>
+              </div>
+              <Link to="/auth">
+                <Button size="lg">Unlock the full reading</Button>
+              </Link>
+              <p className="text-slate-600 text-[11px] mt-3">
+                Free account includes your full chart, saved compatibility, celebrity matches, and Stella.
+              </p>
+            </div>
+          )}
+
+          <p className="text-[10px] text-slate-600 text-center max-w-sm mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
+        </div>
       </div>
     )
   }
@@ -184,6 +312,48 @@ export function MatchInvitePage() {
         )}
 
         <p className="text-[10px] text-slate-600 text-center mt-8 max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
+      </div>
+    </div>
+  )
+}
+
+interface PublicPersonFieldsProps {
+  label: string
+  draft: MatchPersonDraft
+  today: string
+  onChange: (patch: Partial<MatchPersonDraft>) => void
+  onCityChange: (value: string) => void
+  onChooseCity: (city: CityResult) => void
+}
+
+function PublicPersonFields({ label, draft, today, onChange, onCityChange, onChooseCity }: PublicPersonFieldsProps) {
+  return (
+    <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-4">
+      <h2 className="font-display text-xl text-stardust-300 mb-4">{label}</h2>
+      <div className="flex flex-col gap-4">
+        <Input label="Name" value={draft.name} onChange={e => onChange({ name: e.target.value })} required />
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="Birth date" type="date" value={draft.date} max={today}
+            onChange={e => onChange({ date: e.target.value })} required className="[color-scheme:dark]" />
+          <Input label="Time (optional)" type="time" value={draft.time}
+            onChange={e => onChange({ time: e.target.value })} className="[color-scheme:dark]" />
+        </div>
+        <div className="relative">
+          <Input label="Birth city" placeholder="Type a city…" value={draft.cityQuery}
+            onChange={e => onCityChange(e.target.value)} autoComplete="off" required />
+          {draft.cityResults.length > 0 && !draft.city && (
+            <ul className="absolute z-20 mt-1 w-full bg-cosmos-800 border border-cosmos-600 rounded-xl overflow-hidden shadow-2xl">
+              {draft.cityResults.map((r, i) => (
+                <li key={i}
+                  onClick={() => onChooseCity(r)}
+                  className="px-4 py-3 text-sm text-slate-300 hover:bg-cosmos-700 cursor-pointer border-b border-cosmos-700 last:border-0">
+                  {r.display_name}
+                </li>
+              ))}
+            </ul>
+          )}
+          {draft.city && <p className="text-xs text-emerald-400 mt-1.5">✓ {draft.city.display_name}</p>}
+        </div>
       </div>
     </div>
   )

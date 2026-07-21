@@ -92,6 +92,12 @@ export function LandingPage() {
               Free Horoscopes
             </Link>
             <Link
+              to="/match"
+              className="hidden md:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium"
+            >
+              Free Match
+            </Link>
+            <Link
               to={session ? '/home' : '/auth'}
               className="whitespace-nowrap px-4 sm:px-6 py-2 bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 hover:from-stardust-400/30 hover:to-stellar-300/30 border border-stardust-400/50 text-stardust-300 rounded-full text-sm font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/20"
             >
@@ -289,6 +295,8 @@ export function LandingPage() {
             <Link to="/horoscopes" className="hover:text-stardust-300 transition-colors">Free horoscopes</Link>
             <span className="text-cosmos-700">·</span>
             <Link to="/horoscopes" className="hover:text-stardust-300 transition-colors">Today's horoscopes</Link>
+            <span className="text-cosmos-700">·</span>
+            <Link to="/match" className="hover:text-stardust-300 transition-colors">Free compatibility match</Link>
             <span className="text-cosmos-700">·</span>
             <Link to="/learn" className="hover:text-stardust-300 transition-colors">Learn astrology</Link>
             <span className="text-cosmos-700">·</span>
