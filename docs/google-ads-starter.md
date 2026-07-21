@@ -6,7 +6,7 @@ Start with high-intent Google Search traffic and send visitors to public tools, 
 
 Primary landing pages:
 
-- `https://viastellis.com/free-birth-chart`
+- `https://viastellis.com/horoscopes`
 - `https://viastellis.com/compatibility-calculator`
 
 Initial budget:
@@ -34,7 +34,6 @@ Tracking is disabled when this variable is blank.
 Tracked events:
 
 - `page_view`
-- `free_chart_complete`
 - `compatibility_check_complete`
 - `signup_cta_click`
 - `signup_submit`
@@ -43,8 +42,8 @@ Tracked events:
 
 Recommended Google Ads conversions:
 
-- Primary: `free_chart_complete`
-- Secondary: `signup_submit`
+- Primary: `signup_submit`
+- Secondary: `signup_cta_click`
 - Secondary: `checkout_start`
 - Observation only: `compatibility_check_complete`
 
@@ -53,43 +52,43 @@ Privacy posture:
 - Do not send birth dates, birth times, city names, emails, names, or chart data to Google.
 - Keep ad personalization signals off initially.
 
-## Campaign 1: Free Birth Chart
+## Campaign 1: Free Horoscopes
 
 Landing page:
 
 ```text
-https://viastellis.com/free-birth-chart?utm_source=google&utm_medium=cpc&utm_campaign=free_birth_chart_search
+https://viastellis.com/horoscopes?utm_source=google&utm_medium=cpc&utm_campaign=free_horoscopes_search
 ```
 
-Ad group: Free Birth Chart
+Ad group: Free Horoscopes
 
 Keywords:
 
 ```text
-"free birth chart"
-"birth chart calculator"
-"free natal chart"
-"vedic birth chart"
-"free kundli"
-"kundli calculator"
-"vedic astrology chart"
+"free daily horoscope"
+"today horoscope"
+"daily horoscope"
+"free horoscopes"
+"vedic horoscope"
+"western horoscope"
+"moon sign horoscope"
 ```
 
 Headlines:
 
 ```text
-Free Vedic Birth Chart
-Vedic + Western Chart
-No Sign-Up Birth Chart
-Find Your Moon Nakshatra
-Free Kundli Calculator
+Free Daily Horoscopes
+Vedic + Western Horoscopes
+Today's Horoscope Free
+Read All 12 Signs
+Daily Astrology Readings
 ```
 
 Descriptions:
 
 ```text
-See your chart in both Vedic and Western astrology. Instant, free, no account needed.
-Find your Sun, Moon, Rising, and Vedic Moon nakshatra with ViaStellis.
+Read today's free horoscopes for all 12 signs in both Vedic and Western astrology.
+Start with a free daily reading, then create an account for your full birth chart.
 ```
 
 ## Campaign 2: Compatibility Calculator
@@ -175,7 +174,7 @@ Avoid:
 
 After 7 days, review:
 
-- Cost per `free_chart_complete`
+- Cost per `signup_cta_click`
 - Cost per `signup_submit`
 - Search terms report
 - Mobile conversion rate

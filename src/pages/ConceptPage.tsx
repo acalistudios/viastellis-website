@@ -75,11 +75,11 @@ export function ConceptPage() {
         <div className="bg-gradient-to-br from-cosmos-800/80 to-cosmos-900/80 border border-stardust-400/30 rounded-2xl px-5 py-5 my-8 text-center">
           <p className="text-slate-100 font-display text-lg mb-1">See it in your own chart</p>
           <p className="text-slate-400 text-sm mb-4">
-            Get your free birth chart in both Vedic and Western — no account needed.
+            Create your free account for your full ViaStellis birth chart, daily readings, tarot, compatibility, and Stella.
           </p>
-          <Link to="/free-birth-chart"
+          <Link to="/auth"
             className="inline-block rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold px-6 py-2.5">
-            Free birth chart →
+            Get my full chart →
           </Link>
         </div>
 

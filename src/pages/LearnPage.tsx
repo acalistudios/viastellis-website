@@ -44,9 +44,9 @@ export function LearnPage() {
 
         {/* Cross-link the tool + the explainer */}
         <div className="mt-10 flex flex-wrap gap-3">
-          <Link to="/free-birth-chart"
+          <Link to="/horoscopes"
             className="rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold px-5 py-2.5">
-            Get your free birth chart →
+            Read today's free horoscopes →
           </Link>
           <Link to="/zodiac-systems"
             className="rounded-full border border-cosmos-700 text-slate-300 hover:border-stardust-400/50 text-sm px-5 py-2.5">

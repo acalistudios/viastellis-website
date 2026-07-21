@@ -11,6 +11,7 @@ import { Starfield } from '@/components/ui/Starfield'
 import { Seo } from '@/components/Seo'
 import { useUser } from '@/store/UserContext'
 import { getPublicHoroscopes, type HoroscopeSystem, type PublicHoroscope } from '@/lib/publicHoroscopes'
+import { trackEvent } from '@/lib/analytics'
 
 const SIGN_GLYPHS: Record<string, string> = {
   Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
@@ -166,6 +167,7 @@ export function PublicHoroscopesPage() {
           </p>
           <Link
             to="/auth"
+            onClick={() => trackEvent('signup_cta_click', { source_page: 'public_horoscopes' })}
             className="inline-block mt-5 rounded-full px-6 py-3 bg-gradient-to-r from-stardust-400 to-stellar-300 text-[#0a0e27] text-sm font-semibold"
           >
             Create your free chart →

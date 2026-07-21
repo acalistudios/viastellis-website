@@ -286,7 +286,7 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto text-center text-sm text-slate-500">
           {/* Free tools & guides — public, indexable entry points */}
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs mb-5 text-slate-400">
-            <Link to="/free-birth-chart" className="hover:text-stardust-300 transition-colors">Free birth chart</Link>
+            <Link to="/horoscopes" className="hover:text-stardust-300 transition-colors">Free horoscopes</Link>
             <span className="text-cosmos-700">·</span>
             <Link to="/compatibility-calculator" className="hover:text-stardust-300 transition-colors">Compatibility</Link>
             <span className="text-cosmos-700">·</span>
