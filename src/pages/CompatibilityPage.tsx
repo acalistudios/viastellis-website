@@ -13,7 +13,7 @@ import { useNatalChart } from '@/hooks/useNatalChart'
 import { calculateNatalChart } from '@/lib/ephemeris'
 import { computeVibeScore, type VibeResult } from '@/lib/vibe'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
-import { CELEBRITIES } from '@/data/celebrities'
+import { CELEBRITIES, type Celebrity } from '@/data/celebrities'
 import { streamStella } from '@/lib/gemini'
 import { CreditCost } from '@/components/ui/CreditCost'
 import { SynastryReportCard } from '@/components/chart/SynastryReportCard'
@@ -26,10 +26,12 @@ import type { BirthData, NatalChart } from '@/types'
 
 interface HistoryItem {
   id: string
+  chart_b_id: string
   vibe_score: number | null
   summary: string | null
   created_at: string
   partnerName: string
+  partnerBirthData: BirthData | null
 }
 
 interface CelebrityMatch {
@@ -68,6 +70,30 @@ function bestSignal(vibe: VibeResult): string {
   return 'Balanced mix'
 }
 
+function cityFromBirthData(birthData: BirthData): CityResult {
+  return {
+    display_name: `${birthData.city}, ${birthData.country}`,
+    city: birthData.city,
+    country: birthData.country,
+    latitude: birthData.latitude,
+    longitude: birthData.longitude,
+  }
+}
+
+function birthDataKey(birthData: BirthData): string {
+  return [
+    birthData.name.trim().toLowerCase(),
+    birthData.date,
+    birthData.time_unknown ? '' : birthData.time,
+    birthData.city.trim().toLowerCase(),
+    birthData.country.trim().toLowerCase(),
+  ].join('|')
+}
+
+function savedPartnersKey(userId: string): string {
+  return `viastellis_saved_match_partners_${userId}`
+}
+
 export function CompatibilityPage() {
   const { session, user } = useUser()
   const { chart: myChart, chartId: myChartId, loading: chartLoading } = useNatalChart()
@@ -90,26 +116,74 @@ export function CompatibilityPage() {
   const [inviteCopied, setInviteCopied] = useState(false)
   const [summaryCopied, setSummaryCopied] = useState(false)
   const [history, setHistory] = useState<HistoryItem[]>([])
+  const [savedPartners, setSavedPartners] = useState<BirthData[]>([])
 
   const loadHistory = useCallback(async () => {
     if (!user) return
     const { data } = await supabase
       .from('compatibility_reports')
-      .select('id, vibe_score, summary, created_at, chart_b:birth_charts!chart_b_id(name)')
+      .select('id, chart_b_id, vibe_score, summary, created_at, chart_b:birth_charts!chart_b_id(name, birth_date, birth_time, time_unknown, city, country, latitude, longitude, timezone)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10)
     if (data) {
       setHistory(
-        (data as unknown as Array<HistoryItem & { chart_b: { name: string } | null }>).map(r => ({
-          ...r,
-          partnerName: r.chart_b?.name ?? 'Unknown',
-        }))
+        (data as unknown as Array<HistoryItem & {
+          chart_b: {
+            name: string
+            birth_date: string
+            birth_time: string | null
+            time_unknown: boolean
+            city: string
+            country: string
+            latitude: number
+            longitude: number
+            timezone: string
+          } | null
+        }>).map(r => {
+          const b = r.chart_b
+          const partnerBirthData = b
+            ? {
+                name: b.name,
+                date: b.birth_date,
+                time: b.birth_time ? b.birth_time.slice(0, 5) : '12:00',
+                time_unknown: b.time_unknown,
+                city: b.city,
+                country: b.country,
+                latitude: b.latitude,
+                longitude: b.longitude,
+                timezone: b.timezone,
+              }
+            : null
+          return {
+            id: r.id,
+            chart_b_id: r.chart_b_id,
+            vibe_score: r.vibe_score,
+            summary: r.summary,
+            created_at: r.created_at,
+            partnerName: b?.name ?? 'Unknown',
+            partnerBirthData,
+          }
+        })
       )
     }
   }, [user])
 
   useEffect(() => { void loadHistory() }, [loadHistory])
+
+  useEffect(() => {
+    if (!user) {
+      setSavedPartners([])
+      return
+    }
+    try {
+      const raw = localStorage.getItem(savedPartnersKey(user.id))
+      setSavedPartners(raw ? JSON.parse(raw) as BirthData[] : [])
+    } catch {
+      localStorage.removeItem(savedPartnersKey(user.id))
+      setSavedPartners([])
+    }
+  }, [user])
 
   const celebrityMatches = useMemo<CelebrityMatch[]>(() => {
     if (!myChart) return []
@@ -130,36 +204,167 @@ export function CompatibilityPage() {
       .sort((a, b) => b.vibe.score - a.vibe.score || a.celebrity.name.localeCompare(b.celebrity.name))
   }, [myChart])
 
+  function fillPartnerForm(birthData: BirthData) {
+    const cityValue = cityFromBirthData(birthData)
+    setName(birthData.name)
+    setDate(birthData.date)
+    setTime(birthData.time_unknown ? '' : birthData.time)
+    setCity(cityValue)
+    setCityQuery(cityValue.display_name)
+    setCityResults([])
+    setError('')
+  }
+
+  function savePartnerLocal(birthData: BirthData) {
+    if (!user) return
+    const next = [
+      birthData,
+      ...savedPartners.filter(p => birthDataKey(p) !== birthDataKey(birthData)),
+    ].slice(0, 25)
+    setSavedPartners(next)
+    localStorage.setItem(savedPartnersKey(user.id), JSON.stringify(next))
+  }
+
+  function fillCelebrity(celebrity: Celebrity) {
+    fillPartnerForm(celebrity)
+  }
+
+  function fillSavedPartner(value: string) {
+    const partner = savedPartners.find(p => birthDataKey(p) === value)
+    if (partner) fillPartnerForm(partner)
+  }
+
+  async function deleteHistoryItem(item: HistoryItem) {
+    if (!user) return
+    setError('')
+    const { error: reportErr } = await supabase
+      .from('compatibility_reports')
+      .delete()
+      .eq('id', item.id)
+      .eq('user_id', user.id)
+    if (reportErr) {
+      setError(reportErr.message)
+      return
+    }
+
+    if (item.chart_b_id) {
+      await supabase
+        .from('birth_charts')
+        .delete()
+        .eq('id', item.chart_b_id)
+        .eq('user_id', user.id)
+        .eq('is_primary', false)
+    }
+    await loadHistory()
+  }
+
+  async function clearHistory() {
+    if (!user || history.length === 0) return
+    setError('')
+    const { data: allReports, error: loadErr } = await supabase
+      .from('compatibility_reports')
+      .select('id, chart_b_id')
+      .eq('user_id', user.id)
+    if (loadErr) {
+      setError(loadErr.message)
+      return
+    }
+
+    const reportIds = allReports?.map(r => r.id) ?? []
+    const chartIds = allReports?.map(r => r.chart_b_id).filter(Boolean) ?? []
+    if (reportIds.length === 0) {
+      setHistory([])
+      return
+    }
+
+    const { error: reportErr } = await supabase
+      .from('compatibility_reports')
+      .delete()
+      .eq('user_id', user.id)
+      .in('id', reportIds)
+    if (reportErr) {
+      setError(reportErr.message)
+      return
+    }
+    if (chartIds.length > 0) {
+      await supabase
+        .from('birth_charts')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('is_primary', false)
+        .in('id', chartIds)
+    }
+    await loadHistory()
+  }
+
+  function reloadHistoryItem(item: HistoryItem) {
+    if (!item.partnerBirthData) return
+    fillPartnerForm(item.partnerBirthData)
+    void runMatch(item.partnerBirthData, { persist: false })
+  }
+
   /** Persist person B as a saved (non-primary) chart + the report row. */
   async function saveReport(birthDataB: BirthData, vibe: VibeResult, summary: string) {
     if (!user || !myChartId) return
     try {
-      const { data: chartBRow, error: chartErr } = await supabase
+      savePartnerLocal(birthDataB)
+
+      const birthTime = birthDataB.time_unknown ? null : birthDataB.time
+      const { data: existingCharts } = await supabase
         .from('birth_charts')
-        .insert({
-          user_id: user.id,
-          label: birthDataB.name,
-          is_primary: false,
-          name: birthDataB.name,
-          birth_date: birthDataB.date,
-          birth_time: birthDataB.time_unknown ? null : birthDataB.time,
-          time_unknown: birthDataB.time_unknown,
-          city: birthDataB.city,
-          country: birthDataB.country,
-          latitude: birthDataB.latitude,
-          longitude: birthDataB.longitude,
-          timezone: birthDataB.timezone,
-          chart_data: null,
-          calculated_at: null,
-        })
         .select('id')
-        .single()
-      if (chartErr || !chartBRow) throw chartErr
+        .eq('user_id', user.id)
+        .eq('is_primary', false)
+        .eq('name', birthDataB.name)
+        .eq('birth_date', birthDataB.date)
+        .eq('city', birthDataB.city)
+        .eq('country', birthDataB.country)
+        .limit(1)
+
+      let chartBId = existingCharts?.[0]?.id
+
+      if (!chartBId) {
+        const { data: chartBRow, error: chartErr } = await supabase
+          .from('birth_charts')
+          .insert({
+            user_id: user.id,
+            label: birthDataB.name,
+            is_primary: false,
+            name: birthDataB.name,
+            birth_date: birthDataB.date,
+            birth_time: birthTime,
+            time_unknown: birthDataB.time_unknown,
+            city: birthDataB.city,
+            country: birthDataB.country,
+            latitude: birthDataB.latitude,
+            longitude: birthDataB.longitude,
+            timezone: birthDataB.timezone,
+            chart_data: null,
+            calculated_at: null,
+          })
+          .select('id')
+          .single()
+        if (chartErr || !chartBRow) throw chartErr
+        chartBId = chartBRow.id
+      }
+
+      const { data: existingReports } = await supabase
+        .from('compatibility_reports')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('chart_a_id', myChartId)
+        .eq('chart_b_id', chartBId)
+        .limit(1)
+
+      if (existingReports && existingReports.length > 0) {
+        void loadHistory()
+        return
+      }
 
       const { error: reportErr } = await supabase.from('compatibility_reports').insert({
         user_id: user.id,
         chart_a_id: myChartId,
-        chart_b_id: chartBRow.id,
+        chart_b_id: chartBId,
         vibe_score: vibe.score,
         summary: summary || null,
         strengths: vibe.highlights,
@@ -221,8 +426,9 @@ export function CompatibilityPage() {
     void runMatch(celebrity)
   }
 
-  async function runMatch(birthDataB: BirthData) {
+  async function runMatch(birthDataB: BirthData, options: { persist?: boolean } = {}) {
     if (!myChart) return
+    const shouldPersist = options.persist ?? true
     setError('')
     setNarrative('')
 
@@ -262,7 +468,9 @@ export function CompatibilityPage() {
       }
 
       // Persist to history (best-effort, non-blocking for the UI)
-      void saveReport(birthDataB, vibe, finalNarrative)
+      if (shouldPersist) {
+        void saveReport(birthDataB, vibe, finalNarrative)
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not compute the match.')
     }
@@ -327,59 +535,124 @@ export function CompatibilityPage() {
         How do your stars dance with someone else's?
       </p>
 
-      {/* Person B form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 mb-8">
-        <Input
-          label="Their name"
-          placeholder="Name or nickname"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          required
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            label="Birth date"
-            type="date"
-            value={date}
-            max={today}
-            onChange={e => setDate(e.target.value)}
-            required
-            className="[color-scheme:dark]"
-          />
-          <Input
-            label="Birth time (optional)"
-            type="time"
-            value={time}
-            onChange={e => setTime(e.target.value)}
-            className="[color-scheme:dark]"
-          />
-        </div>
+        {myChart && (
+          <section className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Person A</p>
+                <h2 className="font-display text-xl text-stardust-300">{myChart.birth_data.name}</h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  {formatBirthday(myChart.birth_data.date)} · {myChart.birth_data.city}, {myChart.birth_data.country}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full border border-stardust-400/30 px-3 py-1 text-[10px] uppercase tracking-wider text-stardust-300">
+                Your chart
+              </span>
+            </div>
+          </section>
+        )}
 
-        <div className="relative">
-          <Input
-            label="Birth city"
-            placeholder="Type a city…"
-            value={cityQuery}
-            onChange={e => handleCityChange(e.target.value)}
-            autoComplete="off"
-            required
-          />
-          {cityResults.length > 0 && !city && (
-            <ul className="absolute z-20 mt-1 w-full bg-cosmos-800 border border-cosmos-600 rounded-xl overflow-hidden shadow-2xl">
-              {cityResults.map((r, i) => (
-                <li
-                  key={i}
-                  onClick={() => { setCity(r); setCityQuery(r.display_name); setCityResults([]) }}
-                  className="px-4 py-3 text-sm text-slate-300 hover:bg-cosmos-700 cursor-pointer border-b border-cosmos-700 last:border-0"
+        <section className="bg-cosmos-900 border border-cosmos-700 rounded-2xl p-4">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Person B</p>
+          <h2 className="font-display text-xl text-stardust-300 mb-4">Partner, friend, or celebrity</h2>
+
+          <div className="flex flex-col gap-4">
+            {savedPartners.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                  Saved person
+                </label>
+                <select
+                  value=""
+                  onChange={e => fillSavedPartner(e.target.value)}
+                  className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:border-stardust-400"
                 >
-                  {r.display_name}
-                </li>
-              ))}
-            </ul>
-          )}
-          {searching && <p className="text-xs text-slate-500 mt-1.5">Searching…</p>}
-          {city && <p className="text-xs text-emerald-400 mt-1.5">✓ {city.display_name}</p>}
-        </div>
+                  <option value="">Choose a saved person...</option>
+                  {savedPartners.map(p => (
+                    <option key={birthDataKey(p)} value={birthDataKey(p)}>
+                      {p.name} · {formatBirthday(p.date)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                Use celebrity
+              </label>
+              <select
+                value=""
+                onChange={e => {
+                  const celebrity = CELEBRITIES.find(c => c.name === e.target.value)
+                  if (celebrity) fillCelebrity(celebrity)
+                }}
+                className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:border-stardust-400"
+              >
+                <option value="">Choose a celebrity...</option>
+                {CELEBRITIES.map(c => (
+                  <option key={c.name} value={c.name}>{c.emoji} {c.name}</option>
+                ))}
+              </select>
+              <p className="text-[10px] text-slate-600 mt-1.5">
+                Celebrity birth times stay blank unless publicly verified.
+              </p>
+            </div>
+
+            <Input
+              label="Their name"
+              placeholder="Name or nickname"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Birth date"
+                type="date"
+                value={date}
+                max={today}
+                onChange={e => setDate(e.target.value)}
+                required
+                className="[color-scheme:dark]"
+              />
+              <Input
+                label="Birth time (optional)"
+                type="time"
+                value={time}
+                onChange={e => setTime(e.target.value)}
+                className="[color-scheme:dark]"
+              />
+            </div>
+
+            <div className="relative">
+              <Input
+                label="Birth city"
+                placeholder="Type a city..."
+                value={cityQuery}
+                onChange={e => handleCityChange(e.target.value)}
+                autoComplete="off"
+                required
+              />
+              {cityResults.length > 0 && !city && (
+                <ul className="absolute z-20 mt-1 w-full bg-cosmos-800 border border-cosmos-600 rounded-xl overflow-hidden shadow-2xl">
+                  {cityResults.map((r, i) => (
+                    <li
+                      key={i}
+                      onClick={() => { setCity(r); setCityQuery(r.display_name); setCityResults([]) }}
+                      className="px-4 py-3 text-sm text-slate-300 hover:bg-cosmos-700 cursor-pointer border-b border-cosmos-700 last:border-0"
+                    >
+                      {r.display_name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {searching && <p className="text-xs text-slate-500 mt-1.5">Searching...</p>}
+              {city && <p className="text-xs text-emerald-400 mt-1.5">✓ {city.display_name}</p>}
+            </div>
+          </div>
+        </section>
 
         <Button type="submit" size="lg" disabled={!name.trim() || !date || !city}>
           <span className="inline-flex items-center gap-1">
@@ -561,17 +834,43 @@ export function CompatibilityPage() {
       {/* History */}
       {history.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-sm text-slate-400 font-medium mb-3 px-1">Past matches</h2>
+          <div className="flex items-center justify-between gap-3 mb-3 px-1">
+            <h2 className="text-sm text-slate-400 font-medium">Past matches</h2>
+            <button
+              type="button"
+              onClick={() => void clearHistory()}
+              className="text-[11px] text-slate-500 hover:text-rose-300 transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
           <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl overflow-hidden">
             {history.map(h => (
-              <div key={h.id} className="flex items-center justify-between px-4 py-3 border-b border-cosmos-800 last:border-0">
-                <div>
+              <div key={h.id} className="flex items-center justify-between gap-3 px-4 py-3 border-b border-cosmos-800 last:border-0">
+                <div className="min-w-0">
                   <p className="text-slate-200 text-sm">{h.partnerName}</p>
                   <p className="text-slate-600 text-[11px]">
                     {new Date(h.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
-                <span className="text-stardust-300 font-display text-xl">{h.vibe_score ?? '—'}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-stardust-300 font-display text-xl min-w-8 text-right">{h.vibe_score ?? '—'}</span>
+                  <button
+                    type="button"
+                    onClick={() => reloadHistoryItem(h)}
+                    disabled={!h.partnerBirthData}
+                    className="rounded-full border border-stardust-400/30 px-3 py-1.5 text-[11px] font-medium text-stardust-300 hover:border-stardust-400/70 hover:text-stardust-200 disabled:opacity-40 disabled:hover:border-stardust-400/30 transition-colors"
+                  >
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void deleteHistoryItem(h)}
+                    className="rounded-full border border-cosmos-700 px-3 py-1.5 text-[11px] font-medium text-slate-500 hover:border-rose-400/50 hover:text-rose-300 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
