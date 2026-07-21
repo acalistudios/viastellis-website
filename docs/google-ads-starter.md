@@ -2,18 +2,17 @@
 
 ## Goal
 
-Start with high-intent Google Search traffic and send visitors to public tools, not the homepage.
+Start with high-intent Google Search traffic and send visitors to public content that is polished and working, not the homepage.
 
 Primary landing pages:
 
 - `https://viastellis.com/horoscopes`
-- `https://viastellis.com/compatibility-calculator`
 
 Initial budget:
 
 - `$10-$25/day`
 - Run for 7 days before judging
-- Optimize for completed tool use first, then signup
+- Optimize for signup intent first, then checkout
 
 ## Tracking Setup
 
@@ -34,7 +33,6 @@ Tracking is disabled when this variable is blank.
 Tracked events:
 
 - `page_view`
-- `compatibility_check_complete`
 - `signup_cta_click`
 - `signup_submit`
 - `auth_oauth_start`
@@ -45,7 +43,6 @@ Recommended Google Ads conversions:
 - Primary: `signup_submit`
 - Secondary: `signup_cta_click`
 - Secondary: `checkout_start`
-- Observation only: `compatibility_check_complete`
 
 Privacy posture:
 
@@ -91,42 +88,42 @@ Read today's free horoscopes for all 12 signs in both Vedic and Western astrolog
 Start with a free daily reading, then create an account for your full birth chart.
 ```
 
-## Campaign 2: Compatibility Calculator
+## Campaign 2: Full Chart Signup
 
 Landing page:
 
 ```text
-https://viastellis.com/compatibility-calculator?utm_source=google&utm_medium=cpc&utm_campaign=compatibility_search
+https://viastellis.com/auth?utm_source=google&utm_medium=cpc&utm_campaign=full_chart_search
 ```
 
-Ad group: Astrology Compatibility
+Ad group: Free Birth Chart Signup
 
 Keywords:
 
 ```text
-"astrology compatibility calculator"
-"zodiac compatibility calculator"
-"love compatibility astrology"
-"birth chart compatibility"
-"vedic compatibility"
-"kundli matching"
+"free birth chart"
+"vedic birth chart"
+"western birth chart"
+"birth chart calculator"
+"astrology birth chart"
+"natal chart"
 ```
 
 Headlines:
 
 ```text
-Astrology Compatibility
-Free Compatibility Check
-Vedic Moon Sign Match
-Check Your Vibe Score
-Birth Chart Compatibility
+Free Astrology Birth Chart
+Vedic + Western Chart
+Create Your Birth Chart
+Personal Astrology App
+Start Free Today
 ```
 
 Descriptions:
 
 ```text
-Check how two charts connect with a Vedic Moon-sign and nakshatra based reading.
-Free instant compatibility score. Explore strengths, friction, and next steps.
+Create a free account for your full Vedic and Western birth chart, daily readings, tarot, and compatibility.
+Start with your chart and explore personalized astrology in ViaStellis.
 ```
 
 ## Negative Keywords

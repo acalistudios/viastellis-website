@@ -21,7 +21,6 @@ import { TermsPage, PrivacyPage, RefundPage, ContactPage } from '@/pages/LegalPa
 import { ZodiacSystemsPage } from '@/pages/ZodiacSystemsPage'
 import { UnsubscribePage } from '@/pages/UnsubscribePage'
 import { PublicHoroscopesPage } from '@/pages/PublicHoroscopesPage'
-import { CompatibilityCalculatorPage } from '@/pages/CompatibilityCalculatorPage'
 import { LearnPage } from '@/pages/LearnPage'
 import { ConceptPage } from '@/pages/ConceptPage'
 import { UpgradePage } from '@/pages/UpgradePage'
@@ -107,7 +106,6 @@ function App() {
       {/* Public "Today's Horoscopes" demo — all 12 signs, no signup */}
       <Route path="/horoscopes" element={<PublicHoroscopesPage />} />
       {/* Public SEO/top-of-funnel: free horoscope demo + concept hub */}
-      <Route path="/compatibility-calculator" element={<CompatibilityCalculatorPage />} />
       <Route path="/learn" element={<LearnPage />} />
       <Route path="/learn/:slug" element={<ConceptPage />} />
       {/* Public: unsubscribe from the daily email. MUST work logged-out —

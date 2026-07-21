@@ -5,7 +5,6 @@
 User-agent: *
 Allow: /$
 Allow: /horoscopes
-Allow: /compatibility-calculator
 Allow: /learn
 Allow: /zodiac-systems
 Allow: /terms
