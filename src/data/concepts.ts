@@ -298,6 +298,108 @@ export const CONCEPTS: Concept[] = [
     ],
     related: ['rising-sign', 'astrology-houses'],
   },
+  {
+    slug: 'navamsa-chart',
+    title: 'Navamsa Chart (D9): The Deeper Vedic Chart',
+    teaser: 'Why the D9 divisional chart matters for marriage, maturity, and the strength of planets.',
+    emoji: 'D9',
+    tradition: 'Vedic',
+    seoTitle: 'Navamsa Chart Explained: What the D9 Chart Means in Vedic Astrology',
+    seoDescription: 'What the Navamsa chart is, how the D9 divisional chart is used in Vedic astrology, why it matters for marriage and maturity, and how it refines the birth chart.',
+    intro: 'The Navamsa chart, also called the D9, is one of the most important divisional charts in Vedic astrology. If the main birth chart shows the visible structure of a life, the Navamsa adds a subtler layer: the maturity of planets, the deeper promise of relationships, and how a person grows into their chart over time.',
+    sections: [
+      {
+        heading: 'What the Navamsa chart is',
+        body: [
+          'Navamsa means "ninth division." Each 30-degree zodiac sign is divided into nine equal parts of 3 degrees 20 minutes, and those divisions are arranged into a secondary chart. This does not replace the main birth chart, known as the D1. It refines it.',
+          'A planet can look strong in the birth chart but weaker in the Navamsa, or modest in the birth chart but supported in the D9. That is why Vedic astrologers often read the D1 and D9 together before making serious judgments.',
+        ],
+      },
+      {
+        heading: 'Why it is associated with marriage',
+        body: [
+          'The Navamsa is famous for relationship and marriage analysis because it shows how partnership themes mature after the initial promise of the birth chart. It is not a simple "spouse chart," but it gives important context for commitment, values, compatibility, and the long-term quality of bonds.',
+          'When astrologers study marriage, they typically consider the 7th house, Venus, Jupiter, dasha timing, compatibility factors, and the Navamsa together rather than relying on one indicator alone.',
+        ],
+      },
+      {
+        heading: 'Planetary dignity in the D9',
+        body: [
+          'The D9 is also used to judge the deeper strength of planets. A planet in a favorable Navamsa sign may express more gracefully with age, while a planet under pressure in the D9 may require conscious work even if it looks easy in the birth chart.',
+          'This is why the Navamsa is sometimes described as a chart of dharma or inner development. It shows not only what is present at birth, but what becomes more visible as life ripens.',
+        ],
+      },
+    ],
+    related: ['nakshatras', 'kundli-matching', 'mangal-dosha'],
+  },
+  {
+    slug: 'vedic-yogas',
+    title: 'Vedic Yogas: Planetary Combinations in a Chart',
+    teaser: 'How astrologers read special combinations for talent, pressure, support, and life patterns.',
+    emoji: 'YG',
+    tradition: 'Vedic',
+    seoTitle: 'Vedic Yogas Explained: Planetary Combinations in a Birth Chart',
+    seoDescription: 'What yogas are in Vedic astrology, how planetary combinations are read, why context matters, and why a yoga is not a guaranteed outcome by itself.',
+    intro: 'In Vedic astrology, a yoga is a meaningful planetary combination. Some yogas are associated with support, talent, status, or intelligence; others describe pressure, delay, or inner conflict. But a yoga is never a magic label. It must be read in the context of the whole chart.',
+    sections: [
+      {
+        heading: 'What a yoga means',
+        body: [
+          'The Sanskrit word yoga means a joining or combination. In chart reading, it refers to planets placed in a relationship that creates a recognizable pattern. The combination might involve house ownership, conjunction, aspect, exchange of signs, or placement in key houses.',
+          'For example, some yogas connect the houses of wealth and action; others connect wisdom, discipline, creativity, or public life. The names can sound dramatic, but the real value is in understanding what kind of pattern is being activated.',
+        ],
+      },
+      {
+        heading: 'Why context matters',
+        body: [
+          'A yoga is only as strong as the planets involved. Their dignity, house placement, aspects, combustion, retrogression, Navamsa strength, and dasha timing all matter. A famous yoga in weak condition may produce only a mild result, while a simpler combination in a strong chart can be very noticeable.',
+          'This is why list-style interpretations can mislead. Seeing a yoga in a chart is the beginning of analysis, not the end of it.',
+        ],
+      },
+      {
+        heading: 'Timing the results',
+        body: [
+          'Many yogas become more visible during the dasha or sub-period of the planets involved. A chart can contain a strong promise for years before the timing system activates it. This is one reason Vimshottari dasha is so often read alongside yogas.',
+          'The healthiest way to use yogas is practical: they point toward recurring strengths, pressures, and opportunities that can be developed consciously.',
+        ],
+      },
+    ],
+    related: ['vimshottari-dasha', 'navamsa-chart', 'astrology-houses'],
+  },
+  {
+    slug: 'moon-phases',
+    title: 'Moon Phases in Astrology',
+    teaser: 'What the lunar cycle says about timing, mood, beginnings, release, and reflection.',
+    emoji: 'MO',
+    tradition: 'Both',
+    seoTitle: 'Moon Phases in Astrology: New Moon, Full Moon & the Lunar Cycle',
+    seoDescription: 'How moon phases are used in astrology, what the New Moon and Full Moon mean, and how the lunar cycle supports timing, reflection, and emotional awareness.',
+    intro: 'The Moon is the fastest-moving major body used in astrology, and its changing light gives astrology one of its most intuitive timing tools. Moon phases describe the relationship between the Sun and Moon: whether life is beginning, building, peaking, releasing, or resting.',
+    sections: [
+      {
+        heading: 'The lunar cycle as a rhythm',
+        body: [
+          'A lunar month begins at the New Moon, when the Moon is close to the Sun and invisible or nearly invisible. From there the Moon waxes, growing in light until the Full Moon, then wanes back toward darkness. The full cycle takes about 29.5 days.',
+          'Astrologically, this rhythm is often used for reflection and timing. It is not about forcing events; it is about noticing whether the sky supports beginning, developing, completing, or letting go.',
+        ],
+      },
+      {
+        heading: 'New Moon and Full Moon meanings',
+        body: [
+          'The New Moon is associated with beginnings, intention, quiet, and planting seeds. It is a low-light moment, better for setting direction than demanding instant results. The Full Moon is associated with visibility, culmination, heightened emotion, and revelation.',
+          'The signs involved matter too. A Full Moon in a practical earth sign feels different from one in a sensitive water sign, and a New Moon touching your personal chart can feel more important than one that does not.',
+        ],
+      },
+      {
+        heading: 'Vedic tithis and Western phases',
+        body: [
+          'Western astrology usually describes the Moon by broad phases: New, crescent, quarter, gibbous, Full, and balsamic. Vedic astrology adds tithis, lunar days based on the angular distance between the Sun and Moon. Tithis create a more granular lunar calendar used in panchanga and electional timing.',
+          'Both approaches share the same core idea: the Moon is not static. Its changing light mirrors changing emotional weather.',
+        ],
+      },
+    ],
+    related: ['nakshatras', 'sade-sati', 'big-three'],
+  },
 ]
 
 export function conceptBySlug(slug: string): Concept | undefined {
