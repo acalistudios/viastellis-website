@@ -8,6 +8,7 @@
 import { Link } from 'react-router-dom'
 import { Seo } from '@/components/Seo'
 import { Starfield } from '@/components/ui/Starfield'
+import { PublicMarketingNav } from '@/components/layout/PublicMarketingNav'
 import { useUser } from '@/store/UserContext'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 
@@ -70,42 +71,7 @@ export function LandingPage() {
       />
       <Starfield count={150} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-b from-[#0f0817]/90 to-transparent backdrop-blur-md border-b border-stardust-400/10 px-6 py-4 relative">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="text-2xl font-display text-stardust-300 flex items-center gap-2 hover:text-stellar-300 transition-colors">
-            <img src="/logo.svg" alt="" className="w-8 h-8" /> ViaStellis
-          </Link>
-          <nav className="flex items-center gap-5 sm:gap-8 text-sm">
-            {/* Secondary links: hidden on phones to avoid overflow; the hero CTAs
-                and page sections still cover these on mobile. */}
-            <a href="#offerings" className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium">
-              Features
-            </a>
-            <a href="#pricing" className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium">
-              Pricing
-            </a>
-            <Link
-              to="/horoscopes"
-              className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium"
-            >
-              Free Horoscopes
-            </Link>
-            <Link
-              to="/match"
-              className="hidden md:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium"
-            >
-              Free Match
-            </Link>
-            <Link
-              to={session ? '/home' : '/auth'}
-              className="whitespace-nowrap px-4 sm:px-6 py-2 bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 hover:from-stardust-400/30 hover:to-stellar-300/30 border border-stardust-400/50 text-stardust-300 rounded-full text-sm font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/20"
-            >
-              {session ? 'Go to App' : 'Sign In'}
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <PublicMarketingNav />
 
       {/* Hero */}
       <section className="relative px-6 py-20 md:py-32 z-10">

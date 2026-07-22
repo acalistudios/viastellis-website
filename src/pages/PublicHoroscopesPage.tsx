@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Starfield } from '@/components/ui/Starfield'
 import { Seo } from '@/components/Seo'
-import { useUser } from '@/store/UserContext'
+import { PublicMarketingNav } from '@/components/layout/PublicMarketingNav'
 import { getPublicHoroscopes, type HoroscopeSystem, type PublicHoroscope } from '@/lib/publicHoroscopes'
 import { trackEvent } from '@/lib/analytics'
 
@@ -36,7 +36,6 @@ function localDateStr(): string {
 }
 
 export function PublicHoroscopesPage() {
-  const { session } = useUser()
   const [system, setSystem] = useState<HoroscopeSystem>('western')
   const [data, setData] = useState<PublicHoroscope[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,24 +75,7 @@ export function PublicHoroscopesPage() {
       />
       <Starfield count={90} />
 
-      {/* Nav bar */}
-      <nav className="relative z-20 sticky top-0 bg-[#0f0817]/90 backdrop-blur-md border-b border-stardust-400/10 px-6 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-stardust-300 font-display text-lg hover:text-stardust-200 transition-colors">
-          <img src="/logo.svg" alt="" className="w-6 h-6" />
-          ViaStellis
-        </Link>
-        <div className="flex items-center gap-4 text-sm">
-          <Link to="/" className="text-slate-400 hover:text-stardust-300 transition-colors hidden sm:inline">
-            ← Back
-          </Link>
-          <Link
-            to={session ? '/home' : '/auth'}
-            className="px-4 py-1.5 rounded-full bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 border border-stardust-400/40 text-stardust-300 hover:border-stardust-400/70 transition-all text-sm font-medium"
-          >
-            {session ? 'Go to App' : 'Sign In'}
-          </Link>
-        </div>
-      </nav>
+      <PublicMarketingNav />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-12">
         {/* Header */}

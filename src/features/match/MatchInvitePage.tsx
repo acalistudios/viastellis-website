@@ -13,6 +13,9 @@ import { calculateNatalChart } from '@/lib/ephemeris'
 import { computeVibeScore, type VibeResult } from '@/lib/vibe'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
 import { CELEBRITIES, type Celebrity } from '@/data/celebrities'
+import { Seo } from '@/components/Seo'
+import { PublicMarketingNav } from '@/components/layout/PublicMarketingNav'
+import { Starfield } from '@/components/ui/Starfield'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
@@ -184,13 +187,16 @@ export function MatchInvitePage() {
     const publicReady = Boolean(personA.name.trim() && personA.date && personA.city && personB.name.trim() && personB.date && personB.city)
 
     return (
-      <div className="min-h-screen bg-cosmos-950 px-6 py-10 flex flex-col items-center">
-        <div className="w-full max-w-2xl">
-          <Link to="/" aria-label="ViaStellis home" className="inline-flex items-center gap-2 text-stardust-300 font-display text-lg mb-8">
-            <img src="/logo.svg" alt="" className="w-7 h-7" />
-            ViaStellis
-          </Link>
+      <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-200 relative overflow-hidden">
+        <Seo
+          title="Free Compatibility Match - ViaStellis"
+          description="Compare two birth profiles with a free astrology compatibility score. No sign-up required."
+          path="/match"
+        />
+        <Starfield count={90} />
+        <PublicMarketingNav />
 
+        <main className="relative z-10 w-full max-w-5xl mx-auto px-6 py-12">
           <div className="text-center mb-8">
             <h1 className="font-display text-4xl text-stardust-300 mb-3">Free Compatibility Match</h1>
             <p className="text-slate-400 text-sm max-w-lg mx-auto">
@@ -250,7 +256,7 @@ export function MatchInvitePage() {
           )}
 
           <p className="text-[10px] text-slate-600 text-center max-w-sm mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
-        </div>
+        </main>
       </div>
     )
   }
@@ -258,11 +264,19 @@ export function MatchInvitePage() {
   const today = new Date().toISOString().split('T')[0]
 
   return (
-    <div className="min-h-screen bg-cosmos-950 px-6 py-12 flex flex-col items-center">
-      <h1 className="font-display text-3xl text-stardust-300 mb-1">ViaStellis</h1>
-      <p className="text-slate-500 text-xs mb-8">Vibe Match invitation</p>
+    <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-200 relative overflow-hidden">
+      <Seo
+        title="Vibe Match Invitation - ViaStellis"
+        description="Open your ViaStellis compatibility invitation and compare your birth chart with someone else."
+        path="/match"
+      />
+      <Starfield count={70} />
+      <PublicMarketingNav />
 
-      <div className="w-full max-w-sm">
+      <main className="relative z-10 w-full max-w-sm mx-auto px-6 py-12">
+        <h1 className="font-display text-3xl text-stardust-300 mb-1 text-center">Vibe Match invitation</h1>
+        <p className="text-slate-500 text-xs mb-8 text-center">Compare your stars with {inviter.name}</p>
+
         {!vibe ? (
           <>
             <p className="text-slate-300 text-center mb-6">
@@ -274,7 +288,7 @@ export function MatchInvitePage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <Input label="Your name" value={name} onChange={e => setName(e.target.value)} required />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <Input label="Birth date" type="date" value={date} max={today}
                   onChange={e => setDate(e.target.value)} required className="[color-scheme:dark]" />
                 <Input label="Time (optional)" type="time" value={time}
@@ -325,7 +339,7 @@ export function MatchInvitePage() {
         )}
 
         <p className="text-[10px] text-slate-600 text-center mt-8 max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
-      </div>
+      </main>
     </div>
   )
 }
@@ -379,7 +393,7 @@ function PublicPersonFields({ label, draft, today, celebrities, onChange, onCity
         </div>
 
         <Input label="Name" value={draft.name} onChange={e => onChange({ name: e.target.value })} required />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid sm:grid-cols-2 gap-3">
           <Input label="Birth date" type="date" value={draft.date} max={today}
             onChange={e => onChange({ date: e.target.value })} required className="[color-scheme:dark]" />
           <Input label="Time (optional)" type="time" value={draft.time}
