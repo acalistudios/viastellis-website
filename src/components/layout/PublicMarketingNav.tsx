@@ -8,7 +8,7 @@ export function PublicMarketingNav() {
     <header className="sticky top-0 z-40 bg-gradient-to-b from-[#0f0817]/90 to-transparent backdrop-blur-md border-b border-stardust-400/10 px-6 py-4 relative">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="text-2xl font-display text-stardust-300 flex items-center gap-2 hover:text-stellar-300 transition-colors">
-          <img src="/logo-mark.svg" alt="" className="w-8 h-8" /> ViaStellis
+          <img src="/logo-mark.png" alt="" className="w-8 h-8" /> ViaStellis
         </Link>
         <nav className="flex items-center gap-5 sm:gap-8 text-sm">
           <a href="/#offerings" className="hidden sm:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium">
