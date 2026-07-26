@@ -8,6 +8,11 @@ declare global {
 }
 
 const tagId = import.meta.env.VITE_GOOGLE_TAG_ID as string | undefined
+const conversionLabels: Record<string, string | undefined> = {
+  signup_cta_click: import.meta.env.VITE_GOOGLE_ADS_SIGNUP_CTA_CONVERSION_LABEL as string | undefined,
+  signup_submit: import.meta.env.VITE_GOOGLE_ADS_SIGNUP_CONVERSION_LABEL as string | undefined,
+  checkout_start: import.meta.env.VITE_GOOGLE_ADS_CHECKOUT_CONVERSION_LABEL as string | undefined,
+}
 let initialized = false
 
 function getTagId(): string | null {
@@ -50,7 +55,13 @@ export function trackPageView(path: string) {
 }
 
 export function trackEvent(name: string, params: Record<string, unknown> = {}) {
-  if (!getTagId()) return
+  const id = getTagId()
+  if (!id) return
   initAnalytics()
-  window.gtag?.('event', name, params)
+  const conversionLabel = conversionLabels[name]
+  const conversionParams =
+    conversionLabel && id.startsWith('AW-')
+      ? { ...params, send_to: `${id}/${conversionLabel}` }
+      : params
+  window.gtag?.('event', name, conversionParams)
 }

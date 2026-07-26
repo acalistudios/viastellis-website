@@ -31,6 +31,16 @@ VITE_GOOGLE_TAG_ID=AW-XXXXXXXXXX
 
 Tracking is disabled when this variable is blank.
 
+For Google Ads conversion actions, add the conversion label from each event snippet:
+
+```text
+VITE_GOOGLE_ADS_SIGNUP_CTA_CONVERSION_LABEL=optional_label
+VITE_GOOGLE_ADS_SIGNUP_CONVERSION_LABEL=signup_label
+VITE_GOOGLE_ADS_CHECKOUT_CONVERSION_LABEL=checkout_label
+```
+
+The full `send_to` value is built in code as `AW-XXXXXXXXXX/LABEL`.
+
 Tracked events:
 
 - `page_view`

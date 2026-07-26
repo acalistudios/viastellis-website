@@ -41,6 +41,12 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_APP_ENV: production
+          # Optional Google tag for Ads/Analytics conversion measurement.
+          # Add via: Settings -> Secrets and variables -> Actions -> New repository secret.
+          VITE_GOOGLE_TAG_ID: AW-18341175223
+          VITE_GOOGLE_ADS_SIGNUP_CTA_CONVERSION_LABEL: ${{ secrets.VITE_GOOGLE_ADS_SIGNUP_CTA_CONVERSION_LABEL }}
+          VITE_GOOGLE_ADS_SIGNUP_CONVERSION_LABEL: ${{ secrets.VITE_GOOGLE_ADS_SIGNUP_CONVERSION_LABEL }}
+          VITE_GOOGLE_ADS_CHECKOUT_CONVERSION_LABEL: ${{ secrets.VITE_GOOGLE_ADS_CHECKOUT_CONVERSION_LABEL }}
           # Stripe Price IDs — empty until these repo secrets are added at go-live.
           # While empty, /upgrade shows "not configured" (startCheckout guards on it).
           # Add via: Settings → Secrets and variables → Actions → New repository secret,
