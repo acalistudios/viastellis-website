@@ -52,7 +52,6 @@ function formatDegree(deg: number): string {
 
 const HUB_TABS = [
   { key: 'chart', label: '✦ Chart' },
-  { key: 'numerology', label: '🔢 Numerology' },
   { key: 'tarot', label: '🃏 Tarot' },
 ] as const
 type HubTab = (typeof HUB_TABS)[number]['key']
@@ -149,16 +148,6 @@ export function ChartPage() {
     </div>
   )
 
-  if (tab === 'numerology') {
-    return (
-      <div className="px-5 py-8 max-w-lg mx-auto">
-        {HubTabBar}
-        <NumerologySection birthData={chart.birth_data} />
-        <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
-      </div>
-    )
-  }
-
   if (tab === 'tarot') {
     return (
       <div className="px-5 py-8 max-w-lg mx-auto">
@@ -210,9 +199,10 @@ export function ChartPage() {
 
   const moonSign = chart.planets.find(p => p.planet === 'Moon')?.sign
   const sunSign = chart.planets.find(p => p.planet === 'Sun')?.sign
+  const venusSign = chart.planets.find(p => p.planet === 'Venus')?.sign
   const synthesis =
     sunSign && moonSign
-      ? getChartSynthesis(sunSign, moonSign, timeUnknown ? undefined : chart.ascendant.sign)
+      ? getChartSynthesis(sunSign, moonSign, timeUnknown ? undefined : chart.ascendant.sign, venusSign)
       : null
 
   return (
@@ -282,14 +272,19 @@ export function ChartPage() {
           <p className="text-slate-300 text-sm leading-relaxed mb-3">{synthesis.personality}</p>
 
           <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Career & vocation</p>
-          <p className="text-slate-300 text-sm leading-relaxed">{synthesis.career}</p>
+          <p className="text-slate-300 text-sm leading-relaxed mb-3">{synthesis.career}</p>
+
+          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Love & relationships</p>
+          <p className="text-slate-300 text-sm leading-relaxed">{synthesis.relationships}</p>
 
           <p className="text-[10px] text-slate-600 mt-3 italic">
-            A blended reading of your rising, Sun, and Moon signs — inclinations, not rules. The houses,
+            A blended reading of your rising, Sun, Moon{venusSign ? ', and Venus' : ''} signs — inclinations, not rules. The houses,
             dashas, and yogas below refine all of this.
           </p>
         </div>
       )}
+
+      <NumerologySection birthData={chart.birth_data} />
 
       {/* Ascendant card */}
       {!timeUnknown && (

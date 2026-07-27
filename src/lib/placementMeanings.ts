@@ -168,6 +168,26 @@ const CAREER_BY_SIGN: Record<ZodiacSign, string> = {
   Pisces: 'arts, music, film, healing, spirituality, charity, marine fields, anything imaginative or compassionate',
 }
 
+/**
+ * Love & relationship style by sign. Classically read most from Venus (how you
+ * love, what you're drawn to) with the 7th house and its lord adding the
+ * partnership dynamic — but Venus alone gives a clear, honest read on its own.
+ */
+const RELATIONSHIP_BY_SIGN: Record<ZodiacSign, string> = {
+  Aries: 'You fall fast and love with your whole chest. You are drawn to a partner who can keep up — someone confident and a little bit of a challenge, not someone who needs chasing. You show love through action and initiative more than words.',
+  Taurus: 'You love slowly, deeply, and for keeps. Physical affection, consistency, and shared comfort mean more to you than grand romantic gestures. Once committed you are extraordinarily loyal — and you expect the same in return.',
+  Gemini: 'You need a partner who is also a friend and conversation partner — mental chemistry matters as much as physical attraction. Variety and playfulness keep the spark alive; routine without novelty is what wears you down.',
+  Cancer: 'You love like family from the very start — protective, nurturing, and quick to build a home together, literally or figuratively. You need real emotional safety to open up, and you remember every kindness (and every slight).',
+  Leo: 'You love generously, romantically, and out loud — you want a partner you can be proud of and who is proud of you. Affection, attention, and appreciation are how you both give and receive love; being taken for granted is your dealbreaker.',
+  Virgo: 'You show love through acts of service — noticing what someone needs and quietly taking care of it. You can be a discerning, even critical, partner-picker, but once you commit you are devoted and dependable.',
+  Libra: 'Partnership itself is central to how you see yourself — you are happiest paired up, and you work hard to keep things fair and harmonious. Charm and aesthetics matter; conflict avoidance is your growth edge.',
+  Scorpio: 'You love all-in or not at all — intensely, loyally, and privately. Trust is everything: once earned you bond for life, but betrayal is nearly unforgivable. You want a partner who can meet you at full emotional depth.',
+  Sagittarius: 'You need a partner who is also an adventure buddy — someone who gives you room to roam and grow rather than pinning you down. Honesty and a shared sense of humor matter more to you than traditional romance.',
+  Capricorn: 'You take love seriously and play the long game — you would rather build something lasting than chase a fling. You may be reserved about your feelings early on, but a committed Capricorn is one of the most dependable partners in the zodiac.',
+  Aquarius: 'You want a partner who is also your best friend and who respects your independence — you fall for minds before bodies. You show love in unconventional ways and need space within closeness to feel free.',
+  Pisces: 'You love with your whole imagination — romantic, empathic, and quick to merge emotionally with a partner. You need a relationship with real emotional and spiritual depth; guard against idealizing a partner instead of seeing them clearly.',
+}
+
 export interface ChartSynthesis {
   /** A short headline, e.g. "Aries rising, Aries Sun, Pisces Moon". */
   headline: string
@@ -177,18 +197,22 @@ export interface ChartSynthesis {
   personality: string
   /** A career-leaning paragraph. */
   career: string
+  /** A love/relationships-leaning paragraph. */
+  relationships: string
 }
 
 /**
- * Synthesize the three pillars into a combined personality + career reading.
+ * Synthesize the three pillars into a combined personality + career + relationships reading.
  * @param lagna  rising sign (undefined if birth time unknown)
  * @param sun    Sun sign
  * @param moon   Moon sign
+ * @param venus  Venus sign (optional — falls back to the Moon's emotional style if omitted)
  */
 export function getChartSynthesis(
   sun: ZodiacSign,
   moon: ZodiacSign,
-  lagna?: ZodiacSign
+  lagna?: ZodiacSign,
+  venus?: ZodiacSign
 ): ChartSynthesis {
   const outer = lagna ?? sun // without a birth time, the Sun carries the outer role
   const isDouble = lagna != null && lagna === sun
@@ -249,10 +273,20 @@ export function getChartSynthesis(
       `The sweet spot is a role that lets both express. Your ${moon} Moon adds the human factor: ` +
       `you will stay engaged longest in work that satisfies your need to be ${moonTraits.keyword.split(',')[0]}.`
 
+  // Relationships: Venus (how you love) blended with the Moon (what you need to feel safe).
+  const loveSign = venus ?? moon
+  const relationships = venus
+    ? `In love, your ${venus} Venus shows how you connect: ${RELATIONSHIP_BY_SIGN[venus]} ` +
+      `Your ${moon} Moon adds what you need underneath the romance to feel secure — ` +
+      `${moon === 'Pisces' ? 'a sense of imaginative, spiritual closeness' : `a partner who honors your need to be ${moonTraits.keyword.split(',')[0]}`}.`
+    : `Your ${moon} Moon — standing in for Venus here — shapes how you love as much as how you feel: ` +
+      `${RELATIONSHIP_BY_SIGN[loveSign]}`
+
   return {
     headline: headlineParts.join(', '),
     isDouble,
     personality,
     career,
+    relationships,
   }
 }

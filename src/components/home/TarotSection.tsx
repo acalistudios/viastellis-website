@@ -194,9 +194,12 @@ export function TarotSection({ chart }: Props) {
                 <div key={i} className="text-center">
                   <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{SPREAD_POSITIONS[i]}</p>
                   <FlipCard card={card} flipped={revealed} reversed={rev} delayMs={i * 160} animate={spreadAnimate} />
-                  {/* Name + keyword fade in after the flip lands */}
+                  {/* Name + keyword fade in after the flip lands. Height-collapsed
+                      (not just opacity-0) before reveal — otherwise this block still
+                      reserves its full text height, leaving a big empty gap between
+                      the card row and the reveal button/description below it. */}
                   <div
-                    className={`transition-opacity duration-500 ${revealed ? 'opacity-100' : 'opacity-0'}`}
+                    className={`transition-opacity duration-500 ${revealed ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}
                     style={{ transitionDelay: revealed ? `${i * 160 + 400}ms` : '0ms' }}
                   >
                     <p className="text-slate-200 text-[11px] font-medium leading-tight mt-1.5">{card.name}</p>
@@ -222,9 +225,6 @@ export function TarotSection({ chart }: Props) {
             <p className="text-slate-500 text-xs">Stella is reading the cards…</p>
           ) : (
             <>
-              <p className="text-slate-400 text-sm mb-3">
-                Reveal your 3-card Past · Present · Future spread for today, with Stella's reading.
-              </p>
               <button
                 onClick={() => void unlockSpread()}
                 disabled={spreadLoading}
@@ -232,6 +232,9 @@ export function TarotSection({ chart }: Props) {
               >
                 {isPremium ? 'Reveal spread (free on Premium)' : `Reveal spread · ${creditLabel(COST)}`}
               </button>
+              <p className="text-slate-400 text-sm mt-3">
+                Reveal your 3-card Past · Present · Future spread for today, with Stella's reading.
+              </p>
               {!isPremium && (
                 <p className="text-[10px] text-slate-600 mt-2">
                   Once per day · free on{' '}

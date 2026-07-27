@@ -160,7 +160,9 @@ function BirthDateFields({ value, onChange }: { value: string; onChange: (v: str
   const currentYear = new Date().getFullYear()
 
   function emit(nextMonth: number | '', nextDay: number | '', nextYear: number | '') {
-    if (nextMonth === '' || nextDay === '' || nextYear === '' || String(nextYear).length < 4) {
+    // nextDay === 0 is the valid mid-typing state for "01".."09" (the user just
+    // typed the leading zero) — treat it as incomplete, not a real day-0 date.
+    if (nextMonth === '' || nextDay === '' || nextDay === 0 || nextYear === '' || String(nextYear).length < 4) {
       onChange('')
       return
     }
@@ -192,7 +194,11 @@ function BirthDateFields({ value, onChange }: { value: string; onChange: (v: str
         max={31}
         value={day}
         onChange={(e) => {
-          const v = e.target.value ? Math.max(1, Math.min(31, Number(e.target.value))) : ''
+          // No lower clamp here: typing "0" (the start of "08") must stay "0" on
+          // screen, not jump to "1" — a floor of 1 was rewriting "0" -> "1" before
+          // the second digit landed, turning "08" into "18". Only cap the top end;
+          // day-0 is filtered out as an incomplete entry in emit() above.
+          const v = e.target.value ? Math.min(31, Number(e.target.value)) : ''
           setDay(v); emit(month, v, year)
         }}
         className="w-full bg-cosmos-800 border border-cosmos-600 rounded-xl px-3 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-stardust-400 focus:ring-1 focus:ring-stardust-400"

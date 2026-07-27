@@ -9,7 +9,9 @@ const PROXY_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
   : '/api'
 
-export type ReportKind = 'career' | 'year_ahead' | 'birth_chart' | 'numerology' | 'western_birth_chart'
+export type ReportKind =
+  | 'career' | 'year_ahead' | 'birth_chart' | 'numerology'
+  | 'western_birth_chart' | 'western_career' | 'western_year_ahead'
 
 export interface ReportContext {
   name: string

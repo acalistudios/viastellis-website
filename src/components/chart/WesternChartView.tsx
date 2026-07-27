@@ -103,9 +103,10 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
   // tropical zodiac too). Mirrors the Vedic view's Blueprint.
   const sunSign = chart.planets.find((p) => p.body === 'Sun')?.sign
   const moonSign = chart.planets.find((p) => p.body === 'Moon')?.sign
+  const venusSign = chart.planets.find((p) => p.body === 'Venus')?.sign
   const synthesis =
     sunSign && moonSign
-      ? getChartSynthesis(sunSign, moonSign, timeUnknown ? undefined : chart.ascendant.sign)
+      ? getChartSynthesis(sunSign, moonSign, timeUnknown ? undefined : chart.ascendant.sign, venusSign)
       : null
 
   const wheelRef = useRef<HTMLDivElement>(null)
@@ -175,14 +176,19 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
           <p className="text-slate-300 text-sm leading-relaxed mb-3">{synthesis.personality}</p>
 
           <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Career & vocation</p>
-          <p className="text-slate-300 text-sm leading-relaxed">{synthesis.career}</p>
+          <p className="text-slate-300 text-sm leading-relaxed mb-3">{synthesis.career}</p>
+
+          <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Love & relationships</p>
+          <p className="text-slate-300 text-sm leading-relaxed">{synthesis.relationships}</p>
 
           <p className="text-[10px] text-slate-600 mt-3 italic">
-            A blended reading of your rising, Sun, and Moon signs — inclinations, not rules. The houses
+            A blended reading of your rising, Sun, Moon{venusSign ? ', and Venus' : ''} signs — inclinations, not rules. The houses
             and aspects below refine all of this.
           </p>
         </div>
       )}
+
+      <NumerologySection birthData={birthData} />
 
       {/* Ascendant / Midheaven summary */}
       {!timeUnknown && (
@@ -335,11 +341,32 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
         </div>
       )}
 
-      {/* Deep-dive report */}
-      {!timeUnknown && <WesternReportCard chart={chart} />}
-
-      {/* Numerology — system-independent (birth date + name), shown on both chart views. */}
-      <NumerologySection birthData={birthData} />
+      {/* Deep-dive reports */}
+      {!timeUnknown && (
+        <>
+          <WesternReportCard
+            chart={chart}
+            kind="western_career"
+            emoji="💼"
+            title="Western Career Deep-Dive"
+            description="A ~500-word reading of your vocational nature, ideal fields, strengths, and growth edges — read from your Midheaven, 10th house, Saturn, and Mars."
+          />
+          <WesternReportCard
+            chart={chart}
+            kind="western_year_ahead"
+            emoji="🔭"
+            title="Western Year-Ahead Reflection"
+            description="A ~500-word reading of the year's themes across love, career, health, opportunity, and caution — grounded in your enduring natal chart."
+          />
+          <WesternReportCard
+            chart={chart}
+            kind="western_birth_chart"
+            emoji="♈"
+            title="Western Chart Deep-Dive Reading"
+            description={`A full ~600-word reading of your tropical chart — your Sun, Moon and Rising "big three", your inner world, drive, and the outer planets, woven together through your aspects.`}
+          />
+        </>
+      )}
 
       <p className="mt-8 text-[11px] text-slate-600 text-center max-w-xs mx-auto">{ENTERTAINMENT_DISCLAIMER}</p>
     </div>
@@ -348,7 +375,15 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
 
 const COST = 40
 
-function WesternReportCard({ chart }: { chart: WesternChart }) {
+interface WesternReportCardProps {
+  chart: WesternChart
+  kind: 'western_birth_chart' | 'western_career' | 'western_year_ahead'
+  emoji: string
+  title: string
+  description: string
+}
+
+function WesternReportCard({ chart, kind, emoji, title, description }: WesternReportCardProps) {
   const { profile } = useUser()
   const isPremium = profile?.subscription_tier === 'premium'
 
@@ -380,7 +415,7 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
     setError('')
     if (unlock) setLoading(true)
     try {
-      const res = await getReport({ kind: 'western_birth_chart', context, persona: personaBlock || undefined, unlock })
+      const res = await getReport({ kind, context, persona: personaBlock || undefined, unlock })
       if (res.body) { setBody(res.body); setLocked(false) }
       else if (res.locked) setLocked(true)
     } catch (e) {
@@ -394,12 +429,12 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
   useEffect(() => { void load(false) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="mt-6 bg-gradient-to-br from-cosmos-800/80 to-cosmos-900/80 border border-stellar-300/30 rounded-2xl px-5 py-5">
+    <div className="mt-4 bg-gradient-to-br from-cosmos-800/80 to-cosmos-900/80 border border-stellar-300/30 rounded-2xl px-5 py-5">
       <div className="flex items-center justify-between mb-1">
         <p className="text-[11px] uppercase tracking-widest text-stellar-300">Deep-Dive Report</p>
-        <span className="text-base">♈</span>
+        <span className="text-base">{emoji}</span>
       </div>
-      <h2 className="text-slate-100 font-display text-xl mb-1">Western Chart Deep-Dive Reading</h2>
+      <h2 className="text-slate-100 font-display text-xl mb-1">{title}</h2>
 
       {body ? (
         <MarkdownText text={body} className="text-slate-300 text-sm mt-3" />
@@ -407,10 +442,7 @@ function WesternReportCard({ chart }: { chart: WesternChart }) {
         <p className="text-slate-500 text-xs mt-2">{locked ? 'Loading…' : 'Calculating…'}</p>
       ) : locked ? (
         <>
-          <p className="text-slate-400 text-sm mt-1 mb-4">
-            A full ~600-word reading of your tropical chart — your Sun, Moon and Rising "big three",
-            your inner world, drive, and the outer planets, woven together through your aspects.
-          </p>
+          <p className="text-slate-400 text-sm mt-1 mb-4">{description}</p>
           <button
             onClick={() => void load(true)}
             className="rounded-full px-5 py-2 bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold"
