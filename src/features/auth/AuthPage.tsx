@@ -92,8 +92,8 @@ export function AuthPage() {
           options: { redirectTo: `${window.location.origin}/home` },
         })
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during authentication')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred during authentication')
     }
   }
 

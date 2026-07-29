@@ -5,7 +5,7 @@
 
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Seo } from '@/components/Seo'
-import { conceptBySlug, CONCEPTS } from '@/data/concepts'
+import { conceptBySlug } from '@/data/concepts'
 
 export function ConceptPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -104,6 +104,3 @@ export function ConceptPage() {
     </div>
   )
 }
-
-// Re-export so a future static-sitemap generator can enumerate slugs.
-export const CONCEPT_SLUGS = CONCEPTS.map(c => c.slug)

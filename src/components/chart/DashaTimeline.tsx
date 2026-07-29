@@ -23,6 +23,7 @@ const SIGNS = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
   'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
 ]
+const MODULE_LOAD_TIME = Date.now()
 
 function fmt(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -48,7 +49,7 @@ export function DashaTimeline({ chart }: { chart: NatalChart }) {
   }, [chart])
 
   const { mahadashas, current } = data
-  const now = useMemo(() => Date.now(), [])
+  const now = MODULE_LOAD_TIME
 
   return (
     <div className="mt-6">
