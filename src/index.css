@@ -38,12 +38,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* PDF / print export — keep the cosmic theme in the output */
+/* PDF / print export: ink-friendly branded paper layout. */
 @media print {
   body {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
-    background-color: var(--color-cosmos-950) !important;
+    background-color: #ffffff !important;
+    color: #1f172a !important;
   }
   @page {
     margin: 10mm;
@@ -65,10 +66,95 @@ body {
     padding-bottom: 0 !important;
   }
 
+  .print-chart-page {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #1f172a !important;
+  }
+
+  .print-chart-page * {
+    color: #1f172a !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  .print-chart-page .bg-cosmos-900,
+  .print-chart-page .bg-cosmos-900\/60,
+  .print-chart-page .bg-cosmos-800,
+  .print-chart-page .from-cosmos-800\/80,
+  .print-chart-page .to-cosmos-900\/80 {
+    background: #ffffff !important;
+  }
+
+  .print-chart-page [class*="border-cosmos"],
+  .print-chart-page [class*="border-stardust"] {
+    border-color: #ddd4ea !important;
+  }
+
+  .print-chart-page svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .print-brand-header {
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 2px solid #ddd4ea;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+
+  .print-brand-lockup {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+  }
+
+  .print-brand-logo {
+    height: 42px;
+    width: 42px;
+  }
+
+  .print-brand-name {
+    color: #241639 !important;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .print-brand-url {
+    color: #6b5c81 !important;
+    font-size: 11px;
+    margin: 4px 0 0;
+  }
+
+  .print-chart-meta {
+    text-align: right;
+  }
+
+  .print-chart-title {
+    color: #241639 !important;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .print-chart-details {
+    color: #6b5c81 !important;
+    font-size: 11px;
+    margin: 4px 0 0;
+  }
+
   /* Avoid awkward breaks through cards and the chart graphic. */
   .print-block {
     break-inside: avoid;
     page-break-inside: avoid;
+    border: 1px solid #ddd4ea !important;
+    border-radius: 12px !important;
   }
   svg {
     break-inside: avoid;

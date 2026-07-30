@@ -6,6 +6,7 @@ import { DashaTimeline } from '@/components/chart/DashaTimeline'
 import { ReportCard } from '@/components/chart/ReportCard'
 import { NumerologySection } from '@/components/chart/NumerologySection'
 import { WesternChartView } from '@/components/chart/WesternChartView'
+import { PrintChartHeader } from '@/components/chart/PrintChartHeader'
 import { TarotSection } from '@/components/home/TarotSection'
 import { signCuspFlag, nakshatraEdgeFlag } from '@/lib/boundaryFlags'
 import { CREDIT_COSTS } from '@/config/creditCosts'
@@ -130,7 +131,7 @@ export function ChartPage() {
 
   // Hub tab bar — Chart / Numerology / Tarot, shown above everything else on this page
   const HubTabBar = (
-    <div className="flex justify-center gap-1 mb-6 border-b border-cosmos-800 pb-px">
+    <div className="flex justify-center gap-1 mb-6 border-b border-cosmos-800 pb-px print:hidden">
       {HUB_TABS.map(({ key, label }) => (
         <button
           key={key}
@@ -160,7 +161,7 @@ export function ChartPage() {
 
   // System toggle pill — shown on both chart views
   const SystemToggle = (
-    <div className="flex justify-center mb-2">
+    <div className="flex justify-center mb-2 print:hidden">
       <div className="inline-flex bg-cosmos-900 rounded-full p-1 border border-cosmos-700">
         {(['vedic', 'western'] as const).map((s) => (
           <button
@@ -206,7 +207,8 @@ export function ChartPage() {
       : null
 
   return (
-    <div className="px-5 py-8 max-w-lg mx-auto">
+    <div className="px-5 py-8 max-w-lg mx-auto print-chart-page">
+      <PrintChartHeader birthData={chart.birth_data} system="Vedic" />
       {HubTabBar}
       {SystemToggle}
       {/* Header */}

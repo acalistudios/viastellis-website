@@ -20,6 +20,7 @@ import { MarkdownText } from '@/components/ui/MarkdownText'
 import { NumerologySection } from '@/components/chart/NumerologySection'
 import { WesternWheel } from '@/components/chart/WesternWheel'
 import { WesternShareCardButton } from '@/components/chart/WesternShareCardButton'
+import { PrintChartHeader } from '@/components/chart/PrintChartHeader'
 import { getChartSynthesis } from '@/lib/placementMeanings'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { BirthData, WesternBody, AspectType, WesternChart } from '@/types'
@@ -114,7 +115,8 @@ export function WesternChartView({ birthData }: { birthData: BirthData }) {
   return (
     // No outer padding here — ChartPage wraps this in the shared padded container
     // (matching the Vedic view) so the system toggle lines up in both.
-    <div>
+    <div className="print-chart-page">
+      <PrintChartHeader birthData={birthData} system="Western" />
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="font-display text-3xl text-stardust-300">Your Western Chart</h1>
