@@ -181,6 +181,28 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['decision_reports']['Row']>
         Relationships: []
       }
+      client_reports: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          birth_data: Json
+          systems: 'vedic_western'
+          status: 'draft' | 'final'
+          prep_notes: string | null
+          credits_debited: number
+          generated_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['client_reports']['Row']> & {
+          user_id: string
+          title: string
+          birth_data: Json
+        }
+        Update: Partial<Database['public']['Tables']['client_reports']['Row']>
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -219,6 +241,10 @@ export type Database = {
           p_customer_id?: string
         }
         Returns: undefined
+      }
+      finalize_client_report: {
+        Args: { p_user_id: string; p_report_id: string; p_prep_notes: string }
+        Returns: number
       }
     }
     Enums: {

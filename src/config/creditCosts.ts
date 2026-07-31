@@ -19,6 +19,8 @@ export const CREDIT_COSTS = {
   report_synastry: 40,
   report_numerology: 40,
   report_western_birth_chart: 40,
+  client_birth_chart: 50,
+  client_birth_chart_premium: 45,
   full_moon_reading: 10,
   tarot_spread: 2,
 } as const

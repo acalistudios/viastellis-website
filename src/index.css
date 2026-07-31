@@ -132,6 +132,12 @@ body {
     margin: 4px 0 0;
   }
 
+  .print-brand-powered {
+    color: #8a7b9c !important;
+    font-size: 10px;
+    margin: 3px 0 0;
+   }
+
   .print-chart-meta {
     text-align: right;
   }

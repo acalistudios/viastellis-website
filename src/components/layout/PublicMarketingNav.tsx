@@ -30,6 +30,12 @@ export function PublicMarketingNav() {
             Free Match
           </Link>
           <Link
+            to="/practitioners"
+            className="hidden lg:inline text-slate-400 hover:text-stardust-300 transition-colors font-medium"
+          >
+            For Astrologers
+          </Link>
+          <Link
             to={session ? '/home' : '/auth'}
             className="whitespace-nowrap px-4 sm:px-6 py-2 bg-gradient-to-r from-stardust-400/20 to-stellar-300/20 hover:from-stardust-400/30 hover:to-stellar-300/30 border border-stardust-400/50 text-stardust-300 rounded-full text-sm font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/20"
           >

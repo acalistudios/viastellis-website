@@ -122,7 +122,7 @@ export function drawFooter(ctx: CanvasRenderingContext2D, note: string) {
 
   ctx.fillStyle = '#9b8aae'
   ctx.font = '18px system-ui, sans-serif'
-  ctx.fillText('For entertainment purposes only', SHARE_CARD_WIDTH / 2, 1300)
+  ctx.fillText('Powered by ViaStellis | For entertainment purposes only', SHARE_CARD_WIDTH / 2, 1300)
 }
 
 function formatDate(date: string): string {

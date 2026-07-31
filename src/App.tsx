@@ -24,6 +24,9 @@ import { PublicHoroscopesPage } from '@/pages/PublicHoroscopesPage'
 import { LearnPage } from '@/pages/LearnPage'
 import { ConceptPage } from '@/pages/ConceptPage'
 import { UpgradePage } from '@/pages/UpgradePage'
+import { PractitionersPage } from '@/pages/PractitionersPage'
+import { PractitionerChartPage } from '@/pages/PractitionerChartPage'
+import { ClientReportsPage } from '@/pages/ClientReportsPage'
 
 // Auth + Onboarding features
 import { AuthPage } from '@/features/auth/AuthPage'
@@ -105,6 +108,9 @@ function App() {
       <Route path="/zodiac-systems" element={<ZodiacSystemsPage />} />
       {/* Public "Today's Horoscopes" demo — all 12 signs, no signup */}
       <Route path="/horoscopes" element={<PublicHoroscopesPage />} />
+      {/* Public practitioner offering for astrologers */}
+      <Route path="/practitioners" element={<PractitionersPage />} />
+      <Route path="/practitioners/create" element={<PractitionerChartPage />} />
       {/* Public SEO/top-of-funnel: free horoscope demo + concept hub */}
       <Route path="/learn" element={<LearnPage />} />
       <Route path="/learn/:slug" element={<ConceptPage />} />
@@ -158,6 +164,7 @@ function App() {
         <Route path="/stella" element={<StellaPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/journal" element={<JournalPage />} />
+        <Route path="/client-reports" element={<ClientReportsPage />} />
       </Route>
 
       {/* Fallback */}

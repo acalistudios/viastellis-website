@@ -204,6 +204,31 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Practitioner offering */}
+      <section className="px-6 py-16 relative z-10">
+        <div className="max-w-5xl mx-auto rounded-3xl border border-stardust-400/25 bg-gradient-to-br from-[#1a1a3f]/70 to-[#0f0817]/70 p-8 md:p-10">
+          <div className="grid md:grid-cols-[1fr_auto] gap-8 items-center">
+            <div>
+              <p className="text-stellar-300 uppercase tracking-[0.25em] text-xs font-semibold mb-3">
+                For astrologers
+              </p>
+              <h2 className="font-display text-3xl text-stardust-300 mb-3">
+                Prepare client charts faster with ViaStellis.
+              </h2>
+              <p className="text-slate-400 leading-relaxed max-w-2xl">
+                Professional chart packets, AI-assisted prep notes, and printable exports for astrologers who want support without replacing their craft. Every export includes a small Powered by ViaStellis marker.
+              </p>
+            </div>
+            <Link
+              to="/practitioners"
+              className="px-7 py-3.5 rounded-full border border-stardust-400/50 text-stardust-300 font-semibold text-center hover:border-stardust-300 hover:bg-stardust-400/10 transition-colors"
+            >
+              ViaStellis for Astrologers
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="px-6 py-20 bg-gradient-to-b from-transparent via-[#1a1a3f]/30 to-transparent relative z-10">
         <div className="max-w-4xl mx-auto">
@@ -263,6 +288,8 @@ export function LandingPage() {
             <Link to="/horoscopes" className="hover:text-stardust-300 transition-colors">Today's horoscopes</Link>
             <span className="text-cosmos-700">·</span>
             <Link to="/match" className="hover:text-stardust-300 transition-colors">Free compatibility match</Link>
+            <span className="text-cosmos-700">·</span>
+            <Link to="/practitioners" className="hover:text-stardust-300 transition-colors">For astrologers</Link>
             <span className="text-cosmos-700">·</span>
             <Link to="/learn" className="hover:text-stardust-300 transition-colors">Learn astrology</Link>
             <span className="text-cosmos-700">·</span>

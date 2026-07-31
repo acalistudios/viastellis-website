@@ -19,7 +19,11 @@ const routes = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)]
   .map(url => new URL(url).pathname)
   .filter(path => path !== '/')
 
-for (const route of routes) {
+const extraStaticRoutes = [
+  '/practitioners/create',
+]
+
+for (const route of [...routes, ...extraStaticRoutes]) {
   const targetDir = join(distDir, route.replace(/^\/+/, ''))
   await mkdir(targetDir, { recursive: true })
   await writeFile(join(targetDir, 'index.html'), indexHtml)

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Star, Calendar, MessageCircle, Menu, Users, HelpCircle, BookOpen, Crown, Settings, X } from 'lucide-react'
+import { Home, Star, Calendar, MessageCircle, Menu, Users, HelpCircle, BookOpen, Crown, Settings, X, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const CORE_ITEMS = [
@@ -11,11 +11,12 @@ const CORE_ITEMS = [
 ]
 
 const MORE_ITEMS = [
-  { to: '/calendar', icon: Calendar,  label: 'Best Days' },
-  { to: '/decision', icon: HelpCircle, label: 'Decisions' },
-  { to: '/journal',  icon: BookOpen,   label: 'Journal' },
-  { to: '/upgrade',  icon: Crown,      label: 'Premium' },
-  { to: '/settings', icon: Settings,   label: 'Settings' },
+  { to: '/calendar',       icon: Calendar,  label: 'Best Days' },
+  { to: '/decision',       icon: HelpCircle, label: 'Decisions' },
+  { to: '/journal',        icon: BookOpen,   label: 'Journal' },
+  { to: '/client-reports', icon: FileText,   label: 'Client Reports' },
+  { to: '/upgrade',        icon: Crown,      label: 'Premium' },
+  { to: '/settings',       icon: Settings,   label: 'Settings' },
 ]
 
 export function BottomNav() {

@@ -14,6 +14,7 @@ export function PrintChartHeader({ birthData, system }: Props) {
         <div>
           <p className="print-brand-name">ViaStellis</p>
           <p className="print-brand-url">viastellis.com</p>
+          <p className="print-brand-powered">Powered by ViaStellis</p>
         </div>
       </div>
       <div className="print-chart-meta">

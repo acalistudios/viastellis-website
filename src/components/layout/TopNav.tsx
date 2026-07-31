@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Star, Users, MessageCircle, Menu, Calendar, HelpCircle, BookOpen, Settings, Crown } from 'lucide-react'
+import { Home, Star, Users, MessageCircle, Menu, Calendar, HelpCircle, BookOpen, Settings, Crown, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/store/UserContext'
 
@@ -13,10 +13,11 @@ const CORE_ITEMS = [
 ]
 
 const MORE_ITEMS = [
-  { to: '/calendar', icon: Calendar,  label: 'Best Days' },
-  { to: '/decision', icon: HelpCircle, label: 'Decisions' },
-  { to: '/journal',  icon: BookOpen,   label: 'Journal'   },
-  { to: '/settings', icon: Settings,   label: 'Settings'  },
+  { to: '/calendar',       icon: Calendar,  label: 'Best Days'      },
+  { to: '/decision',       icon: HelpCircle, label: 'Decisions'      },
+  { to: '/journal',        icon: BookOpen,   label: 'Journal'        },
+  { to: '/client-reports', icon: FileText,   label: 'Client Reports' },
+  { to: '/settings',       icon: Settings,   label: 'Settings'       },
 ]
 
 const itemClass = ({ isActive }: { isActive: boolean }) =>
