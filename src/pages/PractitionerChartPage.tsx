@@ -271,9 +271,9 @@ export function PractitionerChartPage() {
                   <div className="mt-5 rounded-2xl border border-stardust-400/20 bg-cosmos-900/80 p-5">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                       <div>
-                        <p className="text-stardust-300 font-semibold mb-2">Client report draft</p>
+                        <p className="text-stardust-300 font-semibold mb-2">Save this client profile</p>
                         <p className="text-sm text-slate-400 leading-relaxed">
-                          This preview is the free deterministic layer. Final client-ready packets should debit {creditLabel(clientChartCost)} and unlock polished PDF export, AI prep notes, and saved client packet generation.
+                          Save these birth details to Client Reports, then generate a professional prep packet with AI-assisted notes when you are ready.
                         </p>
                         {saveMessage && <p className="text-sm text-emerald-300 mt-3">{saveMessage}</p>}
                       </div>
@@ -295,7 +295,7 @@ export function PractitionerChartPage() {
                       )}
                     </div>
                     <p className="text-xs text-slate-600 mt-4">
-                      Standard cost is {creditLabel(CREDIT_COSTS.client_birth_chart)}. Premium astrologers receive a 10% discount: {creditLabel(CREDIT_COSTS.client_birth_chart_premium)}.
+                      Client birth charts cost {creditLabel(CREDIT_COSTS.client_birth_chart)}. Premium accounts receive a 10% credit discount.
                     </p>
                   </div>
                 </div>
