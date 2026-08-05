@@ -246,7 +246,7 @@ export function MatchInvitePage() {
                 <p className="text-slate-300"><span className="text-stardust-400">☉ Suns:</span> {publicVibe.sun.label}</p>
                 <p className="text-slate-300"><span className="text-stardust-400">♀♂ Spark:</span> {publicVibe.venusMars.label}</p>
               </div>
-              <Link to="/auth">
+              <Link to="/auth?mode=signup">
                 <Button size="lg">Get my full chart free</Button>
               </Link>
               <p className="text-slate-600 text-[11px] mt-3">
@@ -329,7 +329,7 @@ export function MatchInvitePage() {
               <p className="text-slate-300"><span className="text-stardust-400">☉ Suns:</span> {vibe.sun.label}</p>
               <p className="text-slate-300"><span className="text-stardust-400">♀♂ Spark:</span> {vibe.venusMars.label}</p>
             </div>
-            <Link to="/auth">
+            <Link to="/auth?mode=signup">
               <Button size="lg">Get my full chart free</Button>
             </Link>
             <p className="text-slate-600 text-[11px] mt-3">

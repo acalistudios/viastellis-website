@@ -148,7 +148,7 @@ export function PublicHoroscopesPage() {
             readings, transits, compatibility, and Stella.
           </p>
           <Link
-            to="/auth"
+            to="/auth?mode=signup"
             onClick={() => trackEvent('signup_cta_click', { source_page: 'public_horoscopes' })}
             className="inline-block mt-5 rounded-full px-6 py-3 bg-gradient-to-r from-stardust-400 to-stellar-300 text-[#0a0e27] text-sm font-semibold"
           >

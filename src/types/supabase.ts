@@ -166,6 +166,25 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['journal_entries']['Row']>
         Relationships: []
       }
+      horoscope_feedback: {
+        Row: {
+          id: string
+          user_id: string
+          horoscope_date: string
+          lens: string
+          rating: number
+          note: string | null
+          sky_context: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<
+          Database['public']['Tables']['horoscope_feedback']['Row'],
+          'id' | 'created_at' | 'updated_at' | 'note' | 'sky_context'
+        > & { note?: string | null; sky_context?: Json | null; updated_at?: string }
+        Update: Partial<Database['public']['Tables']['horoscope_feedback']['Row']>
+        Relationships: []
+      }
       decision_reports: {
         Row: {
           id: string

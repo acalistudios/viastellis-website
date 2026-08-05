@@ -11,14 +11,12 @@ import { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { useNatalChart } from '@/hooks/useNatalChart'
-import { moonSiderealDeg, moonGocharaQuality, signFromDeg, getNakshatra } from '@/lib/ephemeris'
-import { getPanchanga } from '@/lib/panchanga'
+import { currentSkyContext } from '@/lib/skyContext'
 import { streamStella } from '@/lib/gemini'
 import { CreditCost } from '@/components/ui/CreditCost'
 import { CREDIT_COSTS } from '@/config/creditCosts'
 import { Button } from '@/components/ui/Button'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
-import type { ZodiacSign } from '@/types'
 
 const MOODS = ['😊', '😌', '😐', '😔', '😤', '🤯']
 
@@ -63,20 +61,7 @@ export function JournalPage() {
 
   useEffect(() => { void load() }, [load])
 
-  function currentSkyContext() {
-    const now = new Date()
-    const moonDeg = moonSiderealDeg(now)
-    const moonSign = signFromDeg(moonDeg) as ZodiacSign
-    const natalMoonSign = chart?.planets.find(p => p.planet === 'Moon')?.sign
-    const p = getPanchanga(now)
-    return {
-      moon_sign: moonSign,
-      nakshatra: getNakshatra(moonDeg).name,
-      gochara: natalMoonSign ? moonGocharaQuality(natalMoonSign, moonSign).quality : null,
-      tithi: `${p.tithi.name} (${p.tithi.paksha})`,
-      phase: p.moonPhase.name,
-    }
-  }
+  const natalMoonSign = chart?.planets.find(p => p.planet === 'Moon')?.sign
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -88,7 +73,7 @@ export function JournalPage() {
         user_id: user.id,
         body: body.trim(),
         mood,
-        sky_context: currentSkyContext(),
+        sky_context: currentSkyContext(natalMoonSign),
       })
       if (dbError) throw dbError
       setBody('')

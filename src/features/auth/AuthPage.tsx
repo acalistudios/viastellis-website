@@ -18,10 +18,29 @@ interface RememberedEmail {
   timestamp: number
 }
 
+/**
+ * Which tab to open on. Marketing/ad CTAs pass `?mode=signup` so a fresh visitor
+ * who clicked "Get my full chart free" lands on Create Account, not Sign In.
+ * Absent an explicit param, we open on Create Account for visitors with no
+ * remembered email (almost always new traffic) and Sign In for returning ones.
+ */
+function getInitialMode(): Mode {
+  if (typeof window === 'undefined') return 'signup'
+  const param = new URLSearchParams(window.location.search).get('mode')
+  if (param === 'signin' || param === 'signup') return param
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    const emails = stored ? JSON.parse(stored) : []
+    return Array.isArray(emails) && emails.length > 0 ? 'signin' : 'signup'
+  } catch {
+    return 'signup'
+  }
+}
+
 export function AuthPage() {
   const navigate = useNavigate()
   const { session, loading: sessionLoading } = useUser()
-  const [mode, setMode] = useState<Mode>('signin')
+  const [mode, setMode] = useState<Mode>(getInitialMode())
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberEmail, setRememberEmail] = useState(true)
@@ -130,6 +149,16 @@ export function AuthPage() {
 
         trackEvent('signup_submit', { method: 'email' })
         if (rememberEmail) saveEmail(email)
+
+        // When email confirmation is disabled in Supabase Auth, signUp returns a
+        // live session immediately — skip the "check your email" round-trip (a
+        // major signup drop-off point) and take the new user straight into the
+        // app. AuthGuard routes them to /onboarding to build their chart.
+        if (data.session) {
+          navigate('/home', { replace: true })
+          return
+        }
+
         setMessage('Check your email to confirm your account, then sign in.')
         setMode('signin')
         setPassword('')
@@ -205,10 +234,13 @@ export function AuthPage() {
           {/* Google sign-in */}
           {mode !== 'forgot' && (
             <>
+              {/* Google is the primary path: one tap, no email-confirmation
+                  round-trip. Styled as the standout button; email + Facebook are
+                  secondary below it. */}
               <button
                 type="button"
                 onClick={() => handleOAuth('google')}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stardust-400/20 bg-white/5 hover:bg-white/10 transition-all text-sm font-medium text-slate-200 hover:text-white"
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-white hover:bg-slate-100 transition-all text-sm font-semibold text-slate-800 shadow-lg shadow-black/20"
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -216,12 +248,17 @@ export function AuthPage() {
                   <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
                   <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
                 </svg>
-                Continue with Google
+                {mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}
               </button>
+              {mode === 'signup' && (
+                <p className="text-center text-[11px] text-slate-500 -mt-1">
+                  Fastest way in — no email confirmation needed
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => handleOAuth('facebook')}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stardust-400/20 bg-white/5 hover:bg-white/10 transition-all text-sm font-medium text-slate-200 hover:text-white"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stardust-400/20 bg-white/5 hover:bg-white/10 transition-all text-sm font-medium text-slate-300 hover:text-white"
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path d="M18 9c0-4.97-4.03-9-9-9S0 4.03 0 9c0 4.49 3.29 8.21 7.59 8.89v-6.29H5.31V9h2.28V7.02c0-2.25 1.34-3.49 3.39-3.49.98 0 2.01.17 2.01.17v2.21h-1.13c-1.11 0-1.46.69-1.46 1.4V9h2.49l-.4 2.6h-2.09v6.29C14.71 17.21 18 13.49 18 9z" fill="#1877F2"/>
@@ -230,7 +267,7 @@ export function AuthPage() {
               </button>
               <div className="flex items-center gap-3 my-1">
                 <div className="flex-1 h-px bg-stardust-400/10" />
-                <span className="text-xs text-slate-600">or</span>
+                <span className="text-xs text-slate-600">or use email</span>
                 <div className="flex-1 h-px bg-stardust-400/10" />
               </div>
             </>

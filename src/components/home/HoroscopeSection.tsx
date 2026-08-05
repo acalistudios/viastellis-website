@@ -14,6 +14,7 @@ import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { westernSunSign } from '@/lib/westernSign'
 import { getHoroscope, type HoroscopeLens } from '@/lib/horoscope'
 import { MarkdownText } from '@/components/ui/MarkdownText'
+import { HoroscopeFeedback } from '@/components/home/HoroscopeFeedback'
 import type { NatalChart } from '@/types'
 
 interface Props {
@@ -204,7 +205,11 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
       {loading && !body ? (
         <p className="text-slate-500 text-xs">Reading the sky…</p>
       ) : body ? (
-        <MarkdownText text={body} className="text-slate-300 text-sm lg:text-base" />
+        <>
+          <MarkdownText text={body} className="text-slate-300 text-sm lg:text-base" />
+          {/* Only ask about a reading they can actually see. */}
+          <HoroscopeFeedback lens={active} lensTitle={META[active].title} natalMoonSign={moonSign} />
+        </>
       ) : cost != null ? (
         <div className="text-center bg-cosmos-800/50 border border-cosmos-700 rounded-xl px-4 py-4">
           <button

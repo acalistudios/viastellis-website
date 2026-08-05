@@ -5,7 +5,7 @@
  * Communicates the full breadth of the app in plain language, plus pricing.
  */
 
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { Seo } from '@/components/Seo'
 import { Starfield } from '@/components/ui/Starfield'
 import { PublicMarketingNav } from '@/components/layout/PublicMarketingNav'
@@ -60,7 +60,16 @@ const PRICING_TIERS = [
 ]
 
 export function LandingPage() {
-  const { session } = useUser()
+  const { session, loading: sessionLoading } = useUser()
+
+  // Already signed in? Skip the marketing page and the extra "Go to App" click —
+  // go straight to the dashboard. Two deliberate exceptions:
+  //   - wait for the session to resolve, so we don't flash the landing page first
+  //   - honor an anchor (/#pricing, /#offerings from the nav), so signed-in users
+  //     can still read features and pricing instead of being bounced to /home
+  if (!sessionLoading && session && !window.location.hash) {
+    return <Navigate to="/home" replace />
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0817] via-[#1a1a3f] to-[#0a0e27] text-slate-100 relative overflow-hidden">
@@ -145,7 +154,7 @@ export function LandingPage() {
 
           <div className="text-center mt-12">
             <Link
-              to="/auth"
+              to="/auth?mode=signup"
               className="inline-block rounded-full px-8 py-4 bg-gradient-to-r from-stardust-400 to-stellar-300 text-[#0a0e27] font-semibold transition-all hover:shadow-lg hover:shadow-stardust-400/30"
             >
               Create your free chart →
@@ -297,7 +306,7 @@ export function LandingPage() {
           </div>
           <p className="mb-4">{ENTERTAINMENT_DISCLAIMER}</p>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
-            <Link to="/auth" className="hover:text-stardust-400 transition-colors">
+            <Link to="/auth?mode=signup" className="hover:text-stardust-400 transition-colors">
               Sign Up
             </Link>
             <span className="text-cosmos-700">·</span>

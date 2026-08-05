@@ -77,7 +77,7 @@ export function ConceptPage() {
           <p className="text-slate-400 text-sm mb-4">
             Create your free account for your full ViaStellis birth chart, daily readings, tarot, compatibility, and Stella.
           </p>
-          <Link to="/auth"
+          <Link to="/auth?mode=signup"
             className="inline-block rounded-full bg-gradient-to-r from-stardust-400 to-stellar-300 text-cosmos-950 text-sm font-semibold px-6 py-2.5">
             Get my full chart →
           </Link>
