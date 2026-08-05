@@ -165,7 +165,7 @@ export function HoroscopeFeedback({ lens, lensTitle, natalMoonSign }: Props) {
       {rating === null ? (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[11px] text-slate-500 inline-flex items-center gap-1.5">
-            Was this horoscope accurate for your day?
+            Was this accurate?
             <JournalInfo />
           </span>
           {OPTIONS.map((o) => (
