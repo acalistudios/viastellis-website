@@ -17,6 +17,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
+import { InfoBubble } from '@/components/ui/InfoBubble'
 import { currentSkyContext, localDateStr } from '@/lib/skyContext'
 import type { HoroscopeLens } from '@/lib/horoscope'
 import type { ZodiacSign } from '@/types'
@@ -26,6 +27,22 @@ const OPTIONS = [
   { rating: 0, emoji: '😐', label: 'Kind of' },
   { rating: -1, emoji: '👎', label: 'Not really' },
 ] as const
+
+/** Why bother answering — the payoff isn't obvious until you've built up a few entries. */
+function JournalInfo() {
+  return (
+    <InfoBubble title="Why track this?" align="center">
+      Every answer is saved to your Cosmic Journal and stamped with the sky at that
+      moment — the Moon's sign and nakshatra, the tithi, and how the day's Moon sat
+      against your natal one.
+      <br />
+      <br />
+      Once you have a few entries, Stella can read them back and look for patterns —
+      which kinds of days actually tend to land well for <em>you</em>, rather than in
+      general. The more you note, the more specific she gets.
+    </InfoBubble>
+  )
+}
 
 interface Props {
   lens: HoroscopeLens
@@ -147,7 +164,10 @@ export function HoroscopeFeedback({ lens, lensTitle, natalMoonSign }: Props) {
     <div className="mt-4 pt-3 border-t border-cosmos-800/70">
       {rating === null ? (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] text-slate-500">Did this land?</span>
+          <span className="text-[11px] text-slate-500 inline-flex items-center gap-1.5">
+            Was this horoscope accurate for your day?
+            <JournalInfo />
+          </span>
           {OPTIONS.map((o) => (
             <button
               key={o.rating}
@@ -172,9 +192,11 @@ export function HoroscopeFeedback({ lens, lensTitle, natalMoonSign }: Props) {
                 onClick={() => setNoteOpen(true)}
                 className="text-[11px] text-stardust-400 hover:text-stardust-300 transition-colors"
               >
-                Add a note →
+                Add a note to your journal →
               </button>
             )}
+            {/* Same explainer, offered again at the moment they choose whether to write. */}
+            {!noteSaved && !noteOpen && <JournalInfo />}
             {!noteOpen && (
               <button
                 onClick={() => setRating(null)}
