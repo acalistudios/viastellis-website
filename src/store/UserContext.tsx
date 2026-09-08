@@ -3,6 +3,7 @@ import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { DEFAULT_PERSONALIZATION, type StellaMemory, type UserPersonalization, type UserProfile } from '@/types'
 import { fetchMemories, fetchPersonalization } from '@/lib/personalizationApi'
+import { initPurchases, logOutPurchases } from '@/lib/purchases'
 
 interface UserContextValue {
   session: Session | null
@@ -20,6 +21,8 @@ interface UserContextValue {
   refreshChartStatus: () => Promise<void>
   /** Re-fetch personalization + memories (call after editing the profile). */
   refreshPersonalization: () => Promise<void>
+  /** Re-fetch profile directly from Supabase (call after purchase/credits changes). */
+  refreshProfile: () => Promise<void>
 }
 
 const UserContext = createContext<UserContextValue>({
@@ -32,6 +35,7 @@ const UserContext = createContext<UserContextValue>({
   hasPrimaryChart: false,
   refreshChartStatus: async () => {},
   refreshPersonalization: async () => {},
+  refreshProfile: async () => {},
 })
 
 // localStorage keys — cached so revisits render instantly (stale-while-revalidate).
@@ -83,6 +87,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (!session) {
+        logOutPurchases()
         setProfile(null)
         setHasPrimaryChart(false)
         setPersonalization(DEFAULT_PERSONALIZATION)
@@ -109,6 +114,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
 
     const userId = session.user.id
+    initPurchases(userId)
 
     // If we have cached data for THIS user, show it immediately (no spinner).
     const cached = readCachedProfile()
@@ -188,6 +194,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
     } catch { /* ignore */ }
   }
 
+  // ── Manual profile refresh (called after billing/credits update) ────────
+  async function refreshProfile() {
+    if (!session?.user) return
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single()
+    if (data) {
+      const p = data as UserProfile
+      setProfile(p)
+      try {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(p))
+      } catch { /* ignore */ }
+    }
+  }
+
   return (
     <UserContext.Provider
       value={{
@@ -200,6 +223,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         hasPrimaryChart,
         refreshChartStatus,
         refreshPersonalization,
+        refreshProfile,
       }}
     >
       {children}

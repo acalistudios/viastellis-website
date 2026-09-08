@@ -6,8 +6,10 @@ export interface UserProfile {
   display_name: string | null
   avatar_url: string | null
   subscription_tier: 'free' | 'premium'
-  /** Stripe Price ID of the active subscription (null for free / pack-only users). */
+  /** Stripe Price ID or Google Play Product ID of the active subscription. */
   subscription_price_id: string | null
+  /** Which payment rail owns the subscription: stripe (web) or play (Google Play). */
+  subscription_source?: 'stripe' | 'play' | null
   credits_remaining: number
   default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
   chart_system: 'vedic' | 'western'

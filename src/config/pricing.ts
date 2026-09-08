@@ -21,6 +21,8 @@ export interface PlanOption {
   credits: number
   mode: 'subscription' | 'payment'
   priceId: string
+  /** Google Play in-app product or subscription ID (for native app). */
+  playProductId?: string
   highlight?: boolean
   badge?: string
 }
@@ -36,6 +38,7 @@ export const SUBSCRIPTIONS: PlanOption[] = [
     credits: 30,
     mode: 'subscription',
     priceId: env.VITE_STRIPE_PRICE_MONTHLY ?? '',
+    playProductId: 'viastellis_premium:monthly',
     highlight: true,
     badge: 'Most popular',
   },
@@ -47,6 +50,7 @@ export const SUBSCRIPTIONS: PlanOption[] = [
     credits: 360,
     mode: 'subscription',
     priceId: env.VITE_STRIPE_PRICE_ANNUAL ?? '',
+    playProductId: 'viastellis_premium:annual',
     badge: 'Best value',
   },
 ]
@@ -60,6 +64,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     credits: 10,
     mode: 'payment',
     priceId: env.VITE_STRIPE_PRICE_PACK_TASTER ?? '',
+    playProductId: 'credits_taster',
   },
   {
     id: 'standard',
@@ -69,6 +74,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     credits: 35,
     mode: 'payment',
     priceId: env.VITE_STRIPE_PRICE_PACK_STANDARD ?? '',
+    playProductId: 'credits_standard',
   },
   {
     id: 'value',
@@ -78,6 +84,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     credits: 80,
     mode: 'payment',
     priceId: env.VITE_STRIPE_PRICE_PACK_VALUE ?? '',
+    playProductId: 'credits_value',
     highlight: true,
   },
   {
@@ -88,5 +95,6 @@ export const CREDIT_PACKS: PlanOption[] = [
     credits: 200,
     mode: 'payment',
     priceId: env.VITE_STRIPE_PRICE_PACK_BULK ?? '',
+    playProductId: 'credits_bulk',
   },
 ]

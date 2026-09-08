@@ -40,6 +40,8 @@ export type Database = {
             | null
           subscription_price_id: string | null
           subscription_period_end: string | null
+          stripe_subscription_id: string | null
+          subscription_source: 'stripe' | 'play' | null
           daily_email_enabled: boolean
           daily_email_hour: number
           timezone: string | null
