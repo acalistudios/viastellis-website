@@ -65,6 +65,11 @@ function App() {
               navigate('/home', { replace: true })
             }
           }
+        } else {
+          const target = url.host ? `/${url.host}${url.pathname}` : url.pathname
+          if (target && target !== '/') {
+            navigate(target)
+          }
         }
       })
     }
