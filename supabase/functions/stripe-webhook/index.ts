@@ -37,6 +37,7 @@
 import Stripe from 'https://esm.sh/stripe@17.7.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { APP_TAG, scopeOf, asUuid, isExplicitlyForeign, type AppScope } from '../_shared/stripeApp.ts'
+import { creditsFromLineItems, subscriptionIdFromInvoice } from '../_shared/stripeWebhook.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2025-02-24.acacia',
@@ -55,18 +56,6 @@ const ok = () =>
     headers: { 'Content-Type': 'application/json' },
   })
 
-/** Sum credits across a set of line items by reading each Price's metadata.credits. */
-function creditsFromLineItems(items: Stripe.LineItem[] | Stripe.InvoiceLineItem[]): number {
-  let total = 0
-  for (const item of items) {
-    const price = (item as { price?: Stripe.Price }).price
-    const meta = price?.metadata?.credits
-    const qty = (item as { quantity?: number }).quantity ?? 1
-    if (meta) total += parseInt(meta, 10) * qty
-  }
-  return total
-}
-
 /**
  * Read the subscription id off an Invoice, tolerating both API-version shapes.
  *
@@ -80,20 +69,6 @@ function creditsFromLineItems(items: Stripe.LineItem[] | Stripe.InvoiceLineItem[
  * foreign and IGNORED — silently skipping the credit grant on a real renewal.
  * Read both locations rather than depending on the endpoint's version setting.
  */
-function subscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
-  const legacy = (invoice as { subscription?: string | { id: string } }).subscription
-  if (legacy) return typeof legacy === 'string' ? legacy : legacy.id
-
-  const modern = (
-    invoice as {
-      parent?: { subscription_details?: { subscription?: string | { id: string } } }
-    }
-  ).parent?.subscription_details?.subscription
-  if (modern) return typeof modern === 'string' ? modern : modern.id
-
-  return null
-}
-
 /** Resolve our user id from a Stripe SUBSCRIPTION id — the safe, product-scoped path. */
 async function userIdForSubscription(subscriptionId: string): Promise<string | null> {
   const { data } = await admin
