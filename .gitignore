@@ -21,3 +21,10 @@ ANDROID_HANDOFF.md
 # Local dev config (launch.json etc.)
 .claude/
 
+
+# Local-only Capacitor overrides — machine-specific native project path
+capacitor.local.json
+
+# The native Android project lives in AndroidStudioProjects, never in this repo.
+# Belt-and-braces: if it is ever recreated here by mistake, do not commit it.
+/android/

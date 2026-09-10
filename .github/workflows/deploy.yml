@@ -57,6 +57,12 @@ jobs:
           VITE_STRIPE_PRICE_PACK_STANDARD: ${{ secrets.VITE_STRIPE_PRICE_PACK_STANDARD }}
           VITE_STRIPE_PRICE_PACK_VALUE: ${{ secrets.VITE_STRIPE_PRICE_PACK_VALUE }}
           VITE_STRIPE_PRICE_PACK_BULK: ${{ secrets.VITE_STRIPE_PRICE_PACK_BULK }}
+          # RevenueCat Android SDK key (the PUBLIC "goog_..." key — safe to ship
+          # in the client bundle; it is not the secret API key).
+          # Only used on native builds; on web, initPurchases() no-ops because
+          # Capacitor.isNativePlatform() is false. Empty here is harmless.
+          # NOTE: the variable name must stay in sync with src/lib/purchases.ts.
+          VITE_REVENUECAT_PUBLIC_KEY: ${{ secrets.VITE_REVENUECAT_PUBLIC_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
