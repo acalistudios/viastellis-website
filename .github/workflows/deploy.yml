@@ -29,6 +29,14 @@ jobs:
 
       - run: npm ci
 
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Billing transaction and handler regression tests
+        run: |
+          node --test scripts/billing-database.test.mjs
+          deno test --allow-env scripts/billing-handlers.test.ts supabase/functions/_shared/stripeApp_test.ts
+
       # Build with Vite. We do NOT run `npm run build` (tsc -b) here because the
       # project has pre-existing type errors unrelated to the bundle; Vite/esbuild
       # produces the same static output. Type-checking is handled separately.

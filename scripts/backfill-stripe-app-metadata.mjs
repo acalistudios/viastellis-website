@@ -4,9 +4,8 @@
  * WHY: the ACALI Studios Stripe account is shared with Shattered Saga, and Stripe
  * delivers webhook events account-wide. Both products now stamp metadata.app so
  * each webhook can ignore the other's events. Objects created BEFORE that change
- * carry no tag, so the handler falls back to "untagged means ViaStellis" — safe
- * only because ViaStellis predates Shattered Saga on this account. This script
- * removes the need for that assumption by tagging the existing objects.
+ * carry no tag. The handler requires an exact local subscription binding for
+ * those objects; it never claims untagged account-wide objects by age or email.
  *
  * It tags:
  *   - Subscriptions that ViaStellis already owns in its profiles table
@@ -36,6 +35,11 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
 const APP_TAG = 'viastellis'
+const CATALOG = {vs_sub_monthly:[499,30,'month'],vs_sub_annual_3999:[3999,360,'year'],vs_pack_taster:[99,10,null],vs_pack_standard:[299,35,null],vs_pack_value:[599,80,null],vs_pack_bulk:[1299,200,null]}
+function knownPrice(price) {
+  const item=CATALOG[price.lookup_key]
+  return !!item && price.currency==='usd' && price.unit_amount===item[0] && price.metadata?.credits===String(item[1]) && (price.recurring?.interval??null)===item[2] && (!price.metadata?.app || price.metadata.app===APP_TAG)
+}
 const APPLY = process.argv.includes('--apply')
 
 const key = process.env.STRIPE_SECRET_KEY
@@ -77,12 +81,13 @@ async function tag(kind, obj, update) {
 console.log('Subscriptions:')
 const { data: owners, error: ownersError } = await supabase
   .from('profiles')
-  .select('id,stripe_subscription_id')
+  .select('id,stripe_subscription_id,stripe_customer_id')
   .not('stripe_subscription_id', 'is', null)
 if (ownersError) throw ownersError
 
 for (const owner of owners ?? []) {
   const sub = await stripe.subscriptions.retrieve(owner.stripe_subscription_id)
+  if(sub.customer!==owner.stripe_customer_id || (sub.metadata?.user_id && sub.metadata.user_id!==owner.id) || !sub.items.data.length || !sub.items.data.every(i=>knownPrice(i.price))) throw new Error('Subscription ownership/catalog mismatch: '+sub.id)
   await tag('subscription', sub, () =>
     stripe.subscriptions.update(sub.id, {
       metadata: { ...sub.metadata, app: APP_TAG, user_id: owner.id },
@@ -91,13 +96,11 @@ for (const owner of owners ?? []) {
 }
 
 // ── Prices ───────────────────────────────────────────────────
-// A ViaStellis price is identifiable by metadata.credits, which the webhook
-// already reads to decide how many credits a purchase grants. Shattered Saga's
-// prices don't carry it, so it's a reliable discriminator for untagged prices.
+// Only the explicit catalog is eligible, never the generic credits metadata.
 console.log('\nPrices:')
 for await (const price of stripe.prices.list({ limit: 100 })) {
-  if (!price.metadata?.credits && !price.metadata?.app) {
-    console.log(`  ⏭  price ${price.id} has no credits metadata — not identifiably ViaStellis, skipping`)
+  if (!knownPrice(price)) {
+    console.log(`  ⏭  price ${price.id} is outside the ViaStellis catalog, skipping`)
     skippedForeign++
     continue
   }

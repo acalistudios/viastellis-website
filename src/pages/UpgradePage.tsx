@@ -240,7 +240,7 @@ export function UpgradePage() {
         )}
 
         {/* Subscription Management */}
-        {isPremium && !cancelledAt && (
+        {(isPremium || profile?.stripe_subscription_id || profile?.subscription_source === 'play') && !cancelledAt && (
           <div className="mt-10 pt-6 border-t border-cosmos-700">
             {profile?.subscription_source === 'play' ? (
               <div className="bg-cosmos-900 border border-cosmos-700 rounded-xl px-5 py-4 max-w-md">
@@ -305,6 +305,12 @@ export function UpgradePage() {
               </div>
             )}
           </div>
+        )}
+
+        {!isNative && profile?.subscription_source === 'play' && profile?.stripe_subscription_id && !cancelledAt && (
+          <button className="mt-4 text-sm underline text-slate-400" disabled={cancelling} onClick={() => {
+            if (window.confirm('Cancel your separate website subscription renewal? Your Google Play subscription is not changed.')) void handleCancel()
+          }}>Cancel separate website subscription renewal</button>
         )}
 
         <p className="text-[11px] text-slate-600 mt-8">

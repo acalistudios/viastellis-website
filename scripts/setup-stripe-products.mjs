@@ -44,6 +44,7 @@ const results = {}
 for (const item of CATALOG) {
   const existing = await findExistingPrice(item.lookup_key)
   if (existing) {
+    if (!existing.active || existing.currency!=='usd' || existing.unit_amount!==item.amount || (existing.recurring?.interval??null)!==(item.recurring?.interval??null) || (existing.recurring && existing.recurring.interval_count!==1)) throw new Error('Existing catalog price mismatch: '+existing.id)
     if (existing.metadata?.app && existing.metadata.app !== 'viastellis') {
       throw new Error(`${existing.id} is tagged for ${existing.metadata.app}; refusing to reuse it`)
     }

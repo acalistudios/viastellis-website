@@ -13,7 +13,7 @@
 
 import Stripe from 'https://esm.sh/stripe@17.7.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { scopeOf } from '../_shared/stripeApp.ts'
+import { viaPrice, stripeId } from '../_shared/billingCatalog.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2025-02-24.acacia',
@@ -31,6 +31,7 @@ const json = (b: unknown, status = 200) =>
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) return json({ error: 'Unauthorized' }, 401)
@@ -39,13 +40,13 @@ Deno.serve(async (req: Request) => {
   const { data: { user }, error: authErr } = await admin.auth.getUser(authHeader.replace('Bearer ', ''))
   if (authErr || !user) return json({ error: 'Invalid token' }, 401)
 
-  const { data: profile } = await admin
+  const { data: profile, error: profileError } = await admin
     .from('profiles')
     .select('stripe_customer_id, stripe_subscription_id, subscription_tier, subscription_status')
     .eq('id', user.id)
     .single()
 
-  if (profile?.subscription_tier !== 'premium') return json({ error: 'You don’t have an active subscription.' }, 400)
+  if (profileError) return json({ error: 'Could not load subscription. Please retry.' }, 503)
   const NO_SUB = 'We couldn’t find an active subscription to cancel. If your Premium was granted manually or you subscribed a while ago, email support@viastellis.com and we’ll sort it out.'
   if (!profile?.stripe_customer_id) return json({ error: NO_SUB }, 404)
 
@@ -57,25 +58,30 @@ Deno.serve(async (req: Request) => {
     let sub: Stripe.Subscription | undefined
     if (profile.stripe_subscription_id) {
       const known = await stripe.subscriptions.retrieve(profile.stripe_subscription_id)
-      if (known && known.status !== 'canceled') sub = known
+      if (known.metadata.app && known.metadata.app !== 'viastellis') throw new Error('Foreign subscription')
+      if (known.metadata.user_id && known.metadata.user_id !== user.id) throw new Error('User mismatch')
+      if (stripeId(known.customer) !== profile.stripe_customer_id) throw new Error('Customer mismatch')
+      for (const item of known.items.data) viaPrice(item.price, false)
+      if (!['canceled','incomplete_expired'].includes(known.status)) sub = known
     }
 
     // Legacy fallback: subscriptions created before we stored the id. Scan the
     // customer's subscriptions but skip any explicitly owned by another product.
     if (!sub) {
-      const [active, trialing] = await Promise.all([
-        stripe.subscriptions.list({ customer: profile.stripe_customer_id, status: 'active', limit: 100 }),
-        stripe.subscriptions.list({ customer: profile.stripe_customer_id, status: 'trialing', limit: 100 }),
-      ])
-      sub = [...active.data, ...trialing.data].find(
-        (s) => scopeOf(s.metadata as Record<string, string> | null) !== 'foreign',
-      )
+      const matches: Stripe.Subscription[] = []
+      for await (const s of stripe.subscriptions.list({ customer: profile.stripe_customer_id, status: 'all', limit: 100 })) {
+        if (s.metadata.app === 'viastellis' && s.metadata.user_id === user.id && !['canceled','incomplete_expired'].includes(s.status)) matches.push(s)
+      }
+      if (matches.length > 1) throw new Error('Ambiguous subscriptions require reconciliation')
+      sub = matches[0]
       if (sub) {
         console.warn(`cancel-subscription: legacy customer-scan matched ${sub.id} for user ${user.id}`)
       }
     }
 
     if (!sub) return json({ error: NO_SUB }, 404)
+    if (stripeId(sub.customer) !== profile.stripe_customer_id || (sub.metadata.app && sub.metadata.app !== 'viastellis')) throw new Error('Subscription ownership mismatch')
+    for (const item of sub.items.data) viaPrice(item.price, false)
 
     // Cancel at period end — user keeps access until the billing cycle ends.
     const updated = await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true })

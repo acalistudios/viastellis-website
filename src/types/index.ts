@@ -10,6 +10,8 @@ export interface UserProfile {
   subscription_price_id: string | null
   /** Which payment rail owns the subscription: stripe (web) or play (Google Play). */
   subscription_source?: 'stripe' | 'play' | null
+  /** Exact website subscription; cancellation remains available after payment failure. */
+  stripe_subscription_id?: string | null
   credits_remaining: number
   default_horoscope_lens: 'western_sun' | 'vedic_moon' | 'vedic_sun'
   chart_system: 'vedic' | 'western'

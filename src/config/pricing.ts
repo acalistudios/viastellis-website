@@ -1,10 +1,9 @@
 /**
- * Pricing catalog (display + Stripe Price IDs).
+ * Display catalog and stable Stripe lookup keys (not browser-controlled prices).
  *
- * The dollar amounts and labels here are for DISPLAY only — the real charge is
- * whatever the Stripe Price says. After you run `node scripts/setup-stripe-products.mjs`,
- * paste the printed Price IDs into the `priceId` fields below (or set the
- * matching VITE_STRIPE_* env vars, which take precedence).
+ * The backend resolves each key in its own Stripe environment and verifies the
+ * app tag, amount, currency, interval and credit grant against its allowlist.
+ * No build-time Stripe Price secrets are needed.
  *
  * Credits per purchase are defined on each Stripe Price's metadata.credits and
  * granted server-side by stripe-webhook — they are intentionally NOT trusted
@@ -21,13 +20,11 @@ export interface PlanOption {
   credits: number
   mode: 'subscription' | 'payment'
   priceId: string
-  /** Google Play in-app product or subscription ID (for native app). */
+  /** Google Play product or subscription ID; independent of Stripe catalog. */
   playProductId?: string
   highlight?: boolean
   badge?: string
 }
-
-const env = import.meta.env
 
 export const SUBSCRIPTIONS: PlanOption[] = [
   {
@@ -37,7 +34,7 @@ export const SUBSCRIPTIONS: PlanOption[] = [
     detail: 'All Stella AI readings included · 7-day free trial',
     credits: 30,
     mode: 'subscription',
-    priceId: env.VITE_STRIPE_PRICE_MONTHLY ?? '',
+    priceId: 'vs_sub_monthly',
     playProductId: 'viastellis_premium:monthly',
     highlight: true,
     badge: 'Most popular',
@@ -49,7 +46,7 @@ export const SUBSCRIPTIONS: PlanOption[] = [
     detail: 'All Stella AI readings included · save $19.89 vs monthly',
     credits: 360,
     mode: 'subscription',
-    priceId: env.VITE_STRIPE_PRICE_ANNUAL ?? '',
+    priceId: 'vs_sub_annual_3999',
     playProductId: 'viastellis_premium:annual',
     badge: 'Best value',
   },
@@ -63,7 +60,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     detail: '10 credits',
     credits: 10,
     mode: 'payment',
-    priceId: env.VITE_STRIPE_PRICE_PACK_TASTER ?? '',
+    priceId: 'vs_pack_taster',
     playProductId: 'credits_taster',
   },
   {
@@ -73,7 +70,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     detail: '35 credits',
     credits: 35,
     mode: 'payment',
-    priceId: env.VITE_STRIPE_PRICE_PACK_STANDARD ?? '',
+    priceId: 'vs_pack_standard',
     playProductId: 'credits_standard',
   },
   {
@@ -83,7 +80,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     detail: '80 credits',
     credits: 80,
     mode: 'payment',
-    priceId: env.VITE_STRIPE_PRICE_PACK_VALUE ?? '',
+    priceId: 'vs_pack_value',
     playProductId: 'credits_value',
     highlight: true,
   },
@@ -94,7 +91,7 @@ export const CREDIT_PACKS: PlanOption[] = [
     detail: '200 credits',
     credits: 200,
     mode: 'payment',
-    priceId: env.VITE_STRIPE_PRICE_PACK_BULK ?? '',
+    priceId: 'vs_pack_bulk',
     playProductId: 'credits_bulk',
   },
 ]
