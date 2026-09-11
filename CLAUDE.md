@@ -1,14 +1,19 @@
-# ViaStellis — Claude Code
+# ViaStellis — AI agent working agreement
 
-Read **[AGENTS.md](./AGENTS.md)** first. It is the shared working agreement for
-all three agents on this project (Claude Code, Codex, Antigravity) and is kept as
-the single source of truth so the per-agent files cannot drift apart.
+The working agreement and the shared action log are **not in this repo**. This
+repository is public; the log records what is deployed, what is half-finished and
+which database objects are missing, which is needless exposure.
 
-Short version:
-1. `git fetch origin` before starting — another agent has probably pushed.
-2. Log deploys / migrations / secrets / external changes in `docs/AGENT_LOG.md`.
-   Git does not record them, and they are what surprise the next agent.
-3. Claude's area: Android + Capacitor, RevenueCat, marketing/growth.
-   Stripe billing belongs to Codex — coordinate before editing it.
-4. `npx tsc -b` before claiming the build is clean.
-5. Never push to `main` or deploy the live site without Hans's explicit consent.
+They live in the private `acalistudios/ai-history` repo, cloned locally at:
+
+    C:\Users\hansi\_ACALI\ai-history\coordination\viastellis\AGENTS.md
+    C:\Users\hansi\_ACALI\ai-history\coordination\viastellis\AGENT_LOG.md
+
+**Read AGENTS.md before making changes**, and append to AGENT_LOG.md after any
+action git cannot show — a deploy, an applied migration, a secret set, a change
+in an external dashboard.
+
+Two rules worth repeating here, because they are cheap and prevent most trouble:
+
+1. `git fetch origin` before you start. Three agents share this repo.
+2. Never push to `main` or deploy the live site without Hans's explicit consent.
