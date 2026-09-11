@@ -41,3 +41,15 @@ commit message or a handoff note and reference it here.
 2026-09-10  codex        MIGRATE   20260910130000_atomic_stripe_events.sql — created apply_stripe_event
 2026-09-10  codex        NOTE      moved supabase/ and scripts/ into this PUBLIC repo (audited: no secrets). Open question for Hans — contradicts the documented private-parent split
 ```
+
+### Billing repair continuation (Pacific time; earlier actions reconstructed)
+
+```
+2026-09-10 18:59  codex  MIGRATE  Applied and registered 20260910210000 billing_rpc_permissions, 20260910211000 provider_entitlements, 20260910220000 credit_helper_permissions, and 20260910223000 subscription_rpc_signature. apply_billing_event now EXISTS; only the 8-argument set_subscription remains, backend-only.
+2026-09-10 18:59  codex  DEPLOY   Deployed stripe-webhook, create-checkout-session, cancel-subscription and revenuecat-webhook AFTER applying provider_entitlements; all four use the tested independent-provider architecture. Also replaced the unsafe smart-worker cancellation alias with an import of cancel-subscription.
+2026-09-10 18:59  codex  EXTERNAL Tagged the nine explicitly verified Shattered Saga LIVE prices/products with app=shattered-saga. Added async_payment_succeeded to both LIVE endpoints and invoice.paid to Shattered Saga. OtherImpact unchanged; no live charges or subscription cancellations made.
+2026-09-10 18:59  codex  SECRET   Temporary BILLING_AUDIT_TOKEN and authenticated billing-audit function used for catalog inspection/repair; must remove both before final sign-off. No Stripe keys written to source.
+2026-09-10 18:59  codex  NOTE     Cross-owner RevenueCat change preserves Claude's period-aware product mapping, fails closed, validates environment/product namespace, and uses atomic Play entitlement/grant projection. DB prerequisites verified live; malformed/missing auth returns 401. Play sandbox acceptance still needs verification.
+2026-09-10 18:59  codex  NOTE     Shared pricing.ts now uses server-resolved Stripe lookup keys; existing Play product IDs preserved. Added billing tests to deploy.yml. Upgrade cancellation remains reachable after payment failure and for separate Stripe/Play subscriptions. No Android native files changed.
+2026-09-10 18:59  codex  NOTE     Source/runtime tests pass: real PGlite transaction/permission/refund suite, actual Deno handler suite, and full tsc/Vite build. Production billing RPC public access count is zero; all eight unauthenticated endpoint checks reject correctly. Stripe dashboard already signed in to test mode for final sandbox checks.
+```

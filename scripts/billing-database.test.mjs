@@ -15,11 +15,13 @@ test('Postgres billing permissions, atomicity, ownership and provider isolation'
     credits_remaining integer DEFAULT 0,subscription_tier text DEFAULT 'free',subscription_source text);`);
   await db.exec(await migration('2026-06-14_billing.sql'));
   await db.exec(await migration('2026-08-05_stripe_app_scoping.sql'));
+  await db.exec(await migration('2026-09-08_subscription_source.sql'));
   await db.exec(await migration('20260910130000_atomic_stripe_events.sql'));
   await db.exec(await migration('20260910210000_billing_rpc_permissions.sql'));
   await db.exec(await migration('20260910211000_provider_entitlements.sql'));
   await db.exec("CREATE TABLE usage_ledger(id uuid PRIMARY KEY,user_id uuid,credits_debited integer,status text DEFAULT 'success')");
   await db.exec(await migration('20260910220000_credit_helper_permissions.sql'));
+  await db.exec(await migration('20260910223000_subscription_rpc_signature.sql'));
   const alice='11111111-1111-4111-8111-111111111111',bob='22222222-2222-4222-8222-222222222222';
   await db.query('INSERT INTO profiles(id,stripe_customer_id) VALUES($1,\'cus_a\'),($2,\'cus_b\')',[alice,bob]);
   const state=async()=> (await db.query('SELECT * FROM profiles WHERE id=$1',[alice])).rows[0];

@@ -55,7 +55,7 @@ is used by either automated test suite.
 
 ## Deployment and recovery
 
-The three 2026091021/22 migrations are applied and registered in production.
+The four 2026091021/22 migrations are applied and registered in production.
 They preserve the existing manual Premium entitlement and the canceled legacy
 Stripe subscription. Do not run db push over an unrelated dirty migration tree.
 Deploy stripe-webhook, create-checkout-session, cancel-subscription, smart-worker
@@ -64,6 +64,7 @@ signatures/secrets; checkout/cancel verify the session using Supabase Auth.
 
 The old grant/set_subscription RPCs remain for backend compatibility but are not
 used by the new billing handlers. Never restore PUBLIC/anon/authenticated grants.
+Only the 8-argument set_subscription signature remains; defaults cover older callers.
 Do not roll back to customer-only matching or reintroduce global legacy ownership.
 Do not delete event/grant ledgers to replay a payment: first identify the exact
 missing effect and reconcile it with the original invoice or Checkout ID.
