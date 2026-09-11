@@ -28,3 +28,16 @@ capacitor.local.json
 # The native Android project lives in AndroidStudioProjects, never in this repo.
 # Belt-and-braces: if it is ever recreated here by mistake, do not commit it.
 /android/
+
+# --- Secrets & signing (ACALI PRACTICES.md §4) -------------------------------
+# Redundant on purpose: overlapping rules cost nothing and catch each other's gaps.
+# NOTE: ACALI signing keys carry NO file extension, so *.jks/*.keystore will not
+# match them. Keep signing keys OUTSIDE every repo; these are a backstop only.
+.env
+.env.*
+!.env.example
+*.bak
+*.bak-*
+*.jks
+*.keystore
+*.local.json
