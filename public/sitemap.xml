@@ -116,6 +116,12 @@
     <priority>0.2</priority>
   </url>
   <url>
+    <loc>https://viastellis.com/delete-account</loc>
+    <lastmod>2026-09-14</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
     <loc>https://viastellis.com/refund</loc>
     <lastmod>2026-07-18</lastmod>
     <changefreq>yearly</changefreq>

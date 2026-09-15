@@ -17,7 +17,7 @@ import { DecisionPage } from '@/pages/DecisionPage'
 import { StellaPage } from '@/pages/StellaPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { JournalPage } from '@/pages/JournalPage'
-import { TermsPage, PrivacyPage, RefundPage, ContactPage } from '@/pages/LegalPages'
+import { TermsPage, PrivacyPage, RefundPage, ContactPage, DeleteAccountPage } from '@/pages/LegalPages'
 import { ZodiacSystemsPage } from '@/pages/ZodiacSystemsPage'
 import { UnsubscribePage } from '@/pages/UnsubscribePage'
 import { PublicHoroscopesPage } from '@/pages/PublicHoroscopesPage'
@@ -190,6 +190,9 @@ function App() {
       {/* Public legal/policy pages (required for Stripe + general trust) */}
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      {/* Public and unguarded on purpose: Google Play requires a deletion route
+          reachable without installing the app or signing in. */}
+      <Route path="/delete-account" element={<DeleteAccountPage />} />
       <Route path="/refund" element={<RefundPage />} />
       <Route path="/contact" element={<ContactPage />} />
       {/* Public explainer: Western vs Vedic zodiac systems */}

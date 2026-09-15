@@ -33,6 +33,7 @@ function LegalLayout({ title, children }: { title: string; children: ReactNode }
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/refund">Refunds</Link>
+          <Link to="/delete-account">Delete account</Link>
           <Link to="/contact">Contact</Link>
         </footer>
       </div>
@@ -143,25 +144,49 @@ export function PrivacyPage() {
 
       <h2>3. Service providers</h2>
       <p>
-        We share data only with providers that help us operate, under contract: <strong>Supabase</strong>{' '}
-        (authentication and database hosting), <strong>Stripe</strong> (payments), and{' '}
-        <strong>Google (Gemini API)</strong> (AI generation — your chart context and questions are
-        sent to generate Stella’s responses). These providers process data on our behalf.
+        We share data only with providers that help us operate, under contract, and only so they can
+        provide their service to us — never for their own purposes, and we do not sell your personal
+        information.
+      </p>
+      <p>
+        <strong>Supabase</strong> — authentication and database hosting.<br />
+        <strong>Google (Gemini API)</strong> and <strong>Anthropic (Claude API)</strong> — AI
+        generation. Your chart context, and the text of questions or journal entries you choose to
+        send to Stella, are transmitted to generate a response. We use the paid API tiers of these
+        services, which under their terms do not use submitted content to train or improve their
+        models.<br />
+        <strong>Stripe</strong> — payments made on the web.<br />
+        <strong>Google Play and RevenueCat</strong> — purchases made in the Android app, and the
+        entitlements they grant.<br />
+        <strong>Resend</strong> — delivery of the daily horoscope email, if you opt in.
+      </p>
+      <p>
+        We never receive or store your full card number. Payment details are handled entirely by
+        Stripe or Google Play.
       </p>
 
       <h2 id="data-deletion">4. Data retention & deletion</h2>
       <p>
-        We keep your data while your account is active. You can request access to, correction of,
-        or deletion of your personal data at any time by emailing{' '}
-        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. Deleting your account removes your
-        charts, journal entries, and profile, subject to limited records we must retain (e.g.,
-        payment records for accounting).
+        We keep your data while your account is active. You can delete it at any time, and you do
+        not need to contact us to do so.
       </p>
       <p>
-        <strong>To request deletion of your data:</strong> email{' '}
+        <strong>In the app or on the web:</strong> go to <strong>Settings → Delete account</strong>.
+        You will be asked to type a confirmation phrase, after which deletion happens immediately.
+      </p>
+      <p>
+        <strong>Without signing in:</strong> see our{' '}
+        <Link to="/delete-account">account deletion page</Link>, or email{' '}
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with the subject line
-        "Data Deletion Request" and include the email address associated with your account.
-        We will process your request within 30 days and confirm when complete.
+        “Data Deletion Request” from the address associated with your account. We will process the
+        request within 30 days and confirm when complete.
+      </p>
+      <p>
+        Deletion is permanent and removes your profile and birth details, saved charts, journal
+        entries, Stella’s stored memories, compatibility, decision and client reports, horoscope
+        feedback, and your usage and credit history. Any unused credits are forfeited. We may retain
+        a minimal transaction record where law requires it for accounting and tax purposes; such
+        records are not used to re-identify you within the Service.
       </p>
 
       <h2>5. Security</h2>
@@ -178,6 +203,72 @@ export function PrivacyPage() {
       <p>
         We may update this policy; we’ll revise the “Effective” date above. Questions or requests:{' '}
         <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+    </LegalLayout>
+  )
+}
+
+/**
+ * Public account-deletion page.
+ *
+ * Google Play requires a deletion route reachable WITHOUT installing the app or
+ * signing in, so this is a plain public route — no AuthGuard, and it must stay
+ * linked from the Play listing and the privacy policy.
+ */
+export function DeleteAccountPage() {
+  return (
+    <LegalLayout title="Delete your account">
+      <p>
+        You can permanently delete your {COMPANY} account and all of the personal data associated
+        with it. This page explains how, and exactly what is removed.
+      </p>
+
+      <h2>Option 1 — delete it yourself (immediate)</h2>
+      <p>
+        If you can sign in, this is the fastest route and takes effect straight away:
+      </p>
+      <p>
+        1. Sign in at <a href="https://viastellis.com">viastellis.com</a> or in the Android app.<br />
+        2. Go to <strong>Settings</strong>.<br />
+        3. Scroll to <strong>Delete account</strong>.<br />
+        4. Type the confirmation phrase and choose <strong>Delete permanently</strong>.
+      </p>
+
+      <h2>Option 2 — ask us to delete it</h2>
+      <p>
+        If you cannot sign in — for example you have lost access to your email — write to{' '}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with the subject line
+        “Data Deletion Request”, sent from the address associated with your account. We will verify
+        the request, process it within 30 days, and confirm when it is complete.
+      </p>
+
+      <h2>What is deleted</h2>
+      <p>
+        Everything below is erased permanently. There is no recovery, no grace period, and no
+        archived copy you can ask us to restore.
+      </p>
+      <p>
+        Your account and login · your profile, including birth date, birth time and birth place ·
+        saved birth charts · journal entries · Stella’s stored memories of your conversations ·
+        compatibility reports · decision reports · client reports · horoscope feedback · your usage
+        and credit history.
+      </p>
+      <p>
+        <strong>Unused credits are forfeited</strong> and any active subscription should be
+        cancelled separately through Google Play or Stripe, whichever you purchased through —
+        deleting your {COMPANY} account does not by itself cancel a store subscription.
+      </p>
+
+      <h2>What we keep, and why</h2>
+      <p>
+        We may retain a minimal transaction record where accounting and tax law requires it. It is
+        kept only for that purpose and is not used to re-identify you within the Service.
+      </p>
+
+      <h2>Questions</h2>
+      <p>
+        Write to <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. Our full{' '}
+        <Link to="/privacy">Privacy Policy</Link> explains what we collect and why.
       </p>
     </LegalLayout>
   )
