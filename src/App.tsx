@@ -36,6 +36,12 @@ import { BirthDataForm } from '@/features/onboarding/BirthDataForm'
 
 // Route guards
 import { AuthGuard } from '@/components/layout/AuthGuard'
+import { createNativeAuthHandler } from '@/lib/nativeAuth'
+
+const processNativeCallback = createNativeAuthHandler(
+  code => supabase.auth.exchangeCodeForSession(code),
+  () => Browser.close(),
+)
 
 function App() {
   const navigate = useNavigate()
@@ -46,94 +52,11 @@ function App() {
     let cancelled = false
     const handles: Array<{ remove: () => Promise<void> }> = []
 
-    /**
-     * Close the OAuth Custom Tab.
-     *
-     * Deliberately swallowing the error: on some Android versions Browser.close()
-     * rejects when no tab is open, which is exactly the cold-start case below. An
-     * unhandled rejection here aborts the whole callback, so the user lands back
-     * in the app silently signed out — the failure mode is invisible, which is
-     * what makes it worth guarding.
-     */
-    const closeBrowserQuietly = async () => {
-      try {
-        await Browser.close()
-      } catch {
-        /* nothing was open */
-      }
-    }
-
-    /**
-     * Handle a deep link, whether it arrived while running or launched the app.
-     *
-     * Params are pulled out by string rather than via `new URL()`: the redirect
-     * uses the custom scheme `com.acalistudios.viastellis://auth-callback?...`,
-     * where `pathname` is empty and `host` is "auth-callback", so URL's normal
-     * http assumptions do not hold.
-     */
-    const handleDeepLink = async (urlStr: string) => {
-      if (!urlStr) return
-      await closeBrowserQuietly()
-
-      const queryStr = urlStr.includes('?')
-        ? urlStr.slice(urlStr.indexOf('?') + 1).split('#')[0]
-        : ''
-      const hashStr = urlStr.includes('#') ? urlStr.slice(urlStr.indexOf('#') + 1) : ''
-      const query = new URLSearchParams(queryStr)
-      const hash = new URLSearchParams(hashStr)
-
-      const isCallback = urlStr.includes('auth-callback') || urlStr.includes('/auth/callback')
-
-      if (!isCallback) {
-        try {
-          const url = new URL(urlStr)
-          const target = url.host ? `/${url.host}${url.pathname}` : url.pathname
-          if (target && target !== '/') navigate(target)
-        } catch {
-          console.error('Unparseable deep link:', urlStr)
-        }
-        return
-      }
-
-      // Supabase reports OAuth failures on the redirect itself. Without this the
-      // user is bounced back to a blank screen with nothing logged.
-      const oauthError = query.get('error') ?? hash.get('error')
-      if (oauthError) {
-        console.error('OAuth error:', oauthError, query.get('error_description') ?? hash.get('error_description') ?? '')
-        navigate('/auth', { replace: true })
-        return
-      }
-
-      // PKCE (Supabase's default) returns ?code=. Implicit returns tokens in the
-      // fragment. Handle both so a flow change cannot silently break sign-in.
-      const code = query.get('code')
-      const accessToken = hash.get('access_token')
-      const refreshToken = hash.get('refresh_token')
-
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          console.error('Error exchanging code for session:', error)
-          navigate('/auth', { replace: true })
-          return
-        }
-      } else if (accessToken && refreshToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        })
-        if (error) {
-          console.error('Error setting session from tokens:', error)
-          navigate('/auth', { replace: true })
-          return
-        }
-      } else {
-        console.error('Auth callback carried neither a code nor tokens:', urlStr)
-        navigate('/auth', { replace: true })
-        return
-      }
-
-      navigate('/home', { replace: true })
+    const handleDeepLink = async (url: string) => {
+      if (cancelled) return
+      const result = await processNativeCallback(url)
+      if (cancelled || result === null) return
+      navigate(result === 'success' ? '/home' : '/auth?mode=signin&native_error=1', { replace: true })
     }
 
     const setup = async () => {
@@ -165,7 +88,9 @@ function App() {
       if (!cancelled && launch?.url) await handleDeepLink(launch.url)
     }
 
-    void setup()
+    void setup().catch(() => {
+      if (!cancelled) navigate('/auth?mode=signin&native_error=1', { replace: true })
+    })
 
     return () => {
       cancelled = true

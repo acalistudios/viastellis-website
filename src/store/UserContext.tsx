@@ -22,7 +22,7 @@ interface UserContextValue {
   /** Re-fetch personalization + memories (call after editing the profile). */
   refreshPersonalization: () => Promise<void>
   /** Re-fetch profile directly from Supabase (call after purchase/credits changes). */
-  refreshProfile: () => Promise<void>
+  refreshProfile: () => Promise<UserProfile | null>
 }
 
 const UserContext = createContext<UserContextValue>({
@@ -35,7 +35,7 @@ const UserContext = createContext<UserContextValue>({
   hasPrimaryChart: false,
   refreshChartStatus: async () => {},
   refreshPersonalization: async () => {},
-  refreshProfile: async () => {},
+  refreshProfile: async () => null,
 })
 
 // localStorage keys — cached so revisits render instantly (stale-while-revalidate).
@@ -196,19 +196,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // ── Manual profile refresh (called after billing/credits update) ────────
   async function refreshProfile() {
-    if (!session?.user) return
+    if (!session?.user) return null
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', session.user.id)
       .single()
+    const current = await supabase.auth.getSession()
+    if (current.data.session?.user.id !== session.user.id) return null
     if (data) {
       const p = data as UserProfile
       setProfile(p)
       try {
         localStorage.setItem(PROFILE_KEY, JSON.stringify(p))
       } catch { /* ignore */ }
+      return p
     }
+    return null
   }
 
   return (

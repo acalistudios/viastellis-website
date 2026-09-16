@@ -290,6 +290,14 @@ export function SettingsPage() {
           charts, journal entries, Stella&rsquo;s memories, compatibility and decision
           reports. This cannot be undone, and any remaining credits are forfeited.
         </p>
+        <p className="text-amber-400/90 text-xs leading-relaxed mb-3">
+          <strong>Account deletion does not cancel subscriptions.</strong> If you have
+          any subscriptions, cancel each one before deleting your account to prevent
+          further charges. Manage Google Play subscriptions in the Play Store under
+          Payments &amp; subscriptions → Subscriptions. Manage website subscriptions
+          by signing in at viastellis.com and opening Upgrade. Check both if you
+          subscribed through both services.
+        </p>
 
         {!deleteOpen ? (
           <button
