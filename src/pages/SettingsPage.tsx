@@ -290,6 +290,18 @@ export function SettingsPage() {
           charts, journal entries, Stella&rsquo;s memories, compatibility and decision
           reports. This cannot be undone, and any remaining credits are forfeited.
         </p>
+        {/* Deleting the account does not touch the store subscription. Without this
+            a user can delete their account and keep being billed, with no remaining
+            way to see or cancel it from inside the app. Wording from Codex's 7358940,
+            which covers both stores unconditionally rather than guessing the platform. */}
+        <p className="text-amber-400/90 text-xs leading-relaxed mb-3">
+          <strong>Account deletion does not cancel subscriptions.</strong> If you have
+          any subscriptions, cancel each one before deleting your account to prevent
+          further charges. Manage Google Play subscriptions in the Play Store under
+          Payments &amp; subscriptions → Subscriptions. Manage website subscriptions
+          by signing in at viastellis.com and opening Upgrade. Check both if you
+          subscribed through both services.
+        </p>
 
         {!deleteOpen ? (
           <button

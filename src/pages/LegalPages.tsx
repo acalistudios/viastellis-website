@@ -259,6 +259,28 @@ export function DeleteAccountPage() {
         deleting your {COMPANY} account does not by itself cancel a store subscription.
       </p>
 
+      <h2 id="delete-some-data">Deleting some data without deleting your account</h2>
+      <p>
+        You do not have to delete your whole account to remove data. The following can be deleted
+        from inside {COMPANY} at any time, and deletion is immediate and permanent:
+      </p>
+      <p>
+        <strong>Stella’s memories</strong> — Settings → Personalization. Remove any single memory,
+        or clear all of them at once.<br />
+        <strong>Saved compatibility matches</strong> — open Compatibility and delete a saved match.
+        The other person’s birth details saved for that match are deleted with it.<br />
+        <strong>Client reports</strong> — for practitioner accounts, delete any individual client
+        report from the Client Reports page.
+      </p>
+      <p>
+        For anything else — for example your journal entries, saved charts or birth details, while
+        keeping your account — email{' '}
+        <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with the subject line
+        “Data Deletion Request”, sent from the address associated with your account. Say which data
+        you want removed. We will process the request within 30 days and confirm when it is
+        complete. The same retention exception below applies.
+      </p>
+
       <h2>What we keep, and why</h2>
       <p>
         We may retain a minimal transaction record where accounting and tax law requires it. It is
