@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Star, Users, MessageCircle, Menu, Calendar, HelpCircle, BookOpen, Settings, Crown, FileText } from 'lucide-react'
+import { Home, Star, Users, MessageCircle, Menu, Calendar, HelpCircle, BookOpen, Settings, Crown, FileText, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/store/UserContext'
 
@@ -13,6 +13,10 @@ const CORE_ITEMS = [
 ]
 
 const MORE_ITEMS = [
+  // The 12 sun-sign horoscopes, for checking someone else's sign. Reachable from
+  // the marketing nav when signed out, but signed-in users land straight on /home
+  // and previously had no route to it at all without signing out.
+  { to: '/horoscopes',     icon: Globe,      label: 'All Horoscopes' },
   { to: '/calendar',       icon: Calendar,  label: 'Best Days'      },
   { to: '/decision',       icon: HelpCircle, label: 'Decisions'      },
   { to: '/journal',        icon: BookOpen,   label: 'Journal'        },
