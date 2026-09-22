@@ -8,7 +8,7 @@
  * Free features stay free; credits unlock Stella (AI) features.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Capacitor } from '@capacitor/core'
 import { useUser } from '@/store/UserContext'
@@ -16,9 +16,11 @@ import { startCheckout, cancelSubscription } from '@/lib/billing'
 import { getOfferings, purchasePackage, restorePurchases } from '@/lib/purchases'
 import { SUBSCRIPTIONS, CREDIT_PACKS, type PlanOption } from '@/config/pricing'
 import type { PurchasesPackage } from '@revenuecat/purchases-capacitor'
+import { findPurchasePackage } from '@/lib/purchaseCatalog'
+import { waitForPurchaseProfile } from '@/lib/purchaseRefresh'
 
 export function UpgradePage() {
-  const { profile, refreshProfile } = useUser()
+  const { user, profile, refreshProfile } = useUser()
   const [params] = useSearchParams()
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -29,6 +31,11 @@ export function UpgradePage() {
   const [rcPackages, setRcPackages] = useState<PurchasesPackage[]>([])
   const [restoring, setRestoring] = useState(false)
   const [restoreSuccess, setRestoreSuccess] = useState('')
+  const [offeringsAttempt, setOfferingsAttempt] = useState(0)
+  const [offeringsLoading, setOfferingsLoading] = useState(false)
+  const [offeringsUser, setOfferingsUser] = useState<string | null>(null)
+  const lifecycle = useRef(new AbortController())
+  const operationBusy = useRef(false)
 
   const isNative = Capacitor.isNativePlatform()
   const cancelled = params.get('checkout') === 'cancelled'
@@ -36,16 +43,28 @@ export function UpgradePage() {
 
   // Load native RevenueCat offerings when running in Android shell
   useEffect(() => {
-    if (!isNative) return
+    const controller = new AbortController()
+    lifecycle.current = controller
+    if (!isNative || !user?.id) return () => controller.abort()
     let mounted = true
-    getOfferings().then(offerings => {
-      if (!mounted || !offerings?.current?.availablePackages) return
+    setRcPackages([])
+    setOfferingsUser(null)
+    setOfferingsLoading(true)
+    setError('')
+    setRestoreSuccess('')
+    getOfferings(user.id).then(offerings => {
+      if (!mounted) return
+      if (!offerings?.current?.availablePackages.length) throw new Error('No purchases are available right now. Please retry shortly.')
       setRcPackages(offerings.current.availablePackages)
-    })
+      setOfferingsUser(user.id)
+    }).catch(err => {
+      if (mounted) setError(err instanceof Error ? err.message : 'Could not load purchases.')
+    }).finally(() => { if (mounted) setOfferingsLoading(false) })
     return () => {
       mounted = false
+      controller.abort()
     }
-  }, [isNative])
+  }, [isNative, user?.id, offeringsAttempt])
 
   // Only trust the stored price if it matches a plan we actually display; a
   // stale/unknown price falls back to null so we don't leave a premium user
@@ -61,42 +80,41 @@ export function UpgradePage() {
       : null
 
   function findPackage(plan: PlanOption): PurchasesPackage | undefined {
-    if (!rcPackages.length) return undefined
-    return rcPackages.find(pkg => {
-      const prodId = pkg.product.identifier
-      if (plan.playProductId && (prodId === plan.playProductId || prodId.includes(plan.id))) {
-        return true
-      }
-      if (plan.id === 'monthly' && pkg.packageType === 'MONTHLY') return true
-      if (plan.id === 'annual' && pkg.packageType === 'ANNUAL') return true
-      return false
-    })
+    if (offeringsUser !== user?.id) return undefined
+    return findPurchasePackage(rcPackages, plan)
   }
 
   async function choose(plan: PlanOption) {
+    if (operationBusy.current) return
     setError('')
     setRestoreSuccess('')
     setBusyId(plan.id)
 
     if (isNative) {
       const pkg = findPackage(plan)
-      if (!pkg) {
+      if (!pkg || !user || !profile || profile.id !== user.id) {
         setError('This product is being initialized in Google Play. Please try again in a moment.')
         setBusyId(null)
         return
       }
+      operationBusy.current = true
+      const signal = lifecycle.current.signal
       try {
-        await purchasePackage(pkg)
-        // Give webhook ~2.5 seconds to process before re-fetching profile
-        setTimeout(() => {
-          refreshProfile()
-        }, 2500)
+        await purchasePackage(pkg, user.id)
+        if (signal.aborted) return
+        setRestoreSuccess('Purchase received. Updating your balance…')
+        const updated = await waitForPurchaseProfile(refreshProfile, p =>
+          p.id === user.id && p.credits_remaining >= profile.credits_remaining + plan.credits &&
+          (plan.mode !== 'subscription' || p.subscription_tier === 'premium'), signal)
+        if (!signal.aborted) setRestoreSuccess(updated ? 'Your balance has updated.' :
+          'Your purchase is still syncing. You can refresh your balance below; please do not buy it again.')
       } catch (err: unknown) {
         const anyErr = err as { userCancelled?: boolean; message?: string }
-        if (!anyErr?.userCancelled) {
+        if (!signal.aborted && !anyErr?.userCancelled) {
           setError(anyErr?.message || 'Google Play purchase failed.')
         }
       } finally {
+        operationBusy.current = false
         setBusyId(null)
       }
     } else {
@@ -111,17 +129,22 @@ export function UpgradePage() {
   }
 
   async function handleRestore() {
+    if (operationBusy.current || !user) return
+    operationBusy.current = true
+    const signal = lifecycle.current.signal
     setRestoring(true)
     setError('')
     setRestoreSuccess('')
     try {
-      await restorePurchases()
-      await refreshProfile()
-      setRestoreSuccess('Purchases restored successfully.')
+      await restorePurchases(user.id)
+      if (signal.aborted) return
+      await waitForPurchaseProfile(refreshProfile, p => p.id === user.id && p.subscription_source === 'play' && p.subscription_tier === 'premium', signal)
+      if (!signal.aborted) setRestoreSuccess('Restore check completed. Your current balance is shown above. Missing purchases may still be syncing.')
     } catch (err: unknown) {
       const anyErr = err as { message?: string }
-      setError(anyErr?.message || 'Could not restore purchases.')
+      if (!signal.aborted) setError(anyErr?.message || 'Could not restore purchases.')
     } finally {
+      operationBusy.current = false
       setRestoring(false)
     }
   }
@@ -188,6 +211,14 @@ export function UpgradePage() {
         )}
 
         {/* Subscriptions */}
+        {isNative && (
+          <div className="flex gap-4 mb-4 text-sm">
+            <button disabled={offeringsLoading || !!busyId || restoring} onClick={() => setOfferingsAttempt(n => n + 1)}>
+              {offeringsLoading ? 'Loading purchases…' : 'Reload available purchases'}
+            </button>
+            <button disabled={!!busyId || restoring} onClick={() => { void refreshProfile() }}>Refresh balance</button>
+          </div>
+        )}
         <h2 className="text-slate-300 text-sm uppercase tracking-widest mt-4 mb-3">Subscribe & save</h2>
         <div className="grid sm:grid-cols-2 gap-3 mb-8">
           {SUBSCRIPTIONS.map(plan => {
@@ -197,7 +228,7 @@ export function UpgradePage() {
                 key={plan.id}
                 plan={plan}
                 pkg={pkg}
-                busy={busyId === plan.id}
+                busy={!!busyId || restoring}
                 onChoose={choose}
                 isPremium={isPremium}
                 currentPriceId={activePriceId}
@@ -217,7 +248,7 @@ export function UpgradePage() {
                 key={plan.id}
                 plan={plan}
                 pkg={pkg}
-                busy={busyId === plan.id}
+                busy={!!busyId || restoring}
                 onChoose={choose}
                 compact
                 isNative={isNative}
@@ -231,7 +262,7 @@ export function UpgradePage() {
           <div className="mt-6 flex justify-center">
             <button
               onClick={handleRestore}
-              disabled={restoring}
+              disabled={restoring || !!busyId || offeringsLoading || offeringsUser !== user?.id}
               className="text-xs text-slate-400 hover:text-slate-200 underline transition-colors disabled:opacity-60"
             >
               {restoring ? 'Restoring purchases…' : 'Restore Purchases'}
@@ -356,7 +387,7 @@ function PlanCard({
 
   const premiumUnknownPlan = isPremium && isSub && !currentPriceId
   const otherPlanWhilePremium = isPremium && isSub && !!currentPriceId && !isCurrent
-  const disabled = busy || isCurrent || premiumUnknownPlan || otherPlanWhilePremium
+  const disabled = busy || (isNative && !pkg) || isCurrent || premiumUnknownPlan || otherPlanWhilePremium
 
   // Use localized price from Google Play if package is loaded on native
   const displayPrice = isNative && pkg?.product?.priceString ? pkg.product.priceString : plan.priceLabel
@@ -369,6 +400,8 @@ function PlanCard({
     ? 'Premium active'
     : otherPlanWhilePremium
     ? 'Cancel to switch'
+    : isNative && !pkg
+    ? 'Unavailable'
     : isSub
     ? 'Subscribe'
     : 'Buy'

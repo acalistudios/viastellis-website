@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
-import { useNavigate, Navigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Navigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { Starfield } from '@/components/ui/Starfield'
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { trackEvent } from '@/lib/analytics'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
+import { NATIVE_AUTH_ERROR } from '@/lib/nativeAuth'
 
 type Mode = 'signin' | 'signup' | 'forgot'
 
@@ -39,13 +40,17 @@ function getInitialMode(): Mode {
 
 export function AuthPage() {
   const navigate = useNavigate()
+  const [authParams] = useSearchParams()
   const { session, loading: sessionLoading } = useUser()
   const [mode, setMode] = useState<Mode>(getInitialMode())
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberEmail, setRememberEmail] = useState(true)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(authParams.get('native_error') === '1' ? NATIVE_AUTH_ERROR : '')
+  useEffect(() => {
+    if (authParams.get('native_error') === '1') setError(NATIVE_AUTH_ERROR)
+  }, [authParams])
   const [message, setMessage] = useState('')
   const [rememberedEmails, setRememberedEmails] = useState<RememberedEmail[]>([])
 
