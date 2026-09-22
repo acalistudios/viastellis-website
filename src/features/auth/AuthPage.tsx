@@ -281,25 +281,32 @@ export function AuthPage() {
                   Recent accounts
                 </p>
                 <div className="space-y-2">
+                  {/* Two sibling buttons inside a div, not a button inside a
+                      button: nesting them is invalid HTML and React logs a
+                      hydration error for it. Siblings also remove the need for
+                      stopPropagation, since the dismiss no longer sits inside
+                      the select target. */}
                   {rememberedEmails.map(item => (
-                    <button
+                    <div
                       key={item.email}
-                      type="button"
-                      onClick={() => setEmail(item.email)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[#0a0e27]/40 hover:bg-stardust-400/10 border border-stardust-400/10 hover:border-stardust-400/30 transition-all text-left"
+                      className="w-full flex items-center rounded-lg bg-[#0a0e27]/40 hover:bg-stardust-400/10 border border-stardust-400/10 hover:border-stardust-400/30 transition-all"
                     >
-                      <span className="text-sm text-slate-300">{item.email}</span>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          forgetEmail(item.email)
-                        }}
-                        className="text-xs text-slate-500 hover:text-rose-400 transition-colors"
+                        onClick={() => setEmail(item.email)}
+                        className="flex-1 px-3 py-2 text-left text-sm text-slate-300"
+                      >
+                        {item.email}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => forgetEmail(item.email)}
+                        aria-label={`Forget ${item.email}`}
+                        className="px-3 py-2 text-xs text-slate-500 hover:text-rose-400 transition-colors"
                       >
                         ✕
                       </button>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
