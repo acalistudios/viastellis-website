@@ -5,7 +5,7 @@ export function PublicMarketingNav() {
   const { session } = useUser()
 
   return (
-    <header className="sticky top-0 z-40 bg-gradient-to-b from-[#0f0817]/90 to-transparent backdrop-blur-md border-b border-stardust-400/10 px-6 py-4 relative">
+    <header className="sticky top-0 z-40 bg-gradient-to-b from-[#0f0817]/90 to-transparent backdrop-blur-md border-b border-stardust-400/10 px-6 py-4 pt-[calc(1rem+env(safe-area-inset-top))] relative">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="text-2xl font-display text-stardust-300 flex items-center gap-2 hover:text-stellar-300 transition-colors">
           <img src="/logo-mark.png" alt="" className="w-8 h-8" /> ViaStellis

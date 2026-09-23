@@ -34,7 +34,7 @@ export function AppShell() {
       </div>
 
       {/* Page content */}
-      <main id="main-content" className="relative z-10 flex-1 overflow-y-auto pt-0 lg:pt-14 pb-16 lg:pb-0">
+      <main id="main-content" className="relative z-10 flex-1 overflow-y-auto pt-[env(safe-area-inset-top)] lg:pt-14 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
         <Outlet />
       </main>
     </div>
