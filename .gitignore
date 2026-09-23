@@ -27,7 +27,27 @@ capacitor.local.json
 
 # The native Android project lives in AndroidStudioProjects, never in this repo.
 # Belt-and-braces: if it is ever recreated here by mistake, do not commit it.
+# NOTE: a leading / anchors to the repo root only (PRACTICES.md §4). Kept as-is
+# for android since that is where the damage happened; the iOS rules below are
+# deliberately unanchored so they match at any depth.
 /android/
+
+# The native iOS project lives at ~/Developer/viastellis-ios, never in this repo.
+# Same reasoning as android above, plus Xcode's own build artefacts: Pods/ alone
+# is tens of MB, and DerivedData is far larger. capacitor.config.ts throws rather
+# than defaulting to ./ios, but that guard protects only the CLI path — these
+# rules are the backstop if a project is ever created here by hand.
+ios/
+Pods/
+*.xcworkspace
+*.xcuserstate
+xcuserdata/
+DerivedData/
+
+# Vite's cache. vite.config.ts puts this in %LOCALAPPDATA% on Windows, but that
+# variable does not exist on macOS, so it falls back to __dirname — i.e. INSIDE
+# this public repo. Observed on Hanss-MacBook-Pro 2026-09-23 during the iOS work.
+vite-cache/
 
 # --- Secrets & signing (ACALI PRACTICES.md §4) -------------------------------
 # Redundant on purpose: overlapping rules cost nothing and catch each other's gaps.

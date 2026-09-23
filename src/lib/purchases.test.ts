@@ -8,14 +8,21 @@ const mocks = vi.hoisted(() => ({
   getSession: vi.fn(), configure: vi.fn(), logIn: vi.fn(), logOut: vi.fn(),
   getOfferings: vi.fn(), purchasePackage: vi.fn(), restorePurchases: vi.fn(),
 }))
+// purchases.ts selects the RevenueCat key on platform, so the mock must expose
+// getPlatform() as well as isNativePlatform().
+const platform = vi.hoisted(() => ({ current: 'android' as 'android' | 'ios' }))
 vi.mock('./supabase', () => ({ supabase: { auth: { getSession: mocks.getSession } } }))
-vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true } }))
+vi.mock('@capacitor/core', () => ({
+  Capacitor: { isNativePlatform: () => true, getPlatform: () => platform.current },
+}))
 vi.mock('@revenuecat/purchases-capacitor', () => ({ Purchases: mocks }))
 
 const pkg = (identifier: string) => ({ product: { identifier }, packageType: 'MONTHLY' } as PurchasesPackage)
 beforeEach(() => {
   vi.resetModules(); vi.resetAllMocks()
+  platform.current = 'android'
   vi.stubEnv('VITE_REVENUECAT_PUBLIC_KEY', 'goog_fixture')
+  vi.stubEnv('VITE_REVENUECAT_IOS_KEY', 'appl_fixture')
   mocks.getSession.mockResolvedValue({ data: { session: { user: { id: 'alice' } } } })
   mocks.getOfferings.mockResolvedValue({ current: { availablePackages: [] } })
 })
@@ -46,6 +53,27 @@ test('failed initialization can retry, but purchase cannot bypass it', async () 
 
 test('missing key is visible and makes no SDK calls', async () => {
   vi.stubEnv('VITE_REVENUECAT_PUBLIC_KEY', '')
+  const service = await import('./purchases')
+  await expect(service.getOfferings('alice')).rejects.toThrow('not available in this build')
+  expect(mocks.configure).not.toHaveBeenCalled()
+})
+
+test('android configures with the goog_ key', async () => {
+  const service = await import('./purchases')
+  await service.getOfferings('alice')
+  expect(mocks.configure).toHaveBeenCalledWith({ apiKey: 'goog_fixture', appUserID: 'alice' })
+})
+
+test('ios configures with the appl_ key, never the android one', async () => {
+  platform.current = 'ios'
+  const service = await import('./purchases')
+  await service.getOfferings('alice')
+  expect(mocks.configure).toHaveBeenCalledWith({ apiKey: 'appl_fixture', appUserID: 'alice' })
+})
+
+test('ios with no ios key fails instead of falling back to the android key', async () => {
+  platform.current = 'ios'
+  vi.stubEnv('VITE_REVENUECAT_IOS_KEY', '')
   const service = await import('./purchases')
   await expect(service.getOfferings('alice')).rejects.toThrow('not available in this build')
   expect(mocks.configure).not.toHaveBeenCalled()
