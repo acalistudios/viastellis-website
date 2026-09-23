@@ -15,7 +15,14 @@ function serialize<T>(operation: () => Promise<T>): Promise<T> {
 
 async function requireIdentity(expectedUserId: string) {
   if (!Capacitor.isNativePlatform()) throw new Error('Purchases are available in the mobile app.')
-  const key = import.meta.env.VITE_REVENUECAT_PUBLIC_KEY
+  // RevenueCat SDK keys are per-platform: Android's starts "goog_", iOS's
+  // starts "appl_". One build-time variable cannot serve both — passing the
+  // goog_ key to Purchases.configure() on iOS fails. Both are VITE_ vars and
+  // therefore ship inside the bundle; RevenueCat's PUBLIC keys are designed for
+  // that. Never put a RevenueCat secret key behind a VITE_ name.
+  const key = Capacitor.getPlatform() === 'ios'
+    ? import.meta.env.VITE_REVENUECAT_IOS_KEY
+    : import.meta.env.VITE_REVENUECAT_PUBLIC_KEY
   if (!key) throw new Error('Purchases are not available in this build. Please try again after an app update.')
   const { data: { session } } = await supabase.auth.getSession()
   const userId = session?.user.id
