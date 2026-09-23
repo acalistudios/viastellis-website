@@ -2,7 +2,7 @@ import { beforeEach, afterEach, expect, test, vi } from 'vitest'
 import type { PurchasesPackage } from '@revenuecat/purchases-capacitor'
 import { SUBSCRIPTIONS } from '../config/pricing'
 import { findPurchasePackage } from './purchaseCatalog'
-import { waitForPurchaseProfile } from './purchaseRefresh'
+import { SLOW_POLL_MS, waitForPurchaseProfile } from './purchaseRefresh'
 
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(), configure: vi.fn(), logIn: vi.fn(), logOut: vi.fn(),
@@ -98,5 +98,32 @@ test('polling times out without claiming fulfillment and cancels on unmount', as
   expect(await result).toBe(false); expect(read).toHaveBeenCalledTimes(6)
   const controller = new AbortController(); controller.abort(); read.mockClear()
   expect(await waitForPurchaseProfile(read, () => true, controller.signal)).toBe(false)
+  expect(read).not.toHaveBeenCalled()
+})
+
+test('a late webhook is still picked up by the slow background pass', async () => {
+  // The fast pass gives up at ~19s. Fulfilment that lands after that used to be
+  // invisible until the user forced a refresh, leaving "still syncing" on screen
+  // indefinitely. The slow pass is what now catches it.
+  vi.useFakeTimers()
+  const read = vi.fn().mockResolvedValue(0)
+  const signal = new AbortController().signal
+
+  const fast = waitForPurchaseProfile<number>(read, b => b >= 10, signal)
+  await vi.runAllTimersAsync()
+  expect(await fast).toBe(false)
+
+  read.mockResolvedValue(10) // webhook finally lands
+  const slow = waitForPurchaseProfile<number>(read, b => b >= 10, signal, SLOW_POLL_MS)
+  await vi.runAllTimersAsync()
+  expect(await slow).toBe(true)
+})
+
+test('the background pass stops immediately when the page unmounts', async () => {
+  vi.useFakeTimers()
+  const read = vi.fn().mockResolvedValue(0)
+  const controller = new AbortController()
+  controller.abort()
+  expect(await waitForPurchaseProfile(read, () => true, controller.signal, SLOW_POLL_MS)).toBe(false)
   expect(read).not.toHaveBeenCalled()
 })

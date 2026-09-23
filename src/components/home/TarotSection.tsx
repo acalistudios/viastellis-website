@@ -115,11 +115,22 @@ export function TarotSection({ chart }: Props) {
     markRevealed(dailyKey)
   }
 
-  // On mount, only restore the spread if it was already revealed today (this
-  // device). Otherwise we wait for the click, so premium/owners still get the
-  // flip instead of an auto-revealed board.
+  // On mount, ask the SERVER whether today's spread is already owned.
+  //
+  // This deliberately does NOT gate on localStorage. Ownership lives in the
+  // tarot_spreads table, keyed (user_id, date), so it is per ACCOUNT and
+  // therefore already shared between the website and the app. localStorage is
+  // per origin and per device, and the app's WebView and viastellis.com are
+  // different origins — so gating the lookup on it meant a spread unlocked in
+  // the app still showed as locked on the web (and vice versa), re-offering a
+  // purchase the user had already made. The charge itself was never duplicated
+  // (unlock_tarot_spread returns early when a row exists), but the UI lied.
+  //
+  // A `locked` response is the normal "not bought yet" case and leaves the
+  // board face-down, so premium users and owners still get the flip animation
+  // from a click rather than an auto-revealed board.
   useEffect(() => {
-    if (!spreadCards || !wasRevealed(spreadKey)) return
+    if (!spreadCards) return
     void (async () => {
       try {
         const res = await getTarotSpread({
@@ -131,7 +142,12 @@ export function TarotSection({ chart }: Props) {
           context,
           unlock: false,
         })
-        if (res.body) { setSpreadBody(res.body); setExpanded(true) } // spreadAnimate stays false → no re-flip
+        if (res.body) {
+          setSpreadBody(res.body)
+          setExpanded(true) // spreadAnimate stays false → no re-flip
+          // Keep this device in step so a later visit skips the animation too.
+          markRevealed(spreadKey)
+        }
       } catch { /* not yet unlocked — that's fine */ }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps

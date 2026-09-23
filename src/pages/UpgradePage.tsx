@@ -16,8 +16,9 @@ import { startCheckout, cancelSubscription } from '@/lib/billing'
 import { getOfferings, purchasePackage, restorePurchases } from '@/lib/purchases'
 import { SUBSCRIPTIONS, CREDIT_PACKS, type PlanOption } from '@/config/pricing'
 import type { PurchasesPackage } from '@revenuecat/purchases-capacitor'
+import type { UserProfile } from '@/types'
 import { findPurchasePackage } from '@/lib/purchaseCatalog'
-import { waitForPurchaseProfile } from '@/lib/purchaseRefresh'
+import { SLOW_POLL_MS, waitForPurchaseProfile } from '@/lib/purchaseRefresh'
 
 export function UpgradePage() {
   const { user, profile, refreshProfile } = useUser()
@@ -103,11 +104,28 @@ export function UpgradePage() {
         await purchasePackage(pkg, user.id)
         if (signal.aborted) return
         setRestoreSuccess('Purchase received. Updating your balance…')
-        const updated = await waitForPurchaseProfile(refreshProfile, p =>
+        const fulfilled = (p: UserProfile) =>
           p.id === user.id && p.credits_remaining >= profile.credits_remaining + plan.credits &&
-          (plan.mode !== 'subscription' || p.subscription_tier === 'premium'), signal)
-        if (!signal.aborted) setRestoreSuccess(updated ? 'Your balance has updated.' :
-          'Your purchase is still syncing. You can refresh your balance below; please do not buy it again.')
+          (plan.mode !== 'subscription' || p.subscription_tier === 'premium')
+
+        const updated = await waitForPurchaseProfile(refreshProfile, fulfilled, signal)
+        if (signal.aborted) return
+        if (updated) {
+          setRestoreSuccess('Your balance has updated.')
+        } else {
+          setRestoreSuccess(
+            'Your purchase is still syncing. You can refresh your balance below; please do not buy it again.')
+          // Keep watching in the background. Previously this is where polling
+          // stopped for good, so a webhook landing a few seconds later was
+          // never noticed and the notice above stayed up until the user forced
+          // a refresh or remounted the page. Deliberately not awaited: the
+          // button must free up now, and `signal` still cancels this on unmount.
+          void waitForPurchaseProfile(refreshProfile, fulfilled, signal, SLOW_POLL_MS)
+            .then(late => {
+              if (late && !signal.aborted) setRestoreSuccess('Your balance has updated.')
+            })
+            .catch(() => { /* background watch; the manual Refresh remains */ })
+        }
       } catch (err: unknown) {
         const anyErr = err as { userCancelled?: boolean; message?: string }
         if (!signal.aborted && !anyErr?.userCancelled) {

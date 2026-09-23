@@ -15,6 +15,7 @@ import {
   loadLogo,
   rasterizeSvg,
 } from '@/lib/chartExport'
+import { shareImage } from '@/lib/nativeShare'
 
 const SIGN_GLYPHS: Record<string, string> = {
   Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
@@ -31,6 +32,7 @@ interface Props {
 
 export function WesternShareCardButton({ chart, name, svgContainerRef }: Props) {
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   async function buildCard(): Promise<Blob | null> {
     const svgEl = svgContainerRef.current?.querySelector('svg')
@@ -69,37 +71,33 @@ export function WesternShareCardButton({ chart, name, svgContainerRef }: Props) 
 
   async function handleShare() {
     setBusy(true)
+    setError('')
     try {
       const blob = await buildCard()
-      if (!blob) return
-      const file = new File([blob], 'viastellis-western-birth-chart.png', { type: 'image/png' })
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My Western Birth Chart - ViaStellis' })
-      } else {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'viastellis-western-birth-chart.png'
-        a.click()
-        URL.revokeObjectURL(url)
-      }
-    } catch {
-      // User cancelled the share sheet.
+      if (!blob) throw new Error('The chart is still drawing. Please try again in a moment.')
+      await shareImage(blob, 'viastellis-western-birth-chart.png', 'My Western Birth Chart - ViaStellis')
+    } catch (err) {
+      // See ShareCardButton: swallowing this as a cancel is what made the
+      // button silently inert inside the Android WebView.
+      setError(err instanceof Error ? err.message : 'Could not create the share card.')
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <button
-      onClick={() => void handleShare()}
-      disabled={busy}
-      className="text-xs text-slate-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-4 py-2 transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
-    >
-      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      {busy ? 'Creating...' : 'Share Card'}
-    </button>
+    <div className="inline-flex flex-col items-end gap-1">
+      <button
+        onClick={() => void handleShare()}
+        disabled={busy}
+        className="text-xs text-slate-400 hover:text-stardust-300 border border-cosmos-700 hover:border-stardust-400/50 rounded-full px-4 py-2 transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
+      >
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        {busy ? 'Creating...' : 'Share Card'}
+      </button>
+      {error && <p className="text-[11px] text-rose-400 max-w-[16rem] text-right">{error}</p>}
+    </div>
   )
 }
