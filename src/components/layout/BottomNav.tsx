@@ -28,7 +28,7 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 inset-x-0 bg-cosmos-900 border-t border-cosmos-700 z-50 print:hidden shadow-2xl">
+      <nav className="fixed bottom-0 inset-x-0 bg-cosmos-900 border-t border-cosmos-700 z-50 print:hidden shadow-2xl pb-[env(safe-area-inset-bottom)]">
         <ul className="flex justify-around items-center h-16 px-2">
           {CORE_ITEMS.map(({ to, icon: Icon, label }) => (
             <li key={to} className="flex-1">
