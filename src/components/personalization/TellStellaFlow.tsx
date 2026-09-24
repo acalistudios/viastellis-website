@@ -10,6 +10,7 @@
  */
 import { useState } from 'react'
 import { useUser } from '@/store/UserContext'
+import { usePreferredName } from '@/hooks/usePreferredName'
 import {
   addMemory,
   distillIntake,
@@ -72,8 +73,9 @@ function toggleMulti<T extends string>(arr: T[], v: T): T[] {
 }
 
 export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
-  const { user, session, profile, personalization, refreshPersonalization } = useUser()
-  const name = profile?.display_name?.trim() || 'friend'
+  const { user, session, personalization, refreshPersonalization } = useUser()
+  // The name the user set, not the one their OAuth provider supplied.
+  const name = usePreferredName()
 
   const [draft, setDraft] = useState<UserPersonalization>(personalization)
   const [step, setStep] = useState<Step>('mode')
@@ -110,7 +112,7 @@ export function TellStellaFlow({ onComplete }: { onComplete?: () => void }) {
     if (!user || !session || !text) { advanceFrom('memory', draft.personalization_mode); return }
     setBusy(true)
     try {
-      const { memory, reply } = await distillIntake(text, profile?.display_name ?? undefined, session.access_token)
+      const { memory, reply } = await distillIntake(text, name, session.access_token)
       await addMemory(user.id, memory, 'intake')
       setReply(reply)
     } catch {

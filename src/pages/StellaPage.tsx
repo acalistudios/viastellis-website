@@ -10,6 +10,7 @@
 import { useState, useRef, useEffect, useMemo, type FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
+import { clearHistory, loadHistory, saveHistory } from '@/lib/stellaHistory'
 import { CREDIT_COSTS, creditLabel } from '@/config/creditCosts'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { birthDataToJde } from '@/lib/ephemeris'
@@ -27,7 +28,7 @@ const SUGGESTIONS = [
 ]
 
 export function StellaPage() {
-  const { session, profile, personalization, memories } = useUser()
+  const { user, session, profile, personalization, memories } = useUser()
   const { chart } = useNatalChart()
 
   // Stella's personality is chosen in Settings (defaults to warm); no in-chat picker.
@@ -57,7 +58,9 @@ export function StellaPage() {
     const wheel = calculateVimshottari(moonDeg, new Date((jde - 2440587.5) * 86400000))
     return findCurrentDasha(wheel)
   }, [chart])
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  // Seeded from localStorage so the conversation survives navigating away
+  // and closing the app. See src/lib/stellaHistory.ts for why it is local.
+  const [messages, setMessages] = useState<ChatMessage[]>(() => loadHistory(user?.id))
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [error, setError] = useState('')
@@ -67,6 +70,19 @@ export function StellaPage() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
+
+  // Re-seed when the signed-in user changes, so one account never inherits
+  // another's conversation on a shared device.
+  useEffect(() => {
+    setMessages(loadHistory(user?.id))
+  }, [user?.id])
+
+  // Persist after each turn. Skipped mid-stream: writing a partial assistant
+  // reply on every chunk would thrash localStorage for no benefit.
+  useEffect(() => {
+    if (streaming) return
+    saveHistory(user?.id, messages)
+  }, [messages, streaming, user?.id])
 
   async function sendMessage(text: string) {
     const trimmed = text.trim()
@@ -156,7 +172,23 @@ export function StellaPage() {
       {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-cosmos-800">
         <div className="flex items-center justify-between">
-          <h1 className="font-display text-2xl text-stardust-300">Stella</h1>
+          <div className="flex items-baseline gap-3">
+            <h1 className="font-display text-2xl text-stardust-300">Stella</h1>
+            {messages.length > 0 && !streaming && (
+              // The conversation now persists, so there has to be a way out of
+              // it. Confirmed because the transcript cost credits to produce.
+              <button
+                onClick={() => {
+                  if (!window.confirm('Clear this conversation? It cannot be recovered.')) return
+                  clearHistory(user?.id)
+                  setMessages([])
+                }}
+                className="text-[11px] text-slate-500 hover:text-rose-400 underline underline-offset-4 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <span className="text-[10px] text-slate-600 max-w-[55%] text-right leading-tight">
             {ENTERTAINMENT_DISCLAIMER}
           </span>

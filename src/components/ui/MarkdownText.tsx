@@ -22,6 +22,32 @@ function renderInline(text: string, keyPrefix: string) {
   })
 }
 
+/**
+ * Does this block look like a section title the model forgot to mark up?
+ *
+ * The report prompts now ask for "## " prefixes, but every report generated
+ * before that change stored its titles as plain lines ("Your Life Path"), which
+ * rendered in body colour so the sections were invisible. Those bodies are
+ * cached server-side and are not regenerated for someone who already owns the
+ * report, so they can only be repaired at render time.
+ *
+ * Kept deliberately narrow, because a false positive turns a real sentence into
+ * a heading: one short line, no terminal punctuation, not a list item, not
+ * already fully bold.
+ */
+export function isBareTitle(lines: string[]): boolean {
+  if (lines.length !== 1) return false
+  const t = (lines[0] ?? '').trim()
+  return (
+    t.length > 0 &&
+    t.length <= 60 &&
+    t.split(/\s+/).length <= 8 &&
+    !/[.!?,;:]$/.test(t) &&
+    !/^[-*\d#]/.test(t) &&
+    !/^\*\*.*\*\*$/.test(t)
+  )
+}
+
 interface MarkdownTextProps {
   text: string
   className?: string
@@ -42,6 +68,28 @@ export function MarkdownText({ text, className, trailing }: MarkdownTextProps) {
 
         // Heading block: a single line starting with #, ##, or ###.
         const headingMatch = lines.length === 1 ? /^(#{1,3})\s+(.*)$/.exec(lines[0]) : null
+
+        // Bare-title fallback. The report prompts ask for "## " prefixes now,
+        // but every report generated before that change stored its section
+        // titles as plain lines ("Your Life Path"), which rendered in body
+        // colour and made the sections invisible. Those bodies are cached
+        // server-side and are never regenerated for someone who already owns
+        // the report, so they can only be fixed here.
+        //
+        // Deliberately narrow, to avoid promoting a genuine one-line paragraph:
+        // a lone short line, no terminal punctuation, not a list item, and not
+        // already fully bold.
+        const bare = lines[0] ?? ''
+        // Never promote the trailing block while text is still streaming in —
+        // a half-written sentence briefly looks exactly like a title.
+        if (!headingMatch && bi !== lastBlockIndex && isBareTitle(lines)) {
+          return (
+            <h4 key={bi} className="font-display text-base text-stardust-300 mt-4 mb-1.5 first:mt-0">
+              {renderInline(bare, `bh${bi}`)}
+            </h4>
+          )
+        }
+
         if (headingMatch) {
           const level = headingMatch[1].length
           const content = renderInline(headingMatch[2], `h${bi}`)

@@ -300,7 +300,13 @@ export function CompatibilityPage() {
   function reloadHistoryItem(item: HistoryItem) {
     if (!item.partnerBirthData) return
     fillPartnerForm(item.partnerBirthData)
-    void runMatch(item.partnerBirthData, { persist: false })
+    // Re-show the reading that was already paid for. Previously this re-ran the
+    // match from scratch, which called Stella again and charged ANOTHER credit
+    // to regenerate text we had already stored in compatibility_reports.summary.
+    void runMatch(item.partnerBirthData, {
+      persist: false,
+      cachedNarrative: item.summary ?? undefined,
+    })
   }
 
   /** Persist person B as a saved (non-primary) chart + the report row. */
@@ -395,7 +401,21 @@ export function CompatibilityPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!city || !date || !name.trim()) return
+    // Name each missing field. This used to `return` silently, which made a
+    // tapped "Check the Vibe" look broken — most often because the birth city
+    // had been typed but not PICKED from the suggestion list, which leaves
+    // `city` null while the box still shows text.
+    const missing = [
+      !name.trim() && 'their name',
+      !date && 'a birth date',
+      !city && (cityQuery.trim()
+        ? 'a birth city chosen from the suggestions (type it, then tap a result)'
+        : 'a birth city'),
+    ].filter(Boolean) as string[]
+    if (missing.length || !city || !date || !name.trim()) {
+      if (missing.length) setError(`Please add ${missing.join(', ')}.`)
+      return
+    }
     const timezone = getTimezone(city.latitude, city.longitude)
     await runMatch({
       name: name.trim(),
@@ -426,8 +446,16 @@ export function CompatibilityPage() {
     void runMatch(celebrity)
   }
 
-  async function runMatch(birthDataB: BirthData, options: { persist?: boolean } = {}) {
-    if (!myChart) return
+  async function runMatch(
+    birthDataB: BirthData,
+    options: { persist?: boolean; cachedNarrative?: string } = {},
+  ) {
+    // Say why nothing happened. This used to `return` in silence, so a user
+    // whose own chart had not loaded saw a dead button with no explanation.
+    if (!myChart) {
+      setError('Your own birth chart has not loaded yet. Please wait a moment and try again.')
+      return
+    }
     const shouldPersist = options.persist ?? true
     setError('')
     setNarrative('')
@@ -437,6 +465,12 @@ export function CompatibilityPage() {
       const vibe = computeVibeScore(myChart, chartB)
       setResult({ vibe, chartB })
       let finalNarrative = ''
+
+      // A reading we already own — show it rather than paying for it twice.
+      if (options.cachedNarrative) {
+        setNarrative(options.cachedNarrative)
+        return
+      }
 
       // Ask Stella for the narrative (requires deployed Edge Function)
       if (session) {
