@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useMemo, useState, type ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
 import { useUser } from '@/store/UserContext'
 import { calculateWesternChart } from '@/lib/westernChart'
+import { moonGocharaQuality, moonSiderealDeg, signFromDeg } from '@/lib/ephemeris'
 import { TodayCard } from '@/components/home/TodayCard'
+import { FeatureGrid } from '@/components/home/FeatureGrid'
 import { TarotSection } from '@/components/home/TarotSection'
 import { TellStellaInvite } from '@/components/personalization/TellStellaInvite'
 import { FullMoonCard } from '@/components/home/FullMoonCard'
@@ -18,6 +20,19 @@ const SIGN_GLYPHS: Record<string, string> = {
   Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
   Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
   Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
+}
+
+// Labels match TodayCard's QUALITY_COPY; the hint is plain language for newcomers.
+const DAY_COPY = {
+  favorable:   { label: 'A flowing day',  tone: 'text-emerald-300', hint: 'good energy for action' },
+  neutral:     { label: 'A steady day',   tone: 'text-slate-100',   hint: 'keep a gentle rhythm' },
+  challenging: { label: 'A tender day',   tone: 'text-rose-300',    hint: 'go easy on yourself' },
+} as const
+
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="w-full text-left text-[11px] uppercase tracking-widest text-slate-500 mb-2">{children}</p>
+  )
 }
 
 export function HomePage() {
@@ -51,6 +66,21 @@ export function HomePage() {
     return getPanchanga(new Date(n.getFullYear(), n.getMonth(), n.getDate(), 12)).moonPhase
   }, [])
 
+  // Day quality for the lead tile — the same Moon-from-natal-Moon rule TodayCard uses,
+  // so the tile and the full reading below never disagree.
+  const today = useMemo(() => {
+    if (!moon) return null
+    const transitMoonSign = signFromDeg(moonSiderealDeg(new Date())) as ZodiacSign
+    return { transitMoonSign, ...moonGocharaQuality(moon.sign, transitMoonSign) }
+  }, [moon])
+  const dayCopy = today ? DAY_COPY[today.quality] : null
+
+  const now = new Date()
+  const hour = now.getHours()
+  const greeting = hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+  const dateLine = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
+  const firstName = chart?.birth_data.name?.trim().split(/\s+/)[0]
+
   return (
     <div className="relative flex flex-col items-center px-6 py-10 text-center max-w-lg lg:max-w-3xl mx-auto">
       {showCheckoutSuccess && (
@@ -72,45 +102,58 @@ export function HomePage() {
         </div>
       )}
 
-      <img src="/logo.svg" alt="" className="w-14 h-14 mb-2" />
-      <h1 className="text-4xl font-display text-stardust-300 mb-1">ViaStellis</h1>
-      <p className="text-slate-500 text-sm mb-8">Wisdom from the stars</p>
-
       {loading ? (
         <span className="w-8 h-8 rounded-full border-2 border-stardust-400 border-t-transparent animate-spin my-12" />
       ) : chart ? (
         <>
-          <p className="text-slate-300 text-lg mb-4">
-            Welcome back, <span className="text-stardust-300">{chart.birth_data.name}</span>
-          </p>
-
-          {/* Daily horoscope — the hero: the first thing a returning user sees */}
-          <TodayCard chart={chart} />
-
-          {/* Tonight's moon — ambient, below the reading */}
-          <div className="flex flex-col items-center my-6">
-            <MoonPhase illumination={moonPhase.illumination} name={moonPhase.name} size={56} />
-            <p className="text-slate-400 text-xs mt-1.5 inline-flex items-center gap-1.5">
-              <span>{moonPhase.name} · <span className="text-slate-500">{moonPhase.illumination}% lit</span></span>
-              <InfoBubble title="Tonight's Moon" align="center">
+          {/* Greeting — date and tonight's moon, so the page feels like *today* */}
+          <div className="w-full flex items-center justify-between gap-4 mb-5 text-left">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-display text-slate-100 leading-tight">
+                {greeting}{firstName ? <>, <span className="text-stardust-300">{firstName}</span></> : null}
+              </h1>
+              <p className="text-slate-400 text-sm mt-0.5">{dateLine}</p>
+            </div>
+            <div className="flex flex-col items-center shrink-0">
+              <MoonPhase illumination={moonPhase.illumination} name={moonPhase.name} size={44} />
+              <p className="text-slate-500 text-[11px] mt-1 inline-flex items-center gap-1">
+                <span>{moonPhase.illumination}% lit</span>
+                <InfoBubble title={`Tonight's Moon · ${moonPhase.name}`} align="right">
                 This is the Moon's illuminated fraction right <em>now</em>. It changes continuously,
                 so it can differ by a few percent from sources that fix it to a set time of day — ours
                 is computed for the current moment. As for meaning: a <strong>waxing</strong> (growing)
                 Moon favors building, intention-setting, and starting things; the <strong>Full Moon</strong>{' '}
                 brings culmination and release; a <strong>waning</strong> (shrinking) Moon is for letting
                 go and rest; the <strong>New Moon</strong> is for fresh starts.
-              </InfoBubble>
-            </p>
+                </InfoBubble>
+              </p>
+            </div>
+          </div>
+
+          {/* App-style launcher — one tap to every pillar */}
+          <FeatureGrid
+            dayLabel={dayCopy?.label ?? 'Your day'}
+            dayTone={dayCopy?.tone ?? 'text-slate-100'}
+            moonLine={today ? `Moon in ${today.transitMoonSign} · ${dayCopy?.hint}` : 'See what the sky holds for you'}
+          />
+
+          {/* Daily horoscope — the full reading the lead tile jumps to */}
+          <SectionLabel>Today for you</SectionLabel>
+          <div id="home-today" className="w-full scroll-mt-24">
+            <TodayCard chart={chart} />
           </div>
 
           {/* Daily tarot */}
-          <TarotSection chart={chart} />
+          <div id="home-tarot" className="w-full scroll-mt-24">
+            <TarotSection chart={chart} />
+          </div>
           <FullMoonCard chart={chart} />
 
           {/* Optional: invite the user to personalize (dismissible, hides once engaged) */}
           <TellStellaInvite />
 
           {/* Combined blueprint — what your three pillars mean together */}
+          <SectionLabel>Your chart at a glance</SectionLabel>
           {bpSun && bpMoon && (
             <BlueprintCard
               sunSign={bpSun}
@@ -158,34 +201,13 @@ export function HomePage() {
               </>
             )}
           </div>
-
-          {/* Quick actions */}
-          <div className="grid grid-cols-3 gap-3 w-full">
-            <Link
-              to="/chart"
-              className="bg-cosmos-800 hover:bg-cosmos-700 border border-cosmos-600 rounded-2xl px-4 py-5 transition-colors"
-            >
-              <p className="text-2xl mb-1">✦</p>
-              <p className="text-slate-200 text-sm font-medium">Full Chart</p>
-            </Link>
-            <Link
-              to="/journal"
-              className="bg-cosmos-800 hover:bg-cosmos-700 border border-cosmos-600 rounded-2xl px-4 py-5 transition-colors"
-            >
-              <p className="text-2xl mb-1">📓</p>
-              <p className="text-slate-200 text-sm font-medium">Journal</p>
-            </Link>
-            <Link
-              to="/stella"
-              className="bg-stardust-400/10 hover:bg-stardust-400/20 border border-stardust-400/40 rounded-2xl px-4 py-5 transition-colors"
-            >
-              <p className="text-2xl mb-1">💬</p>
-              <p className="text-stardust-300 text-sm font-medium">Ask Stella</p>
-            </Link>
-          </div>
         </>
       ) : (
-        <p className="text-slate-500 text-sm">Set up your birth chart to get started</p>
+        <>
+          <img src="/logo.svg" alt="" className="w-14 h-14 mb-2" />
+          <h1 className="text-3xl font-display text-stardust-300 mb-1">ViaStellis</h1>
+          <p className="text-slate-500 text-sm">Set up your birth chart to get started</p>
+        </>
       )}
 
       <p className="mt-12 text-[11px] text-slate-600 max-w-xs">{ENTERTAINMENT_DISCLAIMER}</p>
