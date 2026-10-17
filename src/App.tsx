@@ -17,6 +17,8 @@ import { DecisionPage } from '@/pages/DecisionPage'
 import { StellaPage } from '@/pages/StellaPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { JournalPage } from '@/pages/JournalPage'
+import { TodayPage } from '@/pages/TodayPage'
+import { TarotPage } from '@/pages/TarotPage'
 import { TermsPage, PrivacyPage, RefundPage, ContactPage, DeleteAccountPage } from '@/pages/LegalPages'
 import { ZodiacSystemsPage } from '@/pages/ZodiacSystemsPage'
 import { UnsubscribePage } from '@/pages/UnsubscribePage'
@@ -173,6 +175,8 @@ function App() {
         }
       >
         <Route path="/home" element={<HomePage />} />
+        <Route path="/today" element={<TodayPage />} />
+        <Route path="/tarot" element={<TarotPage />} />
         <Route path="/chart" element={<ChartPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/compatibility" element={<CompatibilityPage />} />

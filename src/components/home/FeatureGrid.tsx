@@ -2,9 +2,8 @@
  * FeatureGrid — the home page's app-style launcher.
  *
  * Big tap targets for every pillar, so a returning user reaches what they came
- * for in one tap instead of scrolling past the day's reading. Horoscope and
- * Tarot live further down this same page (Tarot has no route of its own — it is
- * a tab inside /chart), so those two scroll rather than navigate.
+ * for in one tap instead of scrolling past the day's reading. Every tile opens
+ * its own screen (each with a way back Home), so they all behave the same.
  */
 
 import { Link } from 'react-router-dom'
@@ -36,25 +35,19 @@ interface Feature {
   subtitle: string
   icon: LucideIcon
   tone: Tone
-  /** Route to open, or an element id on this page to scroll to. */
-  to?: string
-  scrollTo?: string
+  to: string
 }
 
 const FEATURES: Feature[] = [
   { title: 'Ask Stella',    subtitle: 'Your personal astrologer', icon: MessageCircle, tone: 'violet', to: '/stella' },
   { title: 'Birth Chart',   subtitle: 'Your cosmic blueprint',    icon: Star,          tone: 'gold',   to: '/chart' },
-  { title: 'Daily Tarot',   subtitle: "Draw today's card",        icon: Layers,        tone: 'rose',   scrollTo: 'home-tarot' },
+  { title: 'Daily Tarot',   subtitle: "Draw today's card",        icon: Layers,        tone: 'rose',   to: '/tarot' },
   { title: 'Best Days',     subtitle: 'Your month at a glance',   icon: Calendar,      tone: 'teal',   to: '/calendar' },
   { title: 'Compatibility', subtitle: 'You and someone else',     icon: Users,         tone: 'rose',   to: '/compatibility' },
   { title: 'Decisions',     subtitle: 'Should I…? Ask the stars', icon: HelpCircle,    tone: 'violet', to: '/decision' },
   { title: 'Journal',       subtitle: 'Reflect on your days',     icon: BookOpen,      tone: 'slate',  to: '/journal' },
   { title: 'Horoscopes',    subtitle: 'Every sign, every day',    icon: Sun,           tone: 'gold',   to: '/horoscopes' },
 ]
-
-function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
 
 const CARD = 'group relative flex flex-col justify-start min-h-[112px] rounded-2xl border bg-gradient-to-br px-4 py-4 text-left transition-colors'
 
@@ -72,14 +65,7 @@ function FeatureCard({ f }: { f: Feature }) {
       </span>
     </>
   )
-  const className = `${CARD} ${tone.card}`
-  return f.to ? (
-    <Link to={f.to} className={className}>{body}</Link>
-  ) : (
-    <button type="button" onClick={() => f.scrollTo && scrollToId(f.scrollTo)} className={className}>
-      {body}
-    </button>
-  )
+  return <Link to={f.to} className={`${CARD} ${tone.card}`}>{body}</Link>
 }
 
 interface TodayTileProps {
@@ -88,12 +74,11 @@ interface TodayTileProps {
   moonLine: string
 }
 
-/** Wide lead tile: today's quality at a glance; tapping jumps to the full reading. */
+/** Wide lead tile: today's quality at a glance; opens the full reading at /today. */
 function TodayTile({ dayLabel, dayTone, moonLine }: TodayTileProps) {
   return (
-    <button
-      type="button"
-      onClick={() => scrollToId('home-today')}
+    <Link
+      to="/today"
       className={`${CARD} ${TONES.gold.card} col-span-2 sm:col-span-4 min-h-0 flex-row items-center gap-4`}
     >
       <span className={`inline-flex w-12 h-12 shrink-0 items-center justify-center rounded-2xl ${TONES.gold.icon}`}>
@@ -108,7 +93,7 @@ function TodayTile({ dayLabel, dayTone, moonLine }: TodayTileProps) {
         <span className="hidden sm:inline">Read</span>
         <ChevronRight size={18} className="transition-transform group-hover:translate-x-0.5" />
       </span>
-    </button>
+    </Link>
   )
 }
 

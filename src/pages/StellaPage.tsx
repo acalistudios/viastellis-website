@@ -168,7 +168,8 @@ export function StellaPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-5rem)] max-w-lg mx-auto w-full">
+    // 7.75rem = the original 5rem of nav allowance + AppShell's 2.75rem BackToHomeBar
+    <div className="flex flex-col h-[calc(100dvh-7.75rem)] max-w-lg mx-auto w-full">
       {/* Header */}
       <div className="px-5 pt-5 pb-3 border-b border-cosmos-800">
         <div className="flex items-center justify-between">

@@ -1,26 +1,20 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
-import { useUser } from '@/store/UserContext'
-import { calculateWesternChart } from '@/lib/westernChart'
 import { moonGocharaQuality, moonSiderealDeg, signFromDeg } from '@/lib/ephemeris'
-import { TodayCard } from '@/components/home/TodayCard'
 import { FeatureGrid } from '@/components/home/FeatureGrid'
-import { TarotSection } from '@/components/home/TarotSection'
 import { TellStellaInvite } from '@/components/personalization/TellStellaInvite'
-import { FullMoonCard } from '@/components/home/FullMoonCard'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MoonPhase } from '@/components/ui/MoonPhase'
 import { getPanchanga } from '@/lib/panchanga'
-import { getPlacementMeaning, getNakshatraMeaning, getChartSynthesis } from '@/lib/placementMeanings'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
 import type { ZodiacSign } from '@/types'
 
-const SIGN_GLYPHS: Record<string, string> = {
-  Aries: '♈', Taurus: '♉', Gemini: '♊', Cancer: '♋',
-  Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
-  Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
-}
+/**
+ * HomePage — a short app-style launcher: greeting, today's quality, and a card
+ * per pillar. The content that used to live here now has its own screens:
+ * the full reading at /today, the draw at /tarot, and the blueprint on /chart.
+ */
 
 // Labels match TodayCard's QUALITY_COPY; the hint is plain language for newcomers.
 const DAY_COPY = {
@@ -29,34 +23,12 @@ const DAY_COPY = {
   challenging: { label: 'A tender day',   tone: 'text-rose-300',    hint: 'go easy on yourself' },
 } as const
 
-function SectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <p className="w-full text-left text-[11px] uppercase tracking-widest text-slate-500 mb-2">{children}</p>
-  )
-}
-
 export function HomePage() {
   const { chart, loading } = useNatalChart()
   const [params] = useSearchParams()
   const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(params.get('checkout') === 'success')
 
   const moon = chart?.planets.find(p => p.planet === 'Moon')
-  const sun = chart?.planets.find(p => p.planet === 'Sun')
-
-  // When the user prefers the Western (tropical) system, the blueprint + placement
-  // cards should use tropical Sun/Moon/Rising (and drop nakshatras), not the Vedic chart.
-  const { profile } = useUser()
-  const isWestern = profile?.chart_system === 'western'
-  const westernChart = useMemo(
-    () => (isWestern && chart ? calculateWesternChart(chart.birth_data) : null),
-    [isWestern, chart],
-  )
-  const timeKnown = chart ? !chart.birth_data.time_unknown : false
-  const wSun = westernChart?.planets.find(p => p.body === 'Sun')?.sign
-  const wMoon = westernChart?.planets.find(p => p.body === 'Moon')?.sign
-  const bpSun = isWestern ? wSun : sun?.sign
-  const bpMoon = isWestern ? wMoon : moon?.sign
-  const bpRising = !timeKnown ? undefined : (isWestern ? westernChart?.ascendant.sign : chart?.ascendant.sign)
 
   // Tonight's moon phase (global — same everywhere on Earth).
   // Anchor to local noon of the civil day — the same reference the Calendar uses
@@ -67,7 +39,7 @@ export function HomePage() {
   }, [])
 
   // Day quality for the lead tile — the same Moon-from-natal-Moon rule TodayCard uses,
-  // so the tile and the full reading below never disagree.
+  // so the tile and the full reading on /today never disagree.
   const today = useMemo(() => {
     if (!moon) return null
     const transitMoonSign = signFromDeg(moonSiderealDeg(new Date())) as ZodiacSign
@@ -130,76 +102,15 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* App-style launcher — one tap to every pillar */}
+          {/* App-style launcher — one tap to every pillar, each opening its own screen */}
           <FeatureGrid
             dayLabel={dayCopy?.label ?? 'Your day'}
             dayTone={dayCopy?.tone ?? 'text-slate-100'}
             moonLine={today ? `Moon in ${today.transitMoonSign} · ${dayCopy?.hint}` : 'See what the sky holds for you'}
           />
 
-          {/* Daily horoscope — the full reading the lead tile jumps to (TodayCard has its own header) */}
-          <div id="home-today" className="w-full scroll-mt-24">
-            <TodayCard chart={chart} />
-          </div>
-
-          {/* Daily tarot */}
-          <div id="home-tarot" className="w-full scroll-mt-24">
-            <TarotSection chart={chart} />
-          </div>
-          <FullMoonCard chart={chart} />
-
           {/* Optional: invite the user to personalize (dismissible, hides once engaged) */}
           <TellStellaInvite />
-
-          {/* Combined blueprint — what your three pillars mean together */}
-          <SectionLabel>Your chart at a glance</SectionLabel>
-          {bpSun && bpMoon && (
-            <BlueprintCard
-              sunSign={bpSun}
-              moonSign={bpMoon}
-              lagnaSign={bpRising}
-              isWestern={isWestern}
-            />
-          )}
-
-          {/* Key placements — tropical Sun/Moon/Rising for Western, rashi + nakshatra for Vedic */}
-          <div className="grid grid-cols-1 gap-3 w-full mb-8">
-            {isWestern ? (
-              <>
-                {bpSun && <PlacementCard role="sun" label="Sun Sign (Tropical)" sign={bpSun} />}
-                {bpMoon && <PlacementCard role="moon" label="Moon Sign (Tropical)" sign={bpMoon} />}
-                {bpRising && <PlacementCard role="lagna" label="Rising (Ascendant)" sign={bpRising} />}
-              </>
-            ) : (
-              <>
-                {moon && (
-                  <PlacementCard
-                    role="moon"
-                    label="Moon Sign (Rashi)"
-                    sign={moon.sign}
-                    nakshatra={moon.nakshatra}
-                    pada={moon.nakshatra_pada}
-                  />
-                )}
-                {sun && (
-                  <PlacementCard
-                    role="sun"
-                    label="Sun Sign"
-                    sign={sun.sign}
-                    nakshatra={sun.nakshatra}
-                    pada={sun.nakshatra_pada}
-                  />
-                )}
-                {!chart.birth_data.time_unknown && (
-                  <PlacementCard
-                    role="lagna"
-                    label="Lagna (Rising)"
-                    sign={chart.ascendant.sign}
-                  />
-                )}
-              </>
-            )}
-          </div>
         </>
       ) : (
         <>
@@ -220,89 +131,6 @@ export function HomePage() {
         <span className="text-cosmos-700">·</span>
         <a href="/contact" className="hover:text-stardust-400 transition-colors">Contact</a>
       </div>
-    </div>
-  )
-}
-
-interface BlueprintCardProps {
-  sunSign: ZodiacSign
-  moonSign: ZodiacSign
-  lagnaSign?: ZodiacSign
-  isWestern?: boolean
-}
-
-function BlueprintCard({ sunSign, moonSign, lagnaSign, isWestern }: BlueprintCardProps) {
-  const synth = getChartSynthesis(sunSign, moonSign, lagnaSign)
-
-  return (
-    <div className="w-full bg-gradient-to-br from-cosmos-800/80 to-cosmos-900/80 border border-stardust-400/30 rounded-2xl px-5 py-4 mb-3 text-left">
-      <p className="text-[11px] uppercase tracking-widest text-stardust-400 mb-1">Your Blueprint</p>
-      <p className="text-slate-100 font-display text-lg leading-snug mb-3">
-        {synth.headline}
-        {synth.isDouble && (
-          <span className="ml-2 align-middle text-[10px] uppercase tracking-wider text-stellar-300 border border-stellar-300/40 rounded-full px-2 py-0.5">
-            double {sunSign}
-          </span>
-        )}
-      </p>
-
-      <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Personality</p>
-      <p className="text-slate-300 text-sm leading-relaxed mb-3">{synth.personality}</p>
-
-      <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-1">Career & vocation</p>
-      <p className="text-slate-300 text-sm leading-relaxed">{synth.career}</p>
-
-      <p className="text-[10px] text-slate-600 mt-3 italic">
-        A blended reading of your rising, Sun, and Moon signs. Inclinations, not rules — your full
-        chart ({isWestern ? 'houses and aspects' : 'houses, dashas, yogas'}) refines all of this.
-      </p>
-    </div>
-  )
-}
-
-interface PlacementCardProps {
-  role: 'moon' | 'sun' | 'lagna'
-  label: string
-  sign: ZodiacSign
-  nakshatra?: string
-  pada?: number
-}
-
-function PlacementCard({ role, label, sign, nakshatra, pada }: PlacementCardProps) {
-  const meaning = getPlacementMeaning(role, sign)
-  const nak = nakshatra ? getNakshatraMeaning(nakshatra) : undefined
-
-  return (
-    <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 text-left">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] uppercase tracking-widest text-slate-500 flex items-center gap-1">
-            {label}
-            <InfoBubble title={`${sign} ${label.split(' ')[0]}`} align="left">
-              {meaning.detail}
-            </InfoBubble>
-          </p>
-          <p className="text-slate-100 text-lg font-display">{SIGN_GLYPHS[sign]} {sign}</p>
-        </div>
-        {nakshatra && (
-          <div className="text-right">
-            <p className="text-[11px] uppercase tracking-widest text-slate-500 flex items-center justify-end gap-1">
-              Nakshatra
-              {nak && (
-                <InfoBubble title={`${nakshatra}${nak.symbol ? ` · ${nak.symbol}` : ''}`} align="right">
-                  {nak.meaning} {nak.deity && <span className="text-slate-500">(Deity: {nak.deity}.)</span>}
-                </InfoBubble>
-              )}
-            </p>
-            <p className="text-stardust-300 text-sm">{nakshatra}{pada ? ` · pada ${pada}` : ''}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Plain-language interpretation */}
-      <p className="text-slate-400 text-xs mt-2 leading-relaxed border-t border-cosmos-800 pt-2">
-        {meaning.detail}
-      </p>
     </div>
   )
 }

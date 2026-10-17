@@ -185,7 +185,7 @@ export function UpgradePage() {
     <div className="min-h-screen bg-cosmos-950 text-slate-200">
       <div className="max-w-3xl mx-auto px-6 py-10">
         <Link to="/home" className="text-stardust-400 hover:text-stardust-300 text-sm">
-          ← Back
+          ← Home
         </Link>
 
         <h1 className="font-display text-4xl text-stardust-300 mt-6 mb-1">Unlock Stella</h1>
