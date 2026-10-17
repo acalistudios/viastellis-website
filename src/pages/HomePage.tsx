@@ -137,8 +137,7 @@ export function HomePage() {
             moonLine={today ? `Moon in ${today.transitMoonSign} · ${dayCopy?.hint}` : 'See what the sky holds for you'}
           />
 
-          {/* Daily horoscope — the full reading the lead tile jumps to */}
-          <SectionLabel>Today for you</SectionLabel>
+          {/* Daily horoscope — the full reading the lead tile jumps to (TodayCard has its own header) */}
           <div id="home-today" className="w-full scroll-mt-24">
             <TodayCard chart={chart} />
           </div>

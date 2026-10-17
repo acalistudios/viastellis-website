@@ -56,7 +56,7 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const CARD = 'group relative flex flex-col justify-between min-h-[112px] rounded-2xl border bg-gradient-to-br px-4 py-4 text-left transition-colors'
+const CARD = 'group relative flex flex-col justify-start min-h-[112px] rounded-2xl border bg-gradient-to-br px-4 py-4 text-left transition-colors'
 
 function FeatureCard({ f }: { f: Feature }) {
   const tone = TONES[f.tone]
@@ -102,10 +102,11 @@ function TodayTile({ dayLabel, dayTone, moonLine }: TodayTileProps) {
       <span className="flex-1 min-w-0">
         <span className="block text-[11px] uppercase tracking-widest text-stellar-300/80">Today's horoscope</span>
         <span className={`block text-lg font-display leading-tight ${dayTone}`}>{dayLabel}</span>
-        <span className="block text-slate-400 text-xs mt-0.5 truncate">{moonLine}</span>
+        <span className="block text-slate-400 text-xs mt-0.5 leading-snug line-clamp-2">{moonLine}</span>
       </span>
       <span className="inline-flex items-center gap-0.5 text-stellar-300 text-sm font-medium shrink-0">
-        Read <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+        <span className="hidden sm:inline">Read</span>
+        <ChevronRight size={18} className="transition-transform group-hover:translate-x-0.5" />
       </span>
     </button>
   )
