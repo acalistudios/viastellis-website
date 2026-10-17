@@ -1,15 +1,20 @@
 /**
  * TodayCard — personalized daily horoscope on the home page.
  *
- * The factual layer is deterministic (today's Moon gochara vs natal Moon,
- * notable transits touching natal positions). The prose reading below it is
- * HoroscopeSection: the user's default lens is free daily, others cost credits.
+ * The day's mood comes from lib/dayQuality, in the SAME system as the user's
+ * chosen reading (Western Sun-sign or Vedic Moon), so the mood and the
+ * horoscope under it rest on one source. The prose reading is HoroscopeSection:
+ * the user's default lens is free daily, others cost credits.
  *
- * It leads with one plain sentence; the technical layer (nakshatra, tithi,
- * vara, transits) sits behind "Why?" so a newcomer isn't met with jargon.
+ * It leads with one plain sentence; the technical layer sits behind "Why?" so
+ * a newcomer isn't met with jargon. The Vedic detail (nakshatra, tithi, vara,
+ * transits) shows only when the mood is Vedic — it would explain the wrong
+ * system otherwise.
  */
 
 import { useMemo, useState } from 'react'
+import { useUser } from '@/store/UserContext'
+import { defaultHoroscopeLens, getDayQuality, lensSystem } from '@/lib/dayQuality'
 import {
   getTransitSnapshot,
   moonGocharaQuality,
@@ -21,16 +26,17 @@ import { HoroscopeSection } from './HoroscopeSection'
 import { InfoBubble } from '../ui/InfoBubble'
 import type { NatalChart, ZodiacSign } from '@/types'
 
-// `plain` describes the day's feel, not advice: it comes from the natal-Moon gochara,
-// while the reading under it may be a generic Sun-sign text, so the two can differ.
+// `plain` describes the day's feel, not advice: the reading under it is generated
+// per sign, so even in the same system its wording can lean differently.
 const QUALITY_COPY = {
   favorable: { tone: 'text-emerald-300', label: 'Flowing day', plain: 'A supportive day — things tend to come together more easily.' },
   neutral: { tone: 'text-slate-300', label: 'Steady day', plain: 'An even day — good for steady, ordinary progress.' },
   challenging: { tone: 'text-rose-300', label: 'Tender day', plain: 'A sensitive day — go gently and give yourself room.' },
 } as const
 
-// Chandrashtama (Moon 8th from natal Moon) is the strongest caution; say so plainly.
-const CHANDRASHTAMA_PLAIN = 'Your monthly rest day — keep plans light and avoid big decisions.'
+// The strongest caution in each system — Vedic chandrashtama (Moon 8th from natal
+// Moon) or the Western Moon opposite the Sun sign — said plainly.
+const REST_DAY_PLAIN = 'Your monthly rest day — keep plans light and avoid big decisions.'
 
 const EXPLANATIONS = {
   moonPosition: 'The Moon travels through a new zodiac sign every 2-3 days. This sign colors your emotional mood and instinctive needs today.',
@@ -45,6 +51,12 @@ interface Props {
 }
 
 export function TodayCard({ chart }: Props) {
+  const { profile } = useUser()
+  const system = lensSystem(defaultHoroscopeLens(profile))
+  const day = useMemo(() => getDayQuality(chart, system), [chart, system])
+
+  // Vedic factual layer — feeds the personalized lens prompt (always Vedic) and the
+  // Vedic "Why?" detail.
   const today = useMemo(() => {
     const now = new Date()
     const transits = getTransitSnapshot(now)
@@ -79,8 +91,8 @@ export function TodayCard({ chart }: Props) {
     (today.activations.length ? `; ${today.activations.join('; ')}` : '') +
     (today.gochara.isChandrashtama ? '; chandrashtama (rest day)' : '')
 
-  const q = QUALITY_COPY[today.gochara.quality]
-  const plain = today.gochara.isChandrashtama ? CHANDRASHTAMA_PLAIN : q.plain
+  const q = QUALITY_COPY[day.quality]
+  const plain = day.restDay ? REST_DAY_PLAIN : q.plain
   const [showWhy, setShowWhy] = useState(false)
 
   return (
@@ -93,7 +105,7 @@ export function TodayCard({ chart }: Props) {
       {/* Plain language first */}
       <p className="text-slate-100 text-base leading-snug">{plain}</p>
       <p className="text-slate-500 text-xs mt-1.5">
-        {today.panchanga.moonPhase.emoji} Moon in {today.transitMoonSign}
+        {today.panchanga.moonPhase.emoji} Moon in {day.transitMoonSign}
         {' · '}
         <button
           type="button"
@@ -108,7 +120,10 @@ export function TodayCard({ chart }: Props) {
       {/* The technical layer, on request */}
       {showWhy && (
         <div className="mt-2 rounded-xl bg-cosmos-800/50 border border-cosmos-700 px-3 py-2">
-          <p className="text-slate-300 text-sm">
+          <p className="text-slate-300 text-sm leading-relaxed">{day.basis}</p>
+          {system === 'vedic' && (
+          <>
+          <p className="text-slate-300 text-sm mt-2">
             <span className="inline-flex items-center gap-1">
               {today.panchanga.moonPhase.emoji} Moon in {today.transitMoonSign} · {today.transitMoon.nakshatra}
               <InfoBubble title="Moon's sign today" align="left">{EXPLANATIONS.moonPosition}</InfoBubble>
@@ -143,6 +158,8 @@ export function TodayCard({ chart }: Props) {
               </>
             )}
           </p>
+          </>
+          )}
         </div>
       )}
 

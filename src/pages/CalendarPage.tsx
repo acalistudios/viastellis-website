@@ -398,15 +398,21 @@ export function CalendarPage() {
 
       {/* Goal tagging */}
       <div className="mb-6">
-        <button
-          onClick={() => setShowGoalSection(!showGoalSection)}
-          className="text-sm text-slate-400 font-medium mb-3 px-1 hover:text-stardust-300 transition-colors"
-        >
-          {showGoalSection ? '▼' : '▶'} Tag an intention
+        {/* The info bubble is its own button, so it sits beside the toggle rather than
+            inside it: nested buttons are invalid HTML, and a tap on the "?" also
+            toggled the section. */}
+        <div className="flex items-center gap-1.5 mb-3 px-1">
+          <button
+            onClick={() => setShowGoalSection(!showGoalSection)}
+            aria-expanded={showGoalSection}
+            className="text-sm text-slate-400 font-medium hover:text-stardust-300 transition-colors"
+          >
+            {showGoalSection ? '▼' : '▶'} Tag an intention
+          </button>
           <InfoBubble title="Goal tagging" align="right">
             Tell us what you want to do ("launch business", "healing work", "romance"), and we'll find the 3 best days in the next month for it.
           </InfoBubble>
-        </button>
+        </div>
 
         {showGoalSection && (
           <div className="bg-cosmos-900 border border-cosmos-700 rounded-2xl px-4 py-3 mb-4 space-y-3">

@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase'
 import { usePersonaBlock } from '@/hooks/usePersonaBlock'
 import { westernSunSign } from '@/lib/westernSign'
 import { getHoroscope, type HoroscopeLens } from '@/lib/horoscope'
+import { defaultHoroscopeLens } from '@/lib/dayQuality'
 import { MarkdownText } from '@/components/ui/MarkdownText'
 import { HoroscopeFeedback } from '@/components/home/HoroscopeFeedback'
 import type { NatalChart } from '@/types'
@@ -44,11 +45,9 @@ const creditLabel = (n: number) => `${n} credit${n === 1 ? '' : 's'}`
 
 export function HoroscopeSection({ chart, transitSummary }: Props) {
   const { profile } = useUser()
-  // Legacy guard: the retired 'vedic_sun' lens maps to the traditional Vedic
-  // Moon-sign reading (same system) so old profiles don't break.
-  const rawLens = profile?.default_horoscope_lens
-  const defaultLens: HoroscopeLens =
-    rawLens === 'vedic_sun' ? 'vedic_moon' : ((rawLens ?? 'western_sun') as HoroscopeLens)
+  // Shared with TodayCard's mood line, so both always mean the same lens
+  // (including the legacy 'vedic_sun' → 'vedic_moon' mapping).
+  const defaultLens = defaultHoroscopeLens(profile)
   const isPremium = profile?.subscription_tier === 'premium'
 
   const moonSign = chart.planets.find((p) => p.planet === 'Moon')?.sign

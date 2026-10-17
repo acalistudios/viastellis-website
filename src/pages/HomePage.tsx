@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useNatalChart } from '@/hooks/useNatalChart'
-import { moonGocharaQuality, moonSiderealDeg, signFromDeg } from '@/lib/ephemeris'
+import { useUser } from '@/store/UserContext'
+import { defaultHoroscopeLens, getDayQuality, lensSystem } from '@/lib/dayQuality'
 import { FeatureGrid } from '@/components/home/FeatureGrid'
 import { TellStellaInvite } from '@/components/personalization/TellStellaInvite'
 import { InfoBubble } from '@/components/ui/InfoBubble'
 import { MoonPhase } from '@/components/ui/MoonPhase'
 import { getPanchanga } from '@/lib/panchanga'
 import { ENTERTAINMENT_DISCLAIMER } from '@/types'
-import type { ZodiacSign } from '@/types'
 
 /**
  * HomePage — a short app-style launcher: greeting, today's quality, and a card
@@ -28,7 +28,8 @@ export function HomePage() {
   const [params] = useSearchParams()
   const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(params.get('checkout') === 'success')
 
-  const moon = chart?.planets.find(p => p.planet === 'Moon')
+  const { profile } = useUser()
+  const system = lensSystem(defaultHoroscopeLens(profile))
 
   // Tonight's moon phase (global — same everywhere on Earth).
   // Anchor to local noon of the civil day — the same reference the Calendar uses
@@ -38,13 +39,9 @@ export function HomePage() {
     return getPanchanga(new Date(n.getFullYear(), n.getMonth(), n.getDate(), 12)).moonPhase
   }, [])
 
-  // Day quality for the lead tile — the same Moon-from-natal-Moon rule TodayCard uses,
-  // so the tile and the full reading on /today never disagree.
-  const today = useMemo(() => {
-    if (!moon) return null
-    const transitMoonSign = signFromDeg(moonSiderealDeg(new Date())) as ZodiacSign
-    return { transitMoonSign, ...moonGocharaQuality(moon.sign, transitMoonSign) }
-  }, [moon])
+  // Day quality for the lead tile — the same helper and system TodayCard uses, so
+  // the tile and the full reading on /today never disagree.
+  const today = useMemo(() => (chart ? getDayQuality(chart, system) : null), [chart, system])
   const dayCopy = today ? DAY_COPY[today.quality] : null
 
   const now = new Date()

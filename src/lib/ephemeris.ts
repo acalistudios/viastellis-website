@@ -396,6 +396,11 @@ export function moonSiderealDeg(date: Date): number {
   return norm360(radToDeg(moonPosition(jde).lon) - lahiriAyanamsa(jde))
 }
 
+/** Tropical longitude of the Moon at a given instant — the Western zodiac's Moon. */
+export function moonTropicalDeg(date: Date): number {
+  return norm360(radToDeg(moonPosition(dateToJde(date)).lon))
+}
+
 /** Sidereal (Lahiri) longitude of the Sun at a given instant. */
 export function sunSiderealDeg(date: Date): number {
   const jde = dateToJde(date)
