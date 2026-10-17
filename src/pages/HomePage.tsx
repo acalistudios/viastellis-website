@@ -18,8 +18,8 @@ import type { ZodiacSign } from '@/types'
 
 // Labels match TodayCard's QUALITY_COPY; the hint is plain language for newcomers.
 const DAY_COPY = {
-  favorable:   { label: 'A flowing day',  tone: 'text-emerald-300', hint: 'good energy for action' },
-  neutral:     { label: 'A steady day',   tone: 'text-slate-100',   hint: 'keep a gentle rhythm' },
+  favorable:   { label: 'A flowing day',  tone: 'text-emerald-300', hint: 'things flow more easily' },
+  neutral:     { label: 'A steady day',   tone: 'text-slate-100',   hint: 'a steady, even day' },
   challenging: { label: 'A tender day',   tone: 'text-rose-300',    hint: 'go easy on yourself' },
 } as const
 

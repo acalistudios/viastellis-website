@@ -4,9 +4,15 @@
  * The user's default lens (set at onboarding / in Settings) is free every day.
  * Other generic lenses cost 1 credit; the personalized lens costs 2. Premium
  * unlocks all. Unlocking is cached server-side per day, so re-views are free.
+ *
+ * The free reading leads, on its own. The paid lenses sit behind "More
+ * readings" (open by default only for Premium, where nothing costs extra):
+ * a row of price tags on the first screen read as a paywall to newcomers,
+ * even though today's reading is free.
  */
 
 import { useEffect, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useUser } from '@/store/UserContext'
 import { supabase } from '@/lib/supabase'
@@ -33,6 +39,8 @@ const META: Record<HoroscopeLens, { emoji: string; title: string; tag: string; a
 }
 
 const TOPIC_LENSES: HoroscopeLens[] = ['love', 'career', 'money']
+
+const creditLabel = (n: number) => `${n} credit${n === 1 ? '' : 's'}`
 
 export function HoroscopeSection({ chart, transitSummary }: Props) {
   const { profile } = useUser()
@@ -85,6 +93,8 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
   const [lockedCost, setLockedCost] = useState<Partial<Record<HoroscopeLens, number>>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showMore, setShowMore] = useState(false)
+  const moreOpen = showMore || isPremium
   const personaBlock = usePersonaBlock()
 
   async function load(lens: HoroscopeLens, unlock = false) {
@@ -139,59 +149,6 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
     <div className="mt-4 pt-4 border-t border-cosmos-800">
       <p className="text-[11px] uppercase tracking-widest text-stardust-400 mb-2">Today’s Horoscope</p>
 
-      {/* Lens tabs — astrological then topic */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {(['western_sun', 'vedic_moon', 'personalized'] as HoroscopeLens[]).map((lens) => {
-          const m = META[lens]
-          const free = isPremium || lens === defaultLens || bodies[lens] != null
-          const isActive = active === lens
-          return (
-            <button
-              key={lens}
-              onClick={() => selectLens(lens)}
-              className={[
-                'text-[11px] rounded-full px-2.5 py-1 border transition-colors inline-flex items-center gap-1',
-                isActive
-                  ? 'bg-stardust-400/20 border-stardust-400/50 text-stardust-200'
-                  : 'bg-cosmos-800 border-cosmos-700 text-slate-400 hover:text-slate-200',
-              ].join(' ')}
-            >
-              <span>{m.emoji}</span>
-              <span>{m.title}</span>
-              <span className="opacity-50">· {m.tag}</span>
-              {!free && <span className="text-stellar-300">🔒{costFor(lens)}</span>}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Topic lenses */}
-      <div className="flex gap-1.5 mb-3">
-        {TOPIC_LENSES.map((lens) => {
-          const m = META[lens]
-          const free = isPremium || bodies[lens] != null
-          const isActive = active === lens
-          return (
-            <button
-              key={lens}
-              onClick={() => selectLens(lens)}
-              className={[
-                'flex-1 text-[11px] rounded-full px-2.5 py-1 border transition-colors inline-flex items-center justify-center gap-1',
-                isActive
-                  ? 'bg-stardust-400/20 border-stardust-400/50 text-stardust-200'
-                  : 'bg-cosmos-800 border-cosmos-700 text-slate-400 hover:text-slate-200',
-              ].join(' ')}
-            >
-              <span>{m.emoji}</span>
-              <span>{m.title}</span>
-              {free
-                ? <span className="text-emerald-500 text-[9px]">free</span>
-                : <span className="text-stellar-300 text-[9px]">🔒{costFor(lens)}</span>}
-            </button>
-          )
-        })}
-      </div>
-
       {/* Descriptor for the active lens */}
       <p className="text-slate-500 text-xs italic mb-2">
         {active === 'personalized'
@@ -231,6 +188,80 @@ export function HoroscopeSection({ chart, transitSummary }: Props) {
           {error.includes('credit') && <Link to="/upgrade" className="underline">Get credits</Link>}
         </p>
       )}
+
+      {/* Other readings — opt-in, so the free reading isn't surrounded by prices */}
+      <div className="mt-4">
+        {!isPremium && (
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            aria-expanded={moreOpen}
+            className="w-full flex items-center justify-between rounded-xl border border-cosmos-700 bg-cosmos-800/60 hover:bg-cosmos-800 px-3 py-2 text-left transition-colors"
+          >
+            <span>
+              <span className="block text-slate-200 text-xs font-medium">More readings</span>
+              <span className="block text-slate-500 text-[11px]">Moon sign, your full chart, love, career, money</span>
+            </span>
+            <ChevronDown size={16} className={`text-slate-400 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+          </button>
+        )}
+        {moreOpen && (
+          <div className={isPremium ? '' : 'mt-3'}>
+        {/* Lens tabs — astrological then topic */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {(['western_sun', 'vedic_moon', 'personalized'] as HoroscopeLens[]).map((lens) => {
+            const m = META[lens]
+            const free = isPremium || lens === defaultLens || bodies[lens] != null
+            const isActive = active === lens
+            return (
+              <button
+                key={lens}
+                onClick={() => selectLens(lens)}
+                className={[
+                  'text-[11px] rounded-full px-2.5 py-1 border transition-colors inline-flex items-center gap-1',
+                  isActive
+                    ? 'bg-stardust-400/20 border-stardust-400/50 text-stardust-200'
+                    : 'bg-cosmos-800 border-cosmos-700 text-slate-400 hover:text-slate-200',
+                ].join(' ')}
+              >
+                <span>{m.emoji}</span>
+                <span>{m.title}</span>
+                <span className="opacity-50">· {m.tag}</span>
+                {!free && <span className="text-stellar-300">{creditLabel(costFor(lens))}</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Topic lenses */}
+        <div className="grid grid-cols-3 gap-1.5 mb-3">
+          {TOPIC_LENSES.map((lens) => {
+            const m = META[lens]
+            const free = isPremium || bodies[lens] != null
+            const isActive = active === lens
+            return (
+              <button
+                key={lens}
+                onClick={() => selectLens(lens)}
+                className={[
+                  'min-w-0 text-[11px] rounded-2xl px-2 py-1 border transition-colors inline-flex flex-wrap items-center justify-center gap-x-1',
+                  isActive
+                    ? 'bg-stardust-400/20 border-stardust-400/50 text-stardust-200'
+                    : 'bg-cosmos-800 border-cosmos-700 text-slate-400 hover:text-slate-200',
+                ].join(' ')}
+              >
+                <span>{m.emoji}</span>
+                <span>{m.title}</span>
+                {free
+                  ? <span className="text-emerald-500 text-[9px] whitespace-nowrap">free</span>
+                  : <span className="text-stellar-300 text-[9px] whitespace-nowrap">{creditLabel(costFor(lens))}</span>}
+              </button>
+            )
+          })}
+        </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -2,11 +2,14 @@
  * TodayCard — personalized daily horoscope on the home page.
  *
  * The factual layer is deterministic (today's Moon gochara vs natal Moon,
- * notable transits touching natal positions). Stella's prose reading is
- * generated on demand — one credit, cached for the day in sessionStorage.
+ * notable transits touching natal positions). The prose reading below it is
+ * HoroscopeSection: the user's default lens is free daily, others cost credits.
+ *
+ * It leads with one plain sentence; the technical layer (nakshatra, tithi,
+ * vara, transits) sits behind "Why?" so a newcomer isn't met with jargon.
  */
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   getTransitSnapshot,
   moonGocharaQuality,
@@ -18,11 +21,16 @@ import { HoroscopeSection } from './HoroscopeSection'
 import { InfoBubble } from '../ui/InfoBubble'
 import type { NatalChart, ZodiacSign } from '@/types'
 
+// `plain` describes the day's feel, not advice: it comes from the natal-Moon gochara,
+// while the reading under it may be a generic Sun-sign text, so the two can differ.
 const QUALITY_COPY = {
-  favorable: { tone: 'text-emerald-300', label: 'Flowing day' },
-  neutral: { tone: 'text-slate-300', label: 'Steady day' },
-  challenging: { tone: 'text-rose-300', label: 'Tender day' },
+  favorable: { tone: 'text-emerald-300', label: 'Flowing day', plain: 'A supportive day — things tend to come together more easily.' },
+  neutral: { tone: 'text-slate-300', label: 'Steady day', plain: 'An even day — good for steady, ordinary progress.' },
+  challenging: { tone: 'text-rose-300', label: 'Tender day', plain: 'A sensitive day — go gently and give yourself room.' },
 } as const
+
+// Chandrashtama (Moon 8th from natal Moon) is the strongest caution; say so plainly.
+const CHANDRASHTAMA_PLAIN = 'Your monthly rest day — keep plans light and avoid big decisions.'
 
 const EXPLANATIONS = {
   moonPosition: 'The Moon travels through a new zodiac sign every 2-3 days. This sign colors your emotional mood and instinctive needs today.',
@@ -72,6 +80,8 @@ export function TodayCard({ chart }: Props) {
     (today.gochara.isChandrashtama ? '; chandrashtama (rest day)' : '')
 
   const q = QUALITY_COPY[today.gochara.quality]
+  const plain = today.gochara.isChandrashtama ? CHANDRASHTAMA_PLAIN : q.plain
+  const [showWhy, setShowWhy] = useState(false)
 
   return (
     <div className="w-full bg-cosmos-900 border border-cosmos-700 rounded-2xl px-5 py-4 mb-3 text-left">
@@ -80,41 +90,61 @@ export function TodayCard({ chart }: Props) {
         <p className={`text-xs font-medium ${q.tone}`}>{q.label}</p>
       </div>
 
-      <p className="text-slate-300 text-sm">
-        <span className="inline-flex items-center gap-1">
-          {today.panchanga.moonPhase.emoji} Moon in {today.transitMoonSign} · {today.transitMoon.nakshatra}
-          <InfoBubble title="Moon's sign today" align="left">{EXPLANATIONS.moonPosition}</InfoBubble>
-        </span>
-        {' '}·{' '}
-        <span className="inline-flex items-center gap-1">
-          {today.gochara.houseFromMoon}
-          {today.gochara.houseFromMoon === 1 ? 'st' : today.gochara.houseFromMoon === 2 ? 'nd' : today.gochara.houseFromMoon === 3 ? 'rd' : 'th'}{' '}
-          from your Moon
-          <InfoBubble title="House from your Moon" align="right">{EXPLANATIONS.houseFromMoon}</InfoBubble>
-        </span>
-        {today.gochara.isChandrashtama && <span className="text-rose-300"> · chandrashtama (monthly rest day)</span>}
+      {/* Plain language first */}
+      <p className="text-slate-100 text-base leading-snug">{plain}</p>
+      <p className="text-slate-500 text-xs mt-1.5">
+        {today.panchanga.moonPhase.emoji} Moon in {today.transitMoonSign}
+        {' · '}
+        <button
+          type="button"
+          onClick={() => setShowWhy((v) => !v)}
+          aria-expanded={showWhy}
+          className="text-stardust-300 hover:text-stardust-200 underline underline-offset-2"
+        >
+          {showWhy ? 'Hide the astrology' : 'Why?'}
+        </button>
       </p>
 
-      <p className="text-slate-500 text-xs mt-1">
-        <span className="inline-flex items-center gap-1">
-          {today.panchanga.tithi.name} tithi ({today.panchanga.tithi.paksha})
-          <InfoBubble title="Tithi — lunar day" align="left">{EXPLANATIONS.tithi}</InfoBubble>
-        </span>
-        {' '}·{' '}
-        <span className="inline-flex items-center gap-1">
-          {today.panchanga.vara.name}
-          <InfoBubble title="Vara — weekday" align="center">{EXPLANATIONS.vara}</InfoBubble>
-        </span>
-        {today.activations.length > 0 && (
-          <>
+      {/* The technical layer, on request */}
+      {showWhy && (
+        <div className="mt-2 rounded-xl bg-cosmos-800/50 border border-cosmos-700 px-3 py-2">
+          <p className="text-slate-300 text-sm">
+            <span className="inline-flex items-center gap-1">
+              {today.panchanga.moonPhase.emoji} Moon in {today.transitMoonSign} · {today.transitMoon.nakshatra}
+              <InfoBubble title="Moon's sign today" align="left">{EXPLANATIONS.moonPosition}</InfoBubble>
+            </span>
             {' '}·{' '}
             <span className="inline-flex items-center gap-1">
-              <span>{today.activations.join(' + ')}</span>
-              <InfoBubble title="Transit activations" align="right">{EXPLANATIONS.activations}</InfoBubble>
+              {today.gochara.houseFromMoon}
+              {today.gochara.houseFromMoon === 1 ? 'st' : today.gochara.houseFromMoon === 2 ? 'nd' : today.gochara.houseFromMoon === 3 ? 'rd' : 'th'}{' '}
+              from your Moon
+              <InfoBubble title="House from your Moon" align="right">{EXPLANATIONS.houseFromMoon}</InfoBubble>
             </span>
-          </>
-        )}
-      </p>
+            {today.gochara.isChandrashtama && <span className="text-rose-300"> · chandrashtama (monthly rest day)</span>}
+          </p>
+
+          <p className="text-slate-500 text-xs mt-1">
+            <span className="inline-flex items-center gap-1">
+              {today.panchanga.tithi.name} tithi ({today.panchanga.tithi.paksha})
+              <InfoBubble title="Tithi — lunar day" align="left">{EXPLANATIONS.tithi}</InfoBubble>
+            </span>
+            {' '}·{' '}
+            <span className="inline-flex items-center gap-1">
+              {today.panchanga.vara.name}
+              <InfoBubble title="Vara — weekday" align="center">{EXPLANATIONS.vara}</InfoBubble>
+            </span>
+            {today.activations.length > 0 && (
+              <>
+                {' '}·{' '}
+                <span className="inline-flex items-center gap-1">
+                  <span>{today.activations.join(' + ')}</span>
+                  <InfoBubble title="Transit activations" align="right">{EXPLANATIONS.activations}</InfoBubble>
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       <HoroscopeSection chart={chart} transitSummary={transitSummary} />
     </div>

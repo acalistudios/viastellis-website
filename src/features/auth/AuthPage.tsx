@@ -225,7 +225,7 @@ export function AuthPage() {
                   setPassword('')
                 }}
                 className={[
-                  'flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300',
+                  'flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-[background-color,box-shadow] duration-300',
                   mode === m
                     ? 'bg-gradient-to-r from-stardust-400 to-stellar-300 text-[#0a0e27] shadow-lg shadow-stardust-400/30'
                     : 'text-slate-400 hover:text-stardust-300',
@@ -241,7 +241,10 @@ export function AuthPage() {
             <>
               {/* Google is the primary path: one tap, no email-confirmation
                   round-trip. Styled as the standout button; email + Facebook are
-                  secondary below it. */}
+                  secondary below it. Grouped with its caption so the gap to
+                  Facebook is the same whether or not the caption shows. */}
+              <div className="flex flex-col gap-3">
+              <div>
               <button
                 type="button"
                 onClick={() => handleOAuth('google')}
@@ -256,10 +259,11 @@ export function AuthPage() {
                 {mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}
               </button>
               {mode === 'signup' && (
-                <p className="text-center text-[11px] text-slate-500 -mt-1">
+                <p className="text-center text-[11px] text-slate-500 mt-1.5">
                   Fastest way in — no email confirmation needed
                 </p>
               )}
+              </div>
               <button
                 type="button"
                 onClick={() => handleOAuth('facebook')}
@@ -270,6 +274,7 @@ export function AuthPage() {
                 </svg>
                 Continue with Facebook
               </button>
+              </div>
               <div className="flex items-center gap-3 my-1">
                 <div className="flex-1 h-px bg-stardust-400/10" />
                 <span className="text-xs text-slate-600">or use email</span>

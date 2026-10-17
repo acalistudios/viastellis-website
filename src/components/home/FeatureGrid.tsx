@@ -46,7 +46,7 @@ const FEATURES: Feature[] = [
   { title: 'Compatibility', subtitle: 'You and someone else',     icon: Users,         tone: 'rose',   to: '/compatibility' },
   { title: 'Decisions',     subtitle: 'Should I…? Ask the stars', icon: HelpCircle,    tone: 'violet', to: '/decision' },
   { title: 'Journal',       subtitle: 'Reflect on your days',     icon: BookOpen,      tone: 'slate',  to: '/journal' },
-  { title: 'Horoscopes',    subtitle: 'Every sign, every day',    icon: Sun,           tone: 'gold',   to: '/horoscopes' },
+  { title: 'Horoscopes',    subtitle: 'Every sign, every day',    icon: Sun,           tone: 'gold',   to: '/signs' },
 ]
 
 const CARD = 'group relative flex flex-col justify-start min-h-[112px] rounded-2xl border bg-gradient-to-br px-4 py-4 text-left transition-colors'
