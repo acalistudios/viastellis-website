@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
+import { getAppVersionLabel } from '@/lib/appVersion'
 import { Button } from '@/components/ui/Button'
 import { PersonalizationSettings } from '@/components/personalization/PersonalizationSettings'
 
@@ -23,6 +24,8 @@ function defaultLensFor(system: 'vedic' | 'western'): 'vedic_moon' | 'western_su
 export function SettingsPage() {
   const navigate = useNavigate()
   const { user, profile } = useUser()
+  const [versionLabel, setVersionLabel] = useState('')
+  useEffect(() => { void getAppVersionLabel().then(setVersionLabel) }, [])
   const [signingOut, setSigningOut] = useState(false)
   const [chartSystem, setChartSystem] = useState(profile?.chart_system ?? 'vedic')
   const [chartSaved, setChartSaved] = useState(false)
@@ -361,7 +364,7 @@ export function SettingsPage() {
         <Link to="/contact" className="hover:text-stardust-400">Contact</Link>
       </div>
       <p className="text-xs text-slate-600 text-center mt-3">
-        ViaStellis · v0.1.0
+        ViaStellis{versionLabel ? ` · ${versionLabel}` : ''}
       </p>
     </div>
   )
