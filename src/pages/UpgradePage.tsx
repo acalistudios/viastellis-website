@@ -156,7 +156,7 @@ export function UpgradePage() {
     try {
       await restorePurchases(user.id)
       if (signal.aborted) return
-      await waitForPurchaseProfile(refreshProfile, p => p.id === user.id && p.subscription_source === 'play' && p.subscription_tier === 'premium', signal)
+      await waitForPurchaseProfile(refreshProfile, p => p.id === user.id && (p.subscription_source === 'play' || p.subscription_source === 'app_store') && p.subscription_tier === 'premium', signal)
       if (!signal.aborted) setRestoreSuccess('Restore check completed. Your current balance is shown above. Missing purchases may still be syncing.')
     } catch (err: unknown) {
       const anyErr = err as { message?: string }
@@ -289,9 +289,24 @@ export function UpgradePage() {
         )}
 
         {/* Subscription Management */}
-        {(isPremium || profile?.stripe_subscription_id || profile?.subscription_source === 'play') && !cancelledAt && (
+        {(isPremium || profile?.stripe_subscription_id || profile?.subscription_source === 'play' || profile?.subscription_source === 'app_store') && !cancelledAt && (
           <div className="mt-10 pt-6 border-t border-cosmos-700">
-            {profile?.subscription_source === 'play' ? (
+            {profile?.subscription_source === 'app_store' ? (
+              <div className="bg-cosmos-900 border border-cosmos-700 rounded-xl px-5 py-4 max-w-md">
+                <p className="text-slate-200 text-sm font-medium mb-1">Manage Apple Subscription</p>
+                <p className="text-slate-400 text-xs mb-3">
+                  Your subscription is billed through Apple. You can review, switch, or cancel your renewal anytime in your Apple account settings.
+                </p>
+                <a
+                  href="https://apps.apple.com/account/subscriptions"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-stardust-400 hover:text-stardust-300 text-xs underline"
+                >
+                  Open Apple Subscriptions ↗
+                </a>
+              </div>
+            ) : profile?.subscription_source === 'play' ? (
               <div className="bg-cosmos-900 border border-cosmos-700 rounded-xl px-5 py-4 max-w-md">
                 <p className="text-slate-200 text-sm font-medium mb-1">Manage Google Play Subscription</p>
                 <p className="text-slate-400 text-xs mb-3">

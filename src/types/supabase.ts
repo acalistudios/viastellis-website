@@ -41,7 +41,7 @@ export type Database = {
           subscription_price_id: string | null
           subscription_period_end: string | null
           stripe_subscription_id: string | null
-          subscription_source: 'stripe' | 'play' | null
+          subscription_source: 'stripe' | 'play' | 'app_store' | null
           daily_email_enabled: boolean
           daily_email_hour: number
           timezone: string | null

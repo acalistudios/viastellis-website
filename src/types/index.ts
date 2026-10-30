@@ -9,7 +9,7 @@ export interface UserProfile {
   /** Stripe Price ID or Google Play Product ID of the active subscription. */
   subscription_price_id: string | null
   /** Which payment rail owns the subscription: stripe (web) or play (Google Play). */
-  subscription_source?: 'stripe' | 'play' | null
+  subscription_source?: 'stripe' | 'play' | 'app_store' | null
   /** Exact website subscription; cancellation remains available after payment failure. */
   stripe_subscription_id?: string | null
   credits_remaining: number
