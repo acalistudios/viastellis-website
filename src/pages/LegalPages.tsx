@@ -7,6 +7,8 @@
  * on them in production. Entity, jurisdiction, and support inbox are filled in.
  */
 
+import { useUser } from '@/store/UserContext'
+import { DeleteAccountPanel } from '@/components/account/DeleteAccountPanel'
 import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
@@ -216,6 +218,7 @@ export function PrivacyPage() {
  * linked from the Play listing and the privacy policy.
  */
 export function DeleteAccountPage() {
+  const { user } = useUser()
   return (
     <LegalLayout title="Delete your account">
       <p>
@@ -224,15 +227,27 @@ export function DeleteAccountPage() {
       </p>
 
       <h2>Option 1 — delete it yourself (immediate)</h2>
-      <p>
-        If you can sign in, this is the fastest route and takes effect straight away:
-      </p>
-      <p>
-        1. Sign in at <a href="https://viastellis.com">viastellis.com</a> or in the Android app.<br />
-        2. Go to <strong>Settings</strong>.<br />
-        3. Scroll to <strong>Delete account</strong>.<br />
-        4. Type the confirmation phrase and choose <strong>Delete permanently</strong>.
-      </p>
+      {user ? (
+        <>
+          <p>
+            You are signed in as <strong>{user.email}</strong>. You can delete your account right
+            here, and it takes effect straight away.
+          </p>
+          <div className="not-prose my-6">
+            <DeleteAccountPanel />
+          </div>
+          <p>
+            The same control is in <strong>Settings</strong> once you have finished setting up your
+            chart.
+          </p>
+        </>
+      ) : (
+        <p>
+          <Link to="/auth">Sign in</Link> and this page will offer a Delete account button that
+          takes effect straight away. The same control is in <strong>Settings</strong> once you have
+          finished setting up your chart.
+        </p>
+      )}
 
       <h2>Option 2 — ask us to delete it</h2>
       <p>

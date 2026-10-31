@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { DeleteAccountPanel } from '@/components/account/DeleteAccountPanel'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
@@ -6,9 +7,6 @@ import { getAppVersionLabel } from '@/lib/appVersion'
 import { Button } from '@/components/ui/Button'
 import { PersonalizationSettings } from '@/components/personalization/PersonalizationSettings'
 
-// Must match CONFIRMATION in supabase/functions/delete-account/index.ts — the
-// function rejects the request if the phrase does not arrive exactly.
-const DELETE_PHRASE = 'DELETE MY ACCOUNT'
 
 const CHART_SYSTEM_OPTIONS = [
   { value: 'vedic', label: '🪔 Vedic (sidereal)', hint: 'Recommended · star-aligned zodiac, nakshatras, dashas · daily reading by Moon sign' },
@@ -36,10 +34,6 @@ export function SettingsPage() {
   const [dailyHour, setDailyHour] = useState<number>(profile?.daily_email_hour ?? 8)
   const [dailyEmailSaved, setDailyEmailSaved] = useState(false)
   // Account deletion — see handleDeleteAccount for why this is gated twice.
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deleteTyped, setDeleteTyped] = useState('')
-  const [deleting, setDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   async function handleDailyEmailChange(enabled: boolean) {
     setDailyEmail(enabled)
@@ -78,35 +72,6 @@ export function SettingsPage() {
     setSigningOut(true)
     await supabase.auth.signOut()
     navigate('/auth', { replace: true })
-  }
-
-  /**
-   * Permanent account deletion.
-   *
-   * Required by Google Play for any app offering account creation. Deliberately
-   * two-step and typed-to-confirm: this erases every reading, journal entry and
-   * Stella memory with no recovery path, so a single mis-tap must not trigger it.
-   */
-  async function handleDeleteAccount() {
-    setDeleting(true)
-    setDeleteError(null)
-    const { data, error } = await supabase.functions.invoke('delete-account', {
-      body: { confirm: DELETE_PHRASE },
-    })
-    if (error || !(data as { success?: boolean } | null)?.success) {
-      // The function deletes rows before the login, and aborts before removing
-      // the login if anything fails — so on error the account still exists.
-      const message =
-        (data as { error?: string } | null)?.error ??
-        error?.message ??
-        'Could not delete your account. Please try again or contact support@viastellis.com.'
-      setDeleteError(message)
-      setDeleting(false)
-      return
-    }
-    // The auth user is gone; clear the local session so nothing lingers.
-    await supabase.auth.signOut()
-    navigate('/?deleted=1', { replace: true })
   }
 
   async function handleChartSystemChange(value: typeof chartSystem) {
@@ -285,74 +250,7 @@ export function SettingsPage() {
         </Button>
       </div>
 
-      {/* Danger zone — permanent account deletion (Google Play requirement) */}
-      <div className="bg-cosmos-900 border border-rose-500/30 rounded-2xl px-5 py-4 mt-8">
-        <p className="text-rose-400 text-sm font-medium mb-1">Delete account</p>
-        <p className="text-slate-500 text-xs leading-relaxed mb-3">
-          Permanently deletes your account and everything in it — birth details, saved
-          charts, journal entries, Stella&rsquo;s memories, compatibility and decision
-          reports. This cannot be undone, and any remaining credits are forfeited.
-        </p>
-        {/* Deleting the account does not touch the store subscription. Without this
-            a user can delete their account and keep being billed, with no remaining
-            way to see or cancel it from inside the app. Wording from Codex's 7358940,
-            which covers both stores unconditionally rather than guessing the platform. */}
-        <p className="text-amber-400/90 text-xs leading-relaxed mb-3">
-          <strong>Account deletion does not cancel subscriptions.</strong> If you have
-          any subscriptions, cancel each one before deleting your account to prevent
-          further charges. Manage Google Play subscriptions in the Play Store under
-          Payments &amp; subscriptions → Subscriptions. Manage website subscriptions
-          by signing in at viastellis.com and opening Upgrade. Check both if you
-          subscribed through both services.
-        </p>
-
-        {!deleteOpen ? (
-          <button
-            type="button"
-            onClick={() => setDeleteOpen(true)}
-            className="text-rose-400 text-sm underline underline-offset-4 hover:text-rose-300"
-          >
-            I want to delete my account
-          </button>
-        ) : (
-          <div>
-            <label htmlFor="delete-confirm" className="block text-slate-400 text-xs mb-2">
-              Type <span className="text-rose-400 font-mono">{DELETE_PHRASE}</span> to confirm:
-            </label>
-            <input
-              id="delete-confirm"
-              type="text"
-              value={deleteTyped}
-              onChange={e => setDeleteTyped(e.target.value)}
-              autoComplete="off"
-              className="w-full bg-cosmos-950 border border-cosmos-700 rounded-lg px-3 py-2 text-sm text-slate-200 mb-3 focus:outline-none focus:border-rose-500/60"
-            />
-            {deleteError && (
-              <p className="text-rose-400 text-xs mb-3" role="alert">{deleteError}</p>
-            )}
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleDeleteAccount}
-                isLoading={deleting}
-                disabled={deleteTyped !== DELETE_PHRASE || deleting}
-                className="border-rose-400/50 text-rose-400 hover:bg-rose-400/10"
-              >
-                Delete permanently
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => { setDeleteOpen(false); setDeleteTyped(''); setDeleteError(null) }}
-                disabled={deleting}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <DeleteAccountPanel className="mt-8" />
 
       <div className="flex items-center justify-center gap-3 text-[11px] text-slate-600 mt-8">
         <Link to="/terms" className="hover:text-stardust-400">Terms</Link>

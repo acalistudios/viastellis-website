@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useUser } from '@/store/UserContext'
 import { searchCities, getTimezone, type CityResult } from '@/lib/geocoding'
@@ -779,6 +779,17 @@ export function BirthDataForm({ mode = 'create' }: BirthDataFormProps) {
           Not you? Sign out
         </button>
       )}
+
+      {/* Onboarding is the one place a signed-in user can get stuck: AuthGuard
+          keys on having a primary chart, so /settings bounces back here until
+          onboarding finishes. Without this link there is no in-app route to
+          deletion at all, which both Apple (5.1.1(v)) and Google require. */}
+      <Link
+        to="/delete-account"
+        className="mt-3 text-slate-600 hover:text-rose-400 text-xs transition-colors"
+      >
+        Delete my account
+      </Link>
     </div>
   )
 }
