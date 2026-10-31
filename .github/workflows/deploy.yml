@@ -71,6 +71,12 @@ jobs:
           # Capacitor.isNativePlatform() is false. Empty here is harmless.
           # NOTE: the variable name must stay in sync with src/lib/purchases.ts.
           VITE_REVENUECAT_PUBLIC_KEY: ${{ secrets.VITE_REVENUECAT_PUBLIC_KEY }}
+          # iOS. RevenueCat SDK keys are per-platform (goog_ vs appl_), so this
+          # cannot reuse the key above. Empty until the iOS app exists in
+          # RevenueCat and the repository secret is set; purchases.ts then fails
+          # closed on iOS with "not available in this build" rather than
+          # misconfiguring the SDK with the Android key.
+          VITE_REVENUECAT_IOS_KEY: ${{ secrets.VITE_REVENUECAT_IOS_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
