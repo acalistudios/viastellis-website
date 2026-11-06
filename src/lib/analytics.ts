@@ -1,4 +1,6 @@
-type GtagCommand = 'config' | 'event' | 'js' | 'set'
+import { Capacitor } from '@capacitor/core'
+
+type GtagCommand ='config' | 'event' | 'js' | 'set'
 
 declare global {
   interface Window {
@@ -15,8 +17,17 @@ const conversionLabels: Record<string, string | undefined> = {
 }
 let initialized = false
 
+/**
+ * Analytics is WEB ONLY. The native shells (Android, iOS) never load gtag,
+ * whatever the build env says. The conversion labels above are Google Ads
+ * measurement, which Apple counts as tracking: enabling it in the iOS app
+ * would falsify the published App Privacy label and require an ATT prompt the
+ * app does not have, and it would contradict the Play Data safety declaration.
+ * Every exported function goes through here, so this one guard covers all.
+ */
 function getTagId(): string | null {
   if (typeof window === 'undefined') return null
+  if (Capacitor.isNativePlatform()) return null
   return tagId || null
 }
 
